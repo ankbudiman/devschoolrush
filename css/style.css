@@ -95,3 +95,18 @@ body.st #menu{background:none}
 #mm{width:clamp(84px,30vh,120px);height:clamp(84px,30vh,120px)}
 #hud{max-width:calc(100% - clamp(84px,30vh,120px) - 2.2em)}
 }
+
+/* --- Round 4: Mod Kelas (story mode) --- */
+#stm,#scr{white-space:nowrap}#stm.near{background:#ffd23f;color:#7a2a00;animation:nr .5s ease-in-out infinite alternate}#stm.late{background:#e24b4b;color:#fff}
+@keyframes nr{to{transform:scale(1.08)}}
+#room{position:absolute;inset:0;z-index:25;display:none;align-items:center;justify-content:center;flex-direction:column;gap:.6em;text-align:center;padding:.8em;box-sizing:border-box;color:#fff;background:radial-gradient(circle at 50% 30%,rgba(47,111,208,.8),rgba(16,32,80,.96))}
+#room h2{margin:0;font-size:1.6em}#room p{margin:0;max-width:30em;opacity:.95}#room .rs2{color:#ffd23f;font-weight:700}
+#room .rk{display:flex;gap:.5em;flex-wrap:wrap;justify-content:center;margin-top:.4em}
+#room button{font:inherit;font-size:1.1em;padding:.6em 1.4em;border-radius:1em;border:0;background:#ffd23f;color:#1c2f6b;font-weight:700;cursor:pointer}
+@media(orientation:landscape) and (max-height:560px){#room{gap:.3em}#room h2{font-size:1.25em}#room button{padding:.45em 1.1em}}
+/* --- Tetapan fits phone landscape (more rows after Round 4): scrollable from the top, tighter rows --- */
+@media(orientation:landscape) and (max-height:560px){
+#vt{justify-content:flex-start;gap:.15em;padding:2.4em 0 .6em;flex:none;min-height:100%;box-sizing:border-box}
+#vt h2{font-size:1.2em}#vt .row{gap:.6em}#vt .ops{gap:.25em}#vt .ops button{padding:.18em .6em!important;font-size:.82em!important}
+#vt .bkb{padding:.4em 1.2em}
+}

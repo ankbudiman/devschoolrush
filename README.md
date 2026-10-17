@@ -14,8 +14,15 @@ Game web 3D low poly tentang kehidupan sekolah.
 - `js/chars.js` : pembina watak dan NPC
 - `js/ui.js` : panel kongsi (Cara Main, Tetapan, Kredit, Lencana)
 - `js/menu.js`, `js/world-build.js`, `js/world.js`
+- `js/story.js` : Mod Kelas (loceng rawak, susunan kelas rawak, pemasa, anak panah hampir tamat, pengawas, bilik placeholder). Nombor boleh diubah dalam `CFG` di bahagian atas fail
+- `manifest.webmanifest`, `sw.js`, `assets/icons/` : pasang sebagai aplikasi web (skrin penuh, mengufuk). `sw.js` tidak menyimpan cache, jadi kemas kini GitHub Pages terus nampak
+- `_backup_round3/` : fail sebelum Round 4
 - `css/style.css`
 
 ## Cara jalankan
 Letak folder ini di GitHub Pages, atau jalankan `python3 -m http.server` dalam folder ini lalu buka `http://localhost:8000`.
 Perlu internet untuk memuatkan Three.js dan fon Fredoka.
+
+## Pasang sebagai aplikasi
+- iPhone/iPad (Safari): Kongsi > Tambah ke Skrin Utama > Tambah. Buka dari ikon.
+- Android (Chrome): menu tiga titik > Pasang aplikasi (atau Tambah ke skrin utama). Buka dari ikon.

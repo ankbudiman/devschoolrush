@@ -24,14 +24,15 @@ if(tab==3)add('Topeng muka',[[false,'Tiada'],[true,'Pakai topeng']],'mask')}
 function rawak(){const g=selG,L=LK[g];L.sk=R(SK);L.hc=R(HC4);L.mo=R([0,1,2]);L.es=R([.8,1,1.2]);if(g=='m')L.hs=R(BS)[0];else{L.nt=Math.random()<.5;L.hs=R(GS)[0];L.tud=R(TUD)[0];L.rib=R(RIB)[0]}buildPV();renderCP()}
 function chk(){$('go').disabled=!(selG&&$('nm').value.trim())}
 function pickG(g){selG=g;tab=0;renderCP();chk();tone(660,0,.08,'sine',.12)}
-function showMenu(){inMenu=true;$('menu').style.display='flex';view('vm');const k=curKey();$('mC').hidden=!PF[k];if(PF[k])$('mC').textContent='Teruskan: '+PF[k].name}
+function showMenu(){inMenu=true;$('menu').style.display='flex';view('vm');const k=curKey();$('mC').hidden=!PF[k];if(PF[k])$('mC').textContent='Teruskan: '+PF[k].name+' ('+MODN[getMode()]+')'}
 function startFlow(){LK=defL();selG=null;tab=0;$('nm').value='';$('go').disabled=true;ring.visible=false;buildPV();renderCP();view('vn')}
 function startGame(cont){if(cont){cur=PF[curKey()];if(!cur)return}else{const nm=$('nm').value.replace(/[<>]/g,'').trim().slice(0,12);if(!nm||!selG)return;const k=nm.toLowerCase();PF[k]=PF[k]||Object.assign(NP(),{name:nm});cur=PF[k];cur.name=nm;cur.gen=selG;cur.L=Object.assign({},LK[selG]);LS.set('sk_cur',k);save()}
 inMenu=false;stageOn=false;$('menu').style.display='none';loading(()=>nav('world'))}
-function bell(){[0,.2,.4].forEach(t=>[880,1320,1760].forEach((f,i)=>tone(f,t,1.1-i*.25,'triangle',.06)))}
+function bell(){bellSound(1.8)}
+const MODN={story:'Mod Kelas',roam:'Mod Jalan-jalan'},getMode=()=>LS.get('sk_mode','roam')=='story'?'story':'roam';
 $('menu').addEventListener('pointerdown',()=>{if(!bellDone){bellDone=1;bell()}});$('bellw').onclick=bell;
-$('mK').onclick=()=>{const t=$('mt');t.textContent='Loceng belum berbunyi! Mod Kelas akan datang tak lama lagi.';t.style.opacity=1;clearTimeout(t._t);t._t=setTimeout(()=>t.style.opacity=0,2800)};
-$('mR').onclick=startFlow;$('mC').onclick=()=>startGame(true);$('mL').onclick=()=>{drawBd();frm='vm';view('vl')};$('mS').onclick=()=>{frm='vm';applySet();view('vt')};$('mH').onclick=()=>{frm='vm';view('vh')};$('mKr').onclick=()=>{frm='vm';view('vk')};
+$('mK').onclick=()=>{LS.set('sk_mode','story');startFlow()};
+$('mR').onclick=()=>{LS.set('sk_mode','roam');startFlow()};$('mC').onclick=()=>startGame(true);$('mL').onclick=()=>{drawBd();frm='vm';view('vl')};$('mS').onclick=()=>{frm='vm';applySet();view('vt')};$('mH').onclick=()=>{frm='vm';view('vh')};$('mKr').onclick=()=>{frm='vm';view('vk')};
 $('bk').onclick=()=>view('vm');$('go').onclick=()=>startGame(false);
 $('stg').onclick=e=>{const r=$('stg').getBoundingClientRect();pickG(e.clientX-r.left<r.width/2?'m':'f')};
 $('nm').oninput=chk;$('nm').onkeydown=e=>{if(e.key=='Enter'&&!$('go').disabled)startGame(false)};
