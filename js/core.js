@@ -22,4 +22,7 @@ tr.gain.value=.55;lf.frequency.value=17;lg.gain.value=.45;lf.connect(lg);lg.conn
 if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol))addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
 function tone(f,t0,d,ty,v){try{au=actx();const o=au.createOscillator(),g=au.createGain(),t=au.currentTime+t0;o.type=ty||'sine';o.frequency.setValueAtTime(f,t);g.gain.setValueAtTime(Math.max(.0001,(v||.15)*SET.snd*SET.vol),t);g.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(g);g.connect(au.destination);o.start(t);o.stop(t+d)}catch(e){}}
 const la=(a,b,k)=>a+(((b-a+Math.PI*3)%(Math.PI*2))-Math.PI)*k;
-function nav(to){const p=window.parent;if(p&&p!==window&&p.__sr)p.__sr(to);else location.href=to+'.html'}
+/* Round 6: back-button helpers (index.html and world.html). Not used inside the chat preview iframe */
+const SR_IFR=!!(window.parent&&window.parent!==window);
+function backKeep(){try{history.pushState({sr:1},'')}catch(e){}}
+function nav(to){try{sessionStorage.removeItem('sr_exit')}catch(e){}const p=window.parent;if(p&&p!==window&&p.__sr)p.__sr(to);else location.href=to+'.html'}
