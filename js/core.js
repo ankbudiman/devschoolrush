@@ -24,5 +24,7 @@ function tone(f,t0,d,ty,v){try{au=actx();const o=au.createOscillator(),g=au.crea
 const la=(a,b,k)=>a+(((b-a+Math.PI*3)%(Math.PI*2))-Math.PI)*k;
 /* Round 6: back-button helpers (index.html and world.html). Not used inside the chat preview iframe */
 const SR_IFR=!!(window.parent&&window.parent!==window);
-function backKeep(){try{history.pushState({sr:1},'')}catch(e){}}
-function nav(to){try{sessionStorage.removeItem('sr_exit')}catch(e){}const p=window.parent;if(p&&p!==window&&p.__sr)p.__sr(to);else location.href=to+'.html'}
+let SR_TRAP=0;function backKeep(){try{history.pushState({sr:1},'');SR_TRAP=1}catch(e){}}
+function nav(to){const p=window.parent;if(p&&p!==window&&p.__sr){p.__sr(to);return}
+ /* replace, not push, so the history never keeps stale game pages; if a back-trap entry was added, step back over it first */
+ const go=()=>location.replace(to+'.html');if(SR_TRAP){SR_TRAP=0;addEventListener('popstate',go,{once:true});history.back();setTimeout(go,400)}else go()}

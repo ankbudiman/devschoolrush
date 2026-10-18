@@ -45,18 +45,10 @@ if(r.width>10&&r.height>10){const asp=r.width/r.height,px=Math.max(.5,Math.min(.
 if(selG){ring.visible=true;ring.position.x=selG=='m'?-px:px}
 ren.setScissorTest(true);ren.setViewport(x0,y0,r.width,r.height);ren.setScissor(x0,y0,r.width,r.height);ren.render(ps,pc);ren.setScissorTest(false);ren.setViewport(0,0,W,H)}}}requestAnimationFrame(loop);
 
-/* Round 6: Android back twice to exit (toast on the first press) + the Keluar button.
-   First press: no history entry is re-added, so the second press is a normal system back (leaves/closes the app).
-   sr_exit tells any stale game page left in history to step back again (see the tiny script in <head>). */
-(function(){const E=['pointerdown','keydown','touchend'],ios=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform=='MacIntel'&&navigator.maxTouchPoints>1);let on=0,tm=null;
-const arm=()=>{if(on)return;on=1;backKeep();E.forEach(e=>removeEventListener(e,arm,true))};if(!SR_IFR)E.forEach(e=>addEventListener(e,arm,true));
-addEventListener('popstate',()=>{if(SR_IFR||!on)return;const ld=$('ld');if(ld&&getComputedStyle(ld).display!='none'){backKeep();return}
-const vis=['vn','vh','vt','vk','vl'].find(i=>$(i)&&!$(i).hidden);if(vis){backKeep();view(vis=='vn'?'vm':frm);return}
-toast('Tekan Kembali sekali lagi untuk keluar',2000);try{sessionStorage.setItem('sr_exit',Date.now())}catch(e){}
-clearTimeout(tm);tm=setTimeout(()=>{try{sessionStorage.removeItem('sr_exit')}catch(e){}backKeep()},2200)});
-const q=$('qx'),qm=document.createElement('div');qm.id='qm';document.body.appendChild(qm);
+/* Round 6: Keluar button. Android cannot always close a web app from code, so it falls back to a how-to-close card */
+(function(){const ios=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform=='MacIntel'&&navigator.maxTouchPoints>1),q=$('qx'),qm=document.createElement('div');qm.id='qm';document.body.appendChild(qm);
 function how(){qm.innerHTML='';const h=document.createElement('h2');h.textContent='Cara tutup aplikasi';qm.appendChild(h);
-[ios?'iPhone tak benarkan game tutup sendiri.':'Game tak dapat tutup sendiri di telefon ini.',ios?'Leret ke atas dari bawah skrin (atau tekan dua kali butang Home), kemudian leret kad SCHOOL RUSH ke atas.':'Tekan butang Kembali dua kali di skrin utama, atau tekan butang Terkini (Recent) dan leret SCHOOL RUSH ke atas.'].forEach(t=>{const p=document.createElement('p');p.textContent=t;qm.appendChild(p)});
+[ios?'iPhone tak benarkan game tutup sendiri.':'Game tak dapat tutup sendiri di telefon ini.',ios?'Leret ke atas dari bawah skrin (atau tekan dua kali butang Home), kemudian leret kad SCHOOL RUSH ke atas.':'Tekan butang Terkini (Recent) atau leret ke atas dari bawah skrin, kemudian leret SCHOOL RUSH ke atas untuk tutup.'].forEach(t=>{const p=document.createElement('p');p.textContent=t;qm.appendChild(p)});
 const b=document.createElement('button');b.textContent='OK';b.onclick=()=>qm.style.display='none';qm.appendChild(b);qm.style.display='flex'}
 q.onclick=()=>{if(ios){how();return}try{window.close()}catch(e){}setTimeout(()=>{if(!document.hidden)how()},500)};
 const sync=()=>{q.style.display=$('vm').hidden?'none':'flex';q.style.right=$('fs').hidden?'.6em':'3.7em'};new MutationObserver(sync).observe($('vm'),{attributes:true,attributeFilter:['hidden']});sync()})();

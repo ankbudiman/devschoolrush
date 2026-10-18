@@ -40,7 +40,7 @@ $('pS').onclick=()=>{$('menu').style.display='none';halt=false;document.body.cla
 /* Round 6: Android back button opens Pause (and closes it again) instead of leaving the game.
    The history entry is added on the first touch/key press, because Chrome skips entries added without interaction. */
 (function(){if(SR_IFR)return;let on=0;const E=['pointerdown','keydown','touchend'],arm=()=>{if(on)return;on=1;backKeep();E.forEach(e=>removeEventListener(e,arm,true))};E.forEach(e=>addEventListener(e,arm,true));
-addEventListener('popstate',()=>{if(!on)return;backKeep();const ld=$('ld'),rm=document.getElementById('room');if((ld&&ld.style.display!='none')||(rm&&rm.style.display=='flex'))return;
+addEventListener('popstate',()=>{if(!on||!SR_TRAP)return;backKeep();const ld=$('ld'),rm=document.getElementById('room');if((ld&&ld.style.display!='none')||(rm&&rm.style.display=='flex'))return;
 const m=$('menu');if(m.style.display=='flex'){const vp=$('vp');if(vp&&!vp.hidden)$('pS').click();else view('vp')}else pause()})})();
 window.gfxHook=()=>{ren.shadowMap.enabled=!SET.lo;dl.castShadow=!SET.lo;ren.setPixelRatio(SET.lo?1:Math.min(devicePixelRatio,2));fit();sc.traverse(o=>{if(o.material)o.material.needsUpdate=true})};
 let last=0;function loop(ts){requestAnimationFrame(loop);const dt=Math.min((ts-last)/1000||0,.05),t=ts/1000;last=ts;

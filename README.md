@@ -17,7 +17,9 @@ Game web 3D low poly tentang kehidupan sekolah.
 - `js/story.js` : Mod Kelas (loceng rawak, susunan kelas rawak, pemasa, anak panah hampir tamat, pengawas, bilik placeholder). Nombor boleh diubah dalam `CFG` di bahagian atas fail
 - `manifest.webmanifest`, `sw.js`, `assets/icons/` : pasang sebagai aplikasi web (skrin penuh, mengufuk). `sw.js` tidak menyimpan cache, jadi kemas kini GitHub Pages terus nampak
 - Mod Kelas guna jam analog (bawah minimap) + ikon loceng. 6 loceng: 7:30, 8:30, 9:30 Waktu Rehat (Kantin tetap), 10:00, 11:00, 12:00. Padang Balapan hanya kelas 1 atau 2. 1 saat sebenar = 1/4 minit jam; masa tiba 30 saat. Lepas kelas ke-6: jalan-jalan beberapa saat, loceng balik 1:00 tengah hari (panjang, tiada pemasa/pengawas), kemudian 'Sekolah tamat' dengan butang Main lagi / Sambung jalan-jalan / Halaman utama. 'Sambung jalan-jalan' = bebas berjalan dalam Mod Kelas tanpa loceng, pemasa, jam atau pengawas. Tetapan jadual dalam `CFG` (`js/story.js`)
-- Keluar (Round 6): Android tekan Kembali dua kali di skrin utama untuk keluar (toast pada tekan pertama). Butang Keluar di skrin utama cuba tutup; jika gagal (iPhone selalunya) paparan cara tutup. Dalam game, Kembali membuka menu Jeda. Skrip kecil dalam `<head>` kedua-dua HTML + `backKeep()` dalam `js/core.js` mengurus sejarah pelayar
+- Keluar (Round 6): butang Keluar di skrin utama cuba tutup; jika gagal (iPhone selalunya) paparan cara tutup. Dalam game, Kembali membuka menu Jeda (dan menutupnya semula); skrin utama guna Kembali biasa Android. `nav()` dalam `js/core.js` guna `location.replace` supaya sejarah tidak simpan halaman game lama
+- `sw.js` (Round 6b): rangkaian dahulu, salinan simpanan jika luar talian atau perlahan (termasuk Three.js dan fon), supaya aplikasi terpasang masih dibuka. Jika Three.js gagal dimuat, paparan 'Cuba lagi' (bukan skrin kosong)
+- `_backup_round6b/` : fail sebelum pembaikan Kembali dan sw.js
 - `_backup_round6/` : fail sebelum Round 6
 - `_backup_round5/` : logo, ikon dan index.html sebelum tajuk/ikon baharu
 - `_backup_round4/` : fail sebelum Round 5
