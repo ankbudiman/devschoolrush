@@ -16,6 +16,9 @@ Game web 3D low poly tentang kehidupan sekolah.
 - `js/menu.js`, `js/world-build.js`, `js/world.js`
 - `js/story.js` : Mod Kelas (loceng rawak, susunan kelas rawak, pemasa, anak panah hampir tamat, pengawas, bilik placeholder). Nombor boleh diubah dalam `CFG` di bahagian atas fail
 - `manifest.webmanifest`, `sw.js`, `assets/icons/` : pasang sebagai aplikasi web (skrin penuh, mengufuk). `sw.js` tidak menyimpan cache, jadi kemas kini GitHub Pages terus nampak
+- Mod Kelas guna jam analog (bawah minimap) + ikon loceng. 6 slot: 7:30, 8:30, 9:30 Waktu Rehat (Kantin tetap), 10:30, 11:30, 12:30. Padang Balapan hanya slot 7:30 atau 8:30. Tetapan jadual dalam `CFG` (`js/story.js`)
+- `_backup_round5/` : logo, ikon dan index.html sebelum tajuk/ikon baharu
+- `_backup_round4/` : fail sebelum Round 5
 - `_backup_round3/` : fail sebelum Round 4
 - `css/style.css`
 

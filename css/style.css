@@ -75,7 +75,7 @@ body.st #menu{background:none}
 #vm{flex-direction:row;justify-content:center;align-items:center;gap:3vw;padding:2.6em 3vw .6em}
 #brand{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1 1 0;min-width:0;gap:.3em}
 #acts{display:flex;flex-direction:column;align-items:stretch;justify-content:center;flex:1 1 0;min-width:0;max-width:24em;gap:.5em}
-.logo{width:min(100%,calc(54vh*1.634))}.logo img{max-height:none}
+.logo{width:min(100%,calc(54vh*1.531))}.logo img{max-height:none}
 #sub{margin:0;font-size:.95em}
 #acts .r2{width:100%;flex-wrap:nowrap;gap:.45em}#acts .r2 button{min-width:0}
 #acts .rs{display:grid;grid-template-columns:1fr 1fr}
@@ -110,3 +110,17 @@ body.st #menu{background:none}
 #vt h2{font-size:1.2em}#vt .row{gap:.6em}#vt .ops{gap:.25em}#vt .ops button{padding:.18em .6em!important;font-size:.82em!important}
 #vt .bkb{padding:.4em 1.2em}
 }
+
+/* --- Round 5: analog clock + school bell (Mod Kelas only). --mm mirrors the minimap size so they scale together --- */
+:root{--mm:min(34vw,160px);--ck:calc(var(--mm)*.62)}
+@media(orientation:landscape) and (max-height:560px){:root{--mm:clamp(84px,30vh,120px)}}
+#ck{inset:auto;position:absolute;right:.6em;top:calc(.6em + var(--mm) + .35em);width:var(--ck);height:var(--ck);z-index:2;pointer-events:none}
+#bl{position:absolute;right:calc(.6em + var(--ck) + .4em);top:calc(.6em + var(--mm) + .35em + var(--ck)*.5 - var(--mm)*.17);width:calc(var(--mm)*.34);height:calc(var(--mm)*.34);z-index:2;pointer-events:none;opacity:.7;transform-origin:50% 10%}
+#bl svg{width:100%;height:100%;display:block}
+#bl.on{opacity:1;filter:drop-shadow(0 0 6px #ffd23f);animation:blg 1.4s ease-in-out infinite alternate}
+#bl.ring{opacity:1;animation:bls .16s ease-in-out infinite alternate,blp .45s ease-in-out infinite alternate}
+#bl.late{opacity:1;filter:drop-shadow(0 0 8px #e24b4b);animation:blg .5s ease-in-out infinite alternate}
+@keyframes bls{from{transform:rotate(-22deg)}to{transform:rotate(22deg)}}
+@keyframes blp{from{filter:drop-shadow(0 0 4px #ffd23f)}to{filter:drop-shadow(0 0 16px #fff3a0) drop-shadow(0 0 8px #ffd23f)}}
+@keyframes blg{from{filter:drop-shadow(0 0 3px #ffd23f)}to{filter:drop-shadow(0 0 9px #ffd23f)}}
+body.mn #ck,body.mn #bl{display:none!important}

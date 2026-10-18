@@ -1,27 +1,44 @@
 /* Mod Kelas (Story Mode). Loaded before world.js; only does anything when sk_mode = 'story'.
    Hooks used by world.js: storyBoot() after loading, storyDoor(door) on E at a door, storyTick(dt,t) every frame.
+   The analog clock is the timer: 1 real second = 1 clock minute while running to class.
    Tweak the numbers in CFG. Replace enterRoom()'s placeholder with a real room page in a later round. */
 (function(){
 const MODE=LS.get('sk_mode','roam')=='story'?'story':'roam';
 if(MODE=='story'){const l=$('mdl');if(l)l.textContent='SCHOOL RUSH · Mod Kelas'}
-const CFG={DAY:6,FIRST:[7,12],BREAK:[9,18],TK:2.2,TBASE:10,TMIN:25,TMAX:75,NEAR:.3,NEARMIN:8,
-  ONTIME:100,BONUS:2,LATE:30,CAUGHT:20,PSPD:4,PDELAY:2,CATCH:.85};
-const SUBJ=['Sains','Bahasa Melayu','Matematik','English','Pendidikan Jasmani','Pendidikan Kesihatan']; /* index = DR index */
-let st='off',order=[],n=0,cls=-1,tleft=0,ttot=0,wait=0,score=0,ok=0,lt=0,navOn=false,ph=null,bd=null,bt=0,wasLate=false;
+const CFG={DAY:6,
+  CLASS:[450,510,570,630,690,750], /* clock minutes you must be in class: 7:30 8:30 9:30(Rehat) 10:30 11:30 12:30 */
+  LEAD:30,SEC:30,                  /* bell rings 30 clock-min before; 30 real seconds to get there */
+  FIRST:[6,10],BREAK:[6,12],       /* real seconds of free time before a bell (clock runs 1 min/s) */
+  NEAR:.3,NEARMIN:8,ONTIME:100,BONUS:2,LATE:30,CAUGHT:20,PSPD:4,PDELAY:2,CATCH:.85};
+const LAB=['Sains','Bahasa Melayu','Matematik','English','Pendidikan Jasmani','Waktu Rehat']; /* index = DR index; 5 = Kantin */
+let st='off',order=[],n=0,cls=-1,tleft=0,ttot=0,score=0,ok=0,lt=0,navOn=false,ph=null,bd=null,bt=0,clk=0,ringT=0;
 const shuf=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
 const fmt=s=>{s=Math.max(0,Math.ceil(s));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')};
+const bellAt=i=>CFG.CLASS[i]-CFG.LEAD;
+const hm=m=>{const h=Math.floor(m/60),mi=Math.floor(m%60);return (h%12||12)+':'+String(mi).padStart(2,'0')+(h<12?' PG':h<15?' TH':' PTG')};
 const room=()=>$('room');
-function pills(){const a=$('stm'),b=$('scr');a.hidden=b.hidden=false;b.textContent='Skor '+score;a.className='hp';
+/* day plan: Kantin (Waktu Rehat) always slot 3 (9:30); Padang Balapan (PJ) slot 1 or 2 only; others random */
+function plan(){const pj=Math.random()<.5?0:1,rest=shuf([0,1,2,3]);let r=0;const o=[];for(let s=0;s<6;s++)o.push(s==2?5:s==pj?4:rest[r++]);return o}
+window.storyPlan=plan;
+function drawClock(){const c=$('ck');if(!c||c.hidden)return;const g=c.getContext('2d'),W=200,C=100;g.clearRect(0,0,W,W);
+ g.beginPath();g.arc(C,C,94,0,7);g.fillStyle='#fffdf5';g.fill();g.lineWidth=8;g.strokeStyle='#1c2f6b';g.stroke();
+ if((st=='class'||st=='late')&&ttot>0){const f=st=='late'?0:Math.max(0,tleft/ttot);if(f>0){g.beginPath();g.arc(C,C,82,-Math.PI/2,-Math.PI/2+f*Math.PI*2);g.lineWidth=9;g.strokeStyle=navOn?'#e24b4b':'#ffd23f';g.stroke()}}
+ g.strokeStyle='#1c2f6b';g.lineCap='round';for(let i=0;i<12;i++){const a=i*Math.PI/6,l=i%3?6:11;g.lineWidth=i%3?2:3;g.beginPath();g.moveTo(C+Math.sin(a)*(70-l),C-Math.cos(a)*(70-l));g.lineTo(C+Math.sin(a)*70,C-Math.cos(a)*70);g.stroke()}
+ g.fillStyle='#1c2f6b';g.font='bold 30px sans-serif';g.textAlign='center';g.textBaseline='middle';[[12,0],[3,90],[6,180],[9,270]].forEach(p=>{const a=p[1]*Math.PI/180;g.fillText(p[0],C+Math.sin(a)*50,C-Math.cos(a)*50)});
+ const hand=(ang,len,w,col)=>{g.beginPath();g.moveTo(C,C);g.lineTo(C+Math.sin(ang)*len,C-Math.cos(ang)*len);g.lineWidth=w;g.strokeStyle=col;g.stroke()};
+ hand(((clk/60)%12)*Math.PI/6,36,12,'#1c2f6b');hand((clk%60)*Math.PI/30,56,8,'#2f6fd0');g.beginPath();g.arc(C,C,6,0,7);g.fillStyle='#e24b4b';g.fill()}
+function pills(){const a=$('stm'),b=$('scr'),bl=$('bl');a.hidden=b.hidden=false;b.textContent=hm(clk)+' · Skor '+score;a.className='hp';
  if(st=='idle')a.textContent='Tunggu loceng...';
- else if(st=='class'){a.textContent=SUBJ[cls]+' · '+fmt(tleft);if(navOn)a.className='hp near'}
- else if(st=='late'){a.textContent='LEWAT! '+SUBJ[cls];a.className='hp late'}
- else a.hidden=true}
+ else if(st=='class'){a.textContent=LAB[cls]+' · '+fmt(tleft);if(navOn)a.className='hp near'}
+ else if(st=='late'){a.textContent='LEWAT! '+LAB[cls];a.className='hp late'}
+ else a.hidden=true;
+ bl.className=st=='late'?'late':ringT>0?'ring':st=='class'?'on':''}
 function setNav(on){if(on&&!navOn){navOn=true;tgt=cls;flood()}else if(!on&&navOn){navOn=false;tgt=-1;dist=null}}
-function sched(first){st='idle';setNav(false);hidePref();wait=rnd.apply(null,first?CFG.FIRST:CFG.BREAK);pills()}
-function ring(){cls=order[n];tgt=cls;flood();const len=path(2000).length*GC;tgt=-1;dist=null;navOn=false;
- ttot=tleft=Math.round(Math.min(CFG.TMAX,Math.max(CFG.TMIN,len/5*CFG.TK+CFG.TBASE)));wasLate=false;st='class';
- bellSound(2.4);toast('Ringg!!! Kelas '+SUBJ[cls]+' di '+DR[cls][6]+'. Cepat!',3800);pills()}
-function late(){st='late';wasLate=true;setNav(true);score=Math.max(0,score-CFG.LATE);bellSound(.9);toast('Lewat! Pengawas datang!',3000);say('Alamak, lewat!');spawnPref();pills()}
+function sched(first){st='idle';setNav(false);hidePref();clk=bellAt(n)-rnd.apply(null,first?CFG.FIRST:CFG.BREAK);ringT=0;pills()}
+function ring(){cls=order[n];clk=bellAt(n);ttot=tleft=CFG.SEC;st='class';ringT=2.6;
+ bellSound(2.4);try{navigator.vibrate&&navigator.vibrate([250,120,250])}catch(e){}
+ toast(cls==5?'Ringg!!! Waktu Rehat! Jom ke Kantin.':'Ringg!!! Kelas '+LAB[cls]+' di '+DR[cls][6]+'. Cepat!',3800);pills()}
+function late(){st='late';setNav(true);score=Math.max(0,score-CFG.LATE);bellSound(.9);toast('Lewat! Pengawas datang!',3000);say('Alamak, lewat!');spawnPref();pills()}
 /* ---- prefect chase ---- */
 function spawnPref(){if(!ph){const m=npc('pengawas');sc.add(m);ph={m,x:0,z:0,f:0,mv:0,d:0}}
  const ks=Object.keys(ND).filter(k=>k!='TL'&&k!='BR'&&Math.hypot(X(ND[k][0])-P.x,Z(ND[k][1])-P.z)>=12);const k=R(ks.length?ks:['TS','BS']);
@@ -46,25 +63,27 @@ function card(h,lines,btns){const r=room();r.innerHTML='';const a=document.creat
  r.style.display='flex';document.body.classList.add('mn');halt=true}
 function closeCard(){room().style.display='none'}
 function enterRoom(i,caught){const lateNow=caught||st=='late';let g;
- if(lateNow){lt++;g=caught?'Lewat dan kena hantar pengawas.':'Lewat! Cikgu jeling kamu.'}else{const b=CFG.ONTIME+Math.floor(tleft)*CFG.BONUS;score+=b;ok++;g='Tepat masa! +'+b+' mata.'}
- st='room';setNav(false);hidePref();pills();
- loading(()=>{ /* TODO later round: location.href = room page instead of this placeholder */
-  card('Bilik belum siap',[[SUBJ[i]+' · '+DR[i][6]],[g,1],['Cikgu belum sampai lagi. Sabar ya!']],[['Keluar bilik',()=>{closeCard();leave(i)}]])})}
+ if(lateNow){lt++;g=caught?'Lewat dan kena hantar pengawas.':'Lewat! Cikgu jeling kamu.'}else{const b=CFG.ONTIME+Math.floor(tleft)*CFG.BONUS;score+=b;ok++;g=(i==5?'Sempat rehat! +':'Tepat masa! +')+b+' mata.';clk=CFG.CLASS[n]}
+ st='room';ringT=0;setNav(false);hidePref();pills();
+ loading(()=>{ /* TODO later round: location.href = room page / minigame instead of this placeholder */
+  card(i==5?'Kantin belum siap':'Bilik belum siap',[[i==5?'Waktu Rehat · Kantin':LAB[i]+' · '+DR[i][6]],[g,1],[i==5?'Mini game kantin akan datang. Sabar ya!':'Cikgu belum sampai lagi. Sabar ya!']],[['Keluar',()=>{closeCard();leave(i)}]])})}
 function leave(i){n++;if(n>=CFG.DAY){loading(()=>endDay());return}
  loading(()=>{const d=DR[i];P.x=d[7];P.z=d[8];P.y=0;P.vy=0;P.stun=0;P.slow=0;P.f=Math.atan2(d[4],d[5]);cp.x=P.x;cp.z=P.z;cy=P.f+Math.PI;hold=0;
-  document.body.classList.remove('mn');halt=false;sched(false);toast('Rehat sekejap... loceng akan berbunyi lagi.',2800)})}
-function endDay(){st='off';$('stm').hidden=true;bellSound(2.6);if(score>(cur.sb||0)){cur.sb=score;save()}
- card('Sekolah tamat!',[['Loceng balik berbunyi!'],['Skor: '+score,1],['Tepat masa: '+ok+' · Lewat: '+lt],['Skor terbaik: '+(cur.sb||0)]],[['Main lagi',()=>location.reload()],['Halaman utama',()=>nav('index')]])}
+  document.body.classList.remove('mn');halt=false;sched(false);toast('Masa berlalu... loceng akan berbunyi lagi.',2800)})}
+function endDay(){st='off';clk=CFG.CLASS[CFG.DAY-1];$('stm').hidden=true;$('bl').className='';drawClock();bellSound(2.6);if(score>(cur.sb||0)){cur.sb=score;save()}
+ card('Sekolah tamat!',[['Jam 12:30 tengah hari. Loceng balik berbunyi!'],['Skor: '+score,1],['Tepat masa: '+ok+' · Lewat: '+lt],['Skor terbaik: '+(cur.sb||0)]],[['Main lagi',()=>location.reload()],['Halaman utama',()=>nav('index')]])}
 /* ---- hooks ---- */
 window.storyBoot=function(){if(MODE!='story'){halt=false;return}
- order=shuf([0,1,2,3,4,5]).slice(0,CFG.DAY);n=0;score=ok=lt=0;st='off';$('scr').hidden=false;$('scr').textContent='Skor 0';
- card('Hari sekolah bermula!',[['Loceng akan berbunyi bila-bila masa.'],['Cari kelas yang betul sebelum masa tamat.'],['Lewat? Pengawas akan kejar kamu!']],[['Jom!',()=>{closeCard();document.body.classList.remove('mn');halt=false;sched(true)}]])};
+ order=plan();n=0;score=ok=lt=0;st='off';$('scr').hidden=false;$('ck').hidden=false;$('bl').hidden=false;clk=bellAt(0)-8;pills();$('stm').hidden=true;drawClock();
+ card('Hari sekolah bermula!',[['Lihat jam dan loceng. Loceng berbunyi dahulu.'],['Sampai ke kelas dalam 30 saat.'],['Pukul 9:30 ialah Waktu Rehat di Kantin.'],['Lewat? Pengawas akan kejar kamu!']],[['Jom!',()=>{closeCard();document.body.classList.remove('mn');halt=false;sched(true)}]])};
 window.storyDoor=function(d){if(MODE!='story')return false;const i=DR.indexOf(d);
- if(st=='class'||st=='late'){if(i==cls)enterRoom(i,false);else say('Bukan kelas ini! Cari '+SUBJ[cls]+'.');return true}
+ if(st=='class'||st=='late'){if(i==cls)enterRoom(i,false);else say(cls==5?'Bukan sini! Pergi ke Kantin.':'Bukan kelas ini! Cari '+LAB[cls]+'.');return true}
  say('Loceng belum berbunyi lagi.');return true};
 window.storyTick=function(dt,t){if(MODE!='story'||halt)return;
- if(st=='idle'){wait-=dt;if(wait<=0)ring();pills()}
- else if(st=='class'){tleft-=dt;if(tleft<=Math.max(CFG.NEARMIN,ttot*CFG.NEAR))setNav(true);if(tleft<=0)late();else pills()}
- else if(st=='late'){chase(dt,t)}};
+ if(ringT>0){ringT-=dt;if(ringT<=0)ringT=0}
+ if(st=='idle'){clk+=dt;if(clk>=bellAt(n))ring();else pills()}
+ else if(st=='class'){tleft-=dt;clk=bellAt(n)+CFG.LEAD*(1-Math.max(0,tleft)/ttot);if(tleft<=Math.max(CFG.NEARMIN,ttot*CFG.NEAR))setNav(true);if(tleft<=0)late();else pills()}
+ else if(st=='late'){clk+=dt;chase(dt,t);pills()}
+ drawClock()};
 if(MODE=='story'){const r=document.createElement('div');r.id='room';document.body.appendChild(r)}
 })();
