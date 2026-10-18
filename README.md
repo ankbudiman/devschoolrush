@@ -33,3 +33,5 @@ Perlu internet untuk memuatkan Three.js dan fon Fredoka.
 ## Pasang sebagai aplikasi
 - iPhone/iPad (Safari): Kongsi > Tambah ke Skrin Utama > Tambah. Buka dari ikon.
 - Android (Chrome): menu tiga titik > Pasang aplikasi (atau Tambah ke skrin utama). Buka dari ikon.
+- `_backup_round6c/` : fail sebelum pembetulan butang Keluar/skrin penuh bertindih dan muat semula skrin utama selepas aplikasi lama di latar
+- `_backup_round6d/` : manifest.webmanifest asal (fullscreen + mengufuk). Ujian pemasangan: kini `standalone` tanpa kunci orientasi. Jika berjaya, boleh cuba pulangkan `orientation: landscape` dahulu, kemudian `fullscreen`, satu demi satu

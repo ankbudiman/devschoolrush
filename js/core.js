@@ -28,3 +28,7 @@ let SR_TRAP=0;function backKeep(){try{history.pushState({sr:1},'');SR_TRAP=1}cat
 function nav(to){const p=window.parent;if(p&&p!==window&&p.__sr){p.__sr(to);return}
  /* replace, not push, so the history never keeps stale game pages; if a back-trap entry was added, step back over it first */
  const go=()=>location.replace(to+'.html');if(SR_TRAP){SR_TRAP=0;addEventListener('popstate',go,{once:true});history.back();setTimeout(go,400)}else go()}
+/* Round 6c: coming back from the background. Start screen reloads itself if the app was away 30+ s or the GPU context was lost (progress is in localStorage) */
+(function(){if(SR_IFR)return;const idx=document.body.classList.contains('idx');let hid=0;
+document.addEventListener('visibilitychange',()=>{if(document.hidden){hid=Date.now();return}if(idx&&hid&&Date.now()-hid>30000)location.reload()});
+const c=document.getElementById('cv');if(c&&idx)c.addEventListener('webglcontextrestored',()=>location.reload())})();

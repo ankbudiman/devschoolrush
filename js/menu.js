@@ -51,4 +51,4 @@ function how(){qm.innerHTML='';const h=document.createElement('h2');h.textConten
 [ios?'iPhone tak benarkan game tutup sendiri.':'Game tak dapat tutup sendiri di telefon ini.',ios?'Leret ke atas dari bawah skrin (atau tekan dua kali butang Home), kemudian leret kad SCHOOL RUSH ke atas.':'Tekan butang Terkini (Recent) atau leret ke atas dari bawah skrin, kemudian leret SCHOOL RUSH ke atas untuk tutup.'].forEach(t=>{const p=document.createElement('p');p.textContent=t;qm.appendChild(p)});
 const b=document.createElement('button');b.textContent='OK';b.onclick=()=>qm.style.display='none';qm.appendChild(b);qm.style.display='flex'}
 q.onclick=()=>{if(ios){how();return}try{window.close()}catch(e){}setTimeout(()=>{if(!document.hidden)how()},500)};
-const sync=()=>{q.style.display=$('vm').hidden?'none':'flex';q.style.right=$('fs').hidden?'.6em':'3.7em'};new MutationObserver(sync).observe($('vm'),{attributes:true,attributeFilter:['hidden']});sync()})();
+const sync=()=>{q.style.display=$('vm').hidden?'none':'flex'};new MutationObserver(sync).observe($('vm'),{attributes:true,attributeFilter:['hidden']});sync()})();
