@@ -2,11 +2,22 @@ const T=THREE,R=a=>a[Math.floor(Math.random()*a.length)],rnd=(a,b)=>a+Math.rando
 const SK=['#b87a50','#8d5a3b','#a8693f','#c68a5a','#6e4328','#d9a57a','#f0c9a0'],HC=['#14161d','#14161d','#2a1d16','#3b2a1e','#5a3a22'],CL=['#e24b4b','#e8a33d','#3da36b','#4a86c8','#8a5bd0','#d6568f','#2e9aa8','#e7d24a'],S={mask:false};
 let mt=0,halt=true,au=null;
 const LS={get(k,d){try{const v=JSON.parse(localStorage.getItem(k));return v==null?d:v}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
-const NP=()=>({drinks:0,s:[0,0,0,0],slip:0,gem:0,badges:{}});
+/* Round 7: save version 2 adds rooms (best result per room, Mod Kelas only) and level (difficulty, selector comes in a later round). Old saves are upgraded on load. */
+const NP=()=>({v:2,drinks:0,s:[0,0,0,0],slip:0,gem:0,badges:{},rooms:{},level:'sederhana'});
+function fixP(p){p.v=2;p.rooms=p.rooms||{};p.level=p.level||'sederhana';return p}
 let cur=NP();
-let PF=LS.get('sk_profiles',{}),rc=null,frm='vm';{const k=LS.get('sk_cur',null);if(k&&PF[k])cur=PF[k]}
+let PF=LS.get('sk_profiles',{}),rc=null,frm='vm';{Object.keys(PF).forEach(k=>fixP(PF[k]));const k=LS.get('sk_cur',null);if(k&&PF[k])cur=PF[k]}
 const SET=Object.assign({snd:1,vol:.8,ts:1,lh:0,cf:1,lo:0,mus:1,mvol:.6},LS.get('sk_set',{}));
 function save(){LS.set('sk_profiles',PF)}
+/* Round 7: session storage (cleared when the app is closed, so a killed app restarts the day) */
+const SS={get(k){try{return JSON.parse(sessionStorage.getItem(k))}catch(e){return null}},set(k,v){try{sessionStorage.setItem(k,JSON.stringify(v))}catch(e){}},del(k){try{sessionStorage.removeItem(k)}catch(e){}}};
+/* Round 7: grades. Stall score 0-100 (mistakes and time), room score = average of its games, grade from GRD (edit the numbers to retune). Stars 3 / 2 / 1 from the stall score */
+const GRD=[[98,'A+'],[85,'A'],[70,'B'],[55,'C'],[0,'D']],RM=[['mat','Matematik'],['sains','Sains'],['eng','English'],['bm','Bahasa Melayu'],['pj','Pendidikan Jasmani'],['kantin','Kantin (Waktu Rehat)']];
+const gradeOf=s=>(GRD.find(g=>s>=g[0])||GRD[GRD.length-1])[1];
+const stallScore=(wr,sec,lim)=>Math.max(15,Math.round(100-Math.min(60,wr*12)-(sec<=lim?0:Math.min(25,(sec-lim)/lim*40))));
+const starsOf=s=>s>=95?3:s>=70?2:1;
+const gcls=g=>'gd g'+({'A+':'AP','A':'A','B':'B','C':'C','D':'D'}[g]||'N');
+function recRoom(id,score,stalls){const r=cur.rooms[id]||(cur.rooms[id]={best:0,n:0});r.n++;if(score>=r.best){r.best=score;r.g=gradeOf(score);r.st=stalls}save();return r}
 const BD=[['air8','Tabiat Sihat','Minum air 8 kali'],['sampah12','Pelajar Prihatin','Buang 12 sampah dengan betul'],['slip5','Kaki Licin','Terpijak kulit pisang 5 kali'],['gem5','Laju Kilat','Ambil 5 gem laju']],
 TIPS=['Jangan pijak kulit pisang! Licin tau.','Tong biru untuk kertas, tong oren untuk plastik.','Minum air, badan segar!','Wuuu, kejar loceng!','Lompat! Sampah pun boleh dielak.','Botol kaca masuk tong coklat.','Prefect tengah perhati... senyum sikit.','Hati-hati kat selekoh tu!','Cikgu dah masuk kelas... cepat sikit!','Pengawas tengah ronda, buat-buat rajin.','Loceng berbunyi, kaki jangan malas!','Jangan lewat, nanti kena kejar dengan pengawas.'];
 function toast(t,ms){const m=$('msg');m.textContent=t;m.style.display='block';clearTimeout(mt);mt=setTimeout(()=>m.style.display='none',ms||2600)}
