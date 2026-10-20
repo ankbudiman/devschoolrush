@@ -43,6 +43,13 @@ $('pS').onclick=()=>{$('menu').style.display='none';halt=false;document.body.cla
 addEventListener('popstate',()=>{if(!on||!SR_TRAP)return;backKeep();const ld=$('ld'),rm=document.getElementById('room');if((ld&&ld.style.display!='none')||(rm&&rm.style.display=='flex'))return;
 const m=$('menu');if(m.style.display=='flex'){const vp=$('vp');if(vp&&!vp.hidden)$('pS').click();else view('vp')}else pause()})})();
 window.gfxHook=()=>{ren.shadowMap.enabled=!SET.lo;dl.castShadow=!SET.lo;ren.setPixelRatio(SET.lo?1:Math.min(devicePixelRatio,2));fit();sc.traverse(o=>{if(o.material)o.material.needsUpdate=true})};
+/* Round 8a: see-through walls. A wall (with its posters and signs) fades to 25% only while it is between the camera and the player */
+const FADE=.25;
+function segBox(C,Q,b){let t0=0,t1=1;const d=[Q.x-C.x,Q.y-C.y,Q.z-C.z],o=[C.x,C.y,C.z];
+ for(let i=0;i<3;i++){const lo=b[i*2]-.12,hi=b[i*2+1]+.12;if(Math.abs(d[i])<1e-6){if(o[i]<lo||o[i]>hi)return false}else{let a=(lo-o[i])/d[i],c=(hi-o[i])/d[i];if(a>c){const k=a;a=c;c=k}t0=Math.max(t0,a);t1=Math.min(t1,c);if(t0>t1)return false}}return true}
+function fades(dt){const Q={x:P.x,y:P.y+1.1,z:P.z},C=cam.position;FDS.forEach(f=>{f.tg=f.boxes.some(b=>segBox(C,Q,b))?FADE:1;if(f.op===f.tg)return;
+ const k=SET.lo?1:Math.min(1,dt*10);f.op=Math.abs(f.tg-f.op)<.01?f.tg:f.op+(f.tg-f.op)*k;const fd=f.op<.995;
+ f.m.forEach(m=>{const mt=m.mt;mt.opacity=m.b*f.op;const tr=m.tr||fd;if(mt.transparent!==tr){mt.transparent=tr;mt.needsUpdate=true}mt.depthWrite=fd?false:m.dw})})}
 let last=0;function loop(ts){requestAnimationFrame(loop);const dt=Math.min((ts-last)/1000||0,.05),t=ts/1000;last=ts;
 if(halt){keys.KeyW=keys.KeyA=keys.KeyS=keys.KeyD=keys.ArrowUp=keys.ArrowDown=keys.ArrowLeft=keys.ArrowRight=keys.Space=0;jv.x=jv.z=0;jmp=0}
 let ix=(keys.KeyD||keys.ArrowRight?1:0)-(keys.KeyA||keys.ArrowLeft?1:0)+jv.x,iz=(keys.KeyS||keys.ArrowDown?1:0)-(keys.KeyW||keys.ArrowUp?1:0)+jv.z;const l=Math.hypot(ix,iz);if(l>1){ix/=l;iz/=l}
@@ -62,7 +69,7 @@ if(d<.3){const gg=n.m.userData.g;if((n.to=='TL'&&gg=='m')||(n.to=='BR'&&gg=='f')
 else{n.x+=dx/d*n.sp*dt;n.z+=dz/d*n.sp*dt;n.f=la(n.f,Math.atan2(dx,dz),Math.min(1,dt*8));n.mv=1}}
 n.m.position.set(n.x,0,n.z);n.m.rotation.y=n.f;anim(n.m,t,n.mv)});
 const CM=CMS[cm],D=CM[0]*(cam.aspect<1?1.15:1);cp.x+=(P.x-cp.x)*Math.min(1,dt*10);cp.z+=(P.z-cp.z)*Math.min(1,dt*10);const sx=Math.sin(cy),sz=Math.cos(cy);const cd=D;
-cam.position.set(cp.x+sx*cd,CM[1]+cd*CM[2],cp.z+sz*cd);cam.lookAt(cp.x-sx*CM[3],CM[4],cp.z-sz*CM[3]);dl.position.set(cp.x+6,14,cp.z+8);dl.target.position.set(cp.x,0,cp.z);
+cam.position.set(cp.x+sx*cd,CM[1]+cd*CM[2],cp.z+sz*cd);cam.lookAt(cp.x-sx*CM[3],CM[4],cp.z-sz*CM[3]);dl.position.set(cp.x+6,14,cp.z+8);dl.target.position.set(cp.x,0,cp.z);fades(dt);
 const pa=path(8);if(pa.length){const q=pa[pa.length-1];ay=la(ay,Math.atan2(q[0]-P.x,q[1]-P.z),Math.min(1,dt*10));ar.visible=true;ar.rotation.y=ay;ar.position.set(P.x,2.3+Math.sin(t*5)*.08,P.z)}else ar.visible=false;
 if(tgt>=0){const g=DR[tgt];tm.visible=true;tm.position.set(g[7],2.9+Math.abs(Math.sin(t*3))*.3,g[8])}else tm.visible=false;
 bt-=dt;if(bt<=0)TD.forEach(q=>{if(q[3]!=gen&&Math.hypot(P.x-q[0],P.z-q[1])<1.5)say('Tak boleh masuk sini!')});const bb=$('bub');if(bb.style.display=='block'){bv.set(P.x,P.y+2.3,P.z).project(cam);bb.style.left=(bv.x*.5+.5)*cv.clientWidth+'px';bb.style.top=(-bv.y*.5+.5)*cv.clientHeight+'px'}

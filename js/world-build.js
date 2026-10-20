@@ -2,10 +2,10 @@ const cv=$('cv'),ren=new T.WebGLRenderer({canvas:cv,antialias:true});ren.shadowM
 const sc=new T.Scene();sc.background=new T.Color('#bfe3f5');const cam=new T.PerspectiveCamera(55,1,.5,150);
 sc.add(new T.HemisphereLight(0xffffff,0x9aa7b8,.95));
 const dl=new T.DirectionalLight(0xffffff,.55);dl.castShadow=true;dl.shadow.mapSize.set(1024,1024);Object.assign(dl.shadow.camera,{left:-14,right:14,top:14,bottom:-14,near:1,far:50});sc.add(dl,dl.target);
-const K=.112,X=x=>(x-340)*K,Z=y=>(y-344)*K,cols=[];
+const K=.112,X=x=>(x-340)*K,Z=y=>(y-344)*K,cols=[],WL=[],FDS=[]; /* Round 8a: WL = wall/roof boxes for see-through, FDS = fade sets (built at the end of this file) */
 function blk(a,b,c,d,h,col,solid,y0,opa){const x0=X(a),x1=X(c),z0=Z(b),z1=Z(d),m=new T.Mesh(new T.BoxGeometry(x1-x0,h,z1-z0),mat(col));
 if(opa){m.material.transparent=true;m.material.opacity=opa;m.material.depthWrite=false;m.renderOrder=2}
-m.position.set((x0+x1)/2,(y0||0)+h/2,(z0+z1)/2);m.castShadow=!opa;m.receiveShadow=true;sc.add(m);if(solid)cols.push({x0,x1,z0,z1});return m}
+m.position.set((x0+x1)/2,(y0||0)+h/2,(z0+z1)/2);m.castShadow=!opa;m.receiveShadow=true;sc.add(m);if(solid)cols.push({x0,x1,z0,z1});if(!opa&&(y0||0)+h>=3.5)WL.push({m,b:[x0,x1,y0||0,(y0||0)+h,z0,z1]});return m}
 function flr(a,b,c,d){const x0=X(a),x1=X(c),z0=Z(b),z1=Z(d),cn=document.createElement('canvas');cn.width=cn.height=2;const g=cn.getContext('2d');
 g.fillStyle='#c4c7cc';g.fillRect(0,0,2,2);g.fillStyle='#aeb2b8';g.fillRect(0,0,1,1);g.fillRect(1,1,1,1);
 const t=new T.CanvasTexture(cn);t.magFilter=T.NearestFilter;t.wrapS=t.wrapT=T.RepeatWrapping;t.repeat.set((x1-x0)/3,(z1-z0)/3);
@@ -112,3 +112,11 @@ if(girl)mk(new T.CircleGeometry(.3,3),'#ffffff',2.82,.02).rotation.z=Math.PI/2;e
 g.position.set(x+nx*.08,0,z+nz*.08);g.rotation.y=r;sc.add(g);return[x+nx*1.2,z+nz*1.2]}
 const TD=[toilet(100,168,1,0,'LELAKI','#2f6fd0',0).concat('Tandas Lelaki','m'),toilet(580,520,-1,0,'PEREMPUAN','#d6568f',1).concat('Tandas Perempuan','f')];
 sc.traverse(o=>{if(o.isMesh&&/Plane|Circle/.test(o.geometry.type)&&o.rotation.x!=-Math.PI/2){const m=o.material;m.polygonOffset=true;m.polygonOffsetFactor=-2;m.polygonOffsetUnits=-2}});
+/* Round 8a: see-through walls. Every wall or roof piece (WL) fades together with what hangs on it (posters, signs, clocks, stripes, windows)
+   while it is between the camera and the player. The test and the fading run in fades() in world.js. */
+(()=>{const E=.3,wm=new Set(WL.map(w=>w.m)),sets=WL.map(w=>({boxes:[w.b],meshes:[w.m],op:1,tg:1}));
+ sc.children.slice().forEach(c=>{if(wm.has(c)||c.isLight||c===cam)return;const p=c.position;
+  if(c.isMesh&&(c.rotation.x==-Math.PI/2||/Octahedron/.test(c.geometry.type)))return; /* floors, ground and gems stay solid */
+  const k=WL.findIndex(w=>p.x>=w.b[0]-E&&p.x<=w.b[1]+E&&p.z>=w.b[4]-E&&p.z<=w.b[5]+E&&p.y>=w.b[2]-.05&&p.y<=w.b[3]+.05);if(k<0)return;
+  c.traverse(o=>{if(o.isMesh)sets[k].meshes.push(o)})});
+ sets.forEach(f=>{f.m=f.meshes.map(o=>{const mt=Array.isArray(o.material)?o.material[0]:o.material,cl=mt.clone();o.material=cl;return{mt:cl,b:cl.opacity,tr:cl.transparent,dw:cl.depthWrite}});delete f.meshes;FDS.push(f)})})();
