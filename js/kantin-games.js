@@ -59,8 +59,8 @@ function gSa(){const PG=data('PG'),PB=data('PB'),PN=data('PN'),PC=data('PC'),all
 function gSn(){const SH=data('SH'),SU=data('SU'),W=480,H=300,GOAL=8;let got=0,wr=0,cartX=W/2,tgt=W/2,its=[],spw=0,lt=performance.now(),fl=0,fx=[],done=0,raf;const kk={};
  const kd=e=>{kk[e.code]=1},ku=e=>{kk[e.code]=0};addEventListener('keydown',kd);addEventListener('keyup',ku);
  show(`<h3>3. Snek Sihat</h3><p id="kfb">Tangkap snek sihat! Elak snek tidak sihat. Gerak troli dengan tetikus, sentuhan atau anak panah.</p><canvas id="gc" width="${W}" height="${H}"></canvas><p id="sc2">🛒 0/${GOAL}</p>${XB}`,1);
- const cv=Q('#gc'),g=cv.getContext('2d');cv.style.width=Math.min(560,innerWidth*.88,innerHeight*.5*1.6)+'px';
- cv.onpointerdown=cv.onpointermove=e=>{const r=cv.getBoundingClientRect();tgt=(e.clientX-r.left)/r.width*W};
+ const cv=Q('#gc'),g=cv.getContext('2d');cv.style.width=Math.min(560,innerWidth*.9,Math.max(180,innerHeight-125)*1.6)+'px';
+ const mvc=e=>{const r=cv.getBoundingClientRect();tgt=(e.clientX-r.left)/r.width*W};cv.onpointerdown=e=>{try{cv.setPointerCapture(e.pointerId)}catch(x){}mvc(e)};cv.onpointermove=mvc; /* finger or mouse keeps steering even if it leaves the canvas */
  const step=ts=>{if(done)return;raf=requestAnimationFrame(step);const dt=Math.min(.05,(ts-lt)/1000);lt=ts;
   if(kk.ArrowLeft||kk.KeyA)tgt-=260*dt;if(kk.ArrowRight||kk.KeyD)tgt+=260*dt;tgt=Math.max(45,Math.min(W-45,tgt));cartX+=(tgt-cartX)*Math.min(1,dt*14);
   spw-=dt;if(spw<=0){spw=.75;const h=Math.random()<.62,L=h?SH:SU,it=L[Math.random()*L.length|0];its.push({x:30+Math.random()*(W-60),y:-20,e:it[1],h,n:it[0],r:it[2],v:90+Math.random()*60+got*6})}

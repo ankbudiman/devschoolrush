@@ -163,6 +163,6 @@ body.mn .sb{display:none!important}
 .cb{display:flex;flex-wrap:wrap;justify-content:center;gap:3px;max-width:14em;margin:.3em auto;min-height:1.5em}.cb i{width:1.3em;height:1.3em;background:#fff;border:2px solid #555;box-shadow:inset -3px -3px 0 #ccc}.cb small{font-size:.9em}
 .tl{display:grid;grid-template-columns:repeat(3,1fr);gap:.3em;width:100%}.tl button{padding:.3em .2em;font-size:.85em}.tl button.s{background:#5ccf4a;color:#10381a}
 .rw{display:flex;flex-wrap:wrap;gap:.3em;justify-content:center}.hw{text-align:left;margin:.2em auto;font-size:.9em;max-width:22em}
-#gc{border-radius:.5em;background:#9ad7ff;max-width:100%}#kfb{min-height:1.3em;font-size:.9em}
+#gc{position:static;inset:auto;width:auto;height:auto;display:block;touch-action:none;border-radius:.5em;background:#9ad7ff;max-width:100%} /* overrides the global canvas rule, which pulled this canvas out of its card */#kfb{min-height:1.3em;font-size:.9em}
 @media(max-width:559px){.gm{grid-template-columns:1fr}}
 @media(orientation:landscape) and (max-height:560px){.kcd{font-size:.88em}.kcd h2{font-size:1.4em}.kcd h3{font-size:1em}.py2{width:min(100%,24em,58vh)}.pl{width:min(100%,18em,54vh)}}

@@ -1,42 +1,59 @@
-/* Kantin room (Round 7). A red room with 5 stalls, all open at once. Each stall opens one mini game (js/kantin-games.js).
+/* Kantin room (Round 7, updated in 7b). A red room with 5 stalls, all open at once. Each stall opens one mini game (js/kantin-games.js).
    Rule: every stall must be finished before the exit door works. Mod Kelas: the result is saved as the Kantin grade and carried
    back to world.html. Mod Jalan-jalan: casual revision, nothing is graded or saved. The player can only get here from world.html
-   (sk_go token), so a killed or reloaded app goes back to the start screen and the day restarts. */
+   (sk_go token), so a killed or reloaded app goes back to the start screen and the day restarts.
+   7b: room size and camera in ROOM / CAMD below, 4 table sets, walking students, rubbish + bins (same mechanic as the hallway), wall posters. */
+const ROOM=.85;   /* room size, 1 = first Kantin build (try .8 or .9) */
+const CAMD=.9;    /* camera distance, 1 = first build, lower = closer */
 const OKGO=!!SS.get('sk_go');SS.del('sk_go');
 const STORY=LS.get('sk_mode','roam')=='story';
 const ren=new T.WebGLRenderer({canvas:$('cv'),antialias:true}),cv=$('cv');ren.shadowMap.enabled=true;ren.setPixelRatio(Math.min(devicePixelRatio,2));
 const sc=new T.Scene();sc.background=new T.Color('#bfe3f5');const cam=new T.PerspectiveCamera(55,1,.5,150);
 sc.add(new T.HemisphereLight(0xffffff,0x9aa7b8,.95));
 const dl=new T.DirectionalLight(0xffffff,.55);dl.castShadow=true;dl.shadow.mapSize.set(1024,1024);Object.assign(dl.shadow.camera,{left:-14,right:14,top:14,bottom:-14,near:1,far:50});sc.add(dl,dl.target);
-/* ---- room ---- */
-const RX=19.5,RZ0=-15,RZ1=11,WH=3.4,WALL='#d9604a',cols=[],MZ=(RZ0+RZ1)/2;
+/* ---- room (all positions come from these numbers; stalls keep their size, the room around them scales with ROOM) ---- */
+const RX=19.5*ROOM,RZ1=11*ROOM,RZ0=RZ1-26*ROOM,WH=3.4,WALL='#d9604a',DW=1.7,cols=[],MZ=(RZ0+RZ1)/2;
 const hit=(x,z,r)=>cols.some(c=>x+r>c.x0&&x-r<c.x1&&z+r>c.z0&&z-r<c.z1);
+const SX=RX-1.8,ZB=RZ0+1.8,ZF=RZ0+4.25,ZN=RZ0+10.25,TX=RX*.34,TZ=[RZ0+8.35,RZ1-7.15];
+const LX=(TX+2+RX-2.58)/2,L0=RZ0+5.45,LM=(TZ[0]+TZ[1])/2,LF=RZ1-2.75,WPX=RX-3.7;
 const gm=new T.Mesh(new T.PlaneGeometry(300,300),mat('#8fc27a'));gm.rotation.x=-Math.PI/2;gm.position.y=-.02;gm.receiveShadow=true;sc.add(gm);
-(()=>{const w=2*RX,d=RZ1-RZ0,c=document.createElement('canvas');c.width=c.height=2;const g=c.getContext('2d');g.fillStyle='#c4c7cc';g.fillRect(0,0,2,2);g.fillStyle='#aeb2b8';g.fillRect(0,0,1,1);g.fillRect(1,1,1,1);
+(()=>{const w=2*RX,d=RZ1-RZ0,c=document.createElement('canvas');c.width=c.height=2;const g=c.getContext('2d');g.fillStyle='#a9aeb6';g.fillRect(0,0,2,2);g.fillStyle='#949ba5';g.fillRect(0,0,1,1);g.fillRect(1,1,1,1);
  const t=new T.CanvasTexture(c);t.magFilter=T.NearestFilter;t.wrapS=t.wrapT=T.RepeatWrapping;t.repeat.set(w/3,d/3);
  const m=new T.Mesh(new T.PlaneGeometry(w,d),new T.MeshPhongMaterial({map:t,shininess:0,specular:0}));m.rotation.x=-Math.PI/2;m.position.set(0,.01,MZ);m.receiveShadow=true;sc.add(m)})();
 bx(sc,2*RX+2,WH,1,WALL,0,WH/2,RZ0-.5);cols.push({x0:-RX-1,x1:RX+1,z0:RZ0-1,z1:RZ0});
 [-1,1].forEach(s=>{bx(sc,1,WH,RZ1-RZ0+2,WALL,s*(RX+.5),WH/2,MZ);cols.push({x0:s>0?RX:-RX-1,x1:s>0?RX+1:-RX,z0:RZ0-1,z1:RZ1+1.2});
  bx(sc,.12,.9,RZ1-RZ0,'#b84a38',s*(RX-.06),.45,MZ)});
 bx(sc,2*RX,.9,.12,'#b84a38',0,.45,RZ0+.06);
-const DW=1.7;[-1,1].forEach(s=>{const a=DW,b=RX+1,w=b-a;bx(sc,w,WH,1,WALL,s*(a+w/2),WH/2,RZ1+.5);cols.push({x0:s>0?a:-b,x1:s>0?b:-a,z0:RZ1,z1:RZ1+1.2})});
+[-1,1].forEach(s=>{const a=DW,b=RX+1,w=b-a;bx(sc,w,WH,1,WALL,s*(a+w/2),WH/2,RZ1+.5);cols.push({x0:s>0?a:-b,x1:s>0?b:-a,z0:RZ1,z1:RZ1+1.2})});
 bx(sc,2*DW,WH-2.5,1,WALL,0,2.5+(WH-2.5)/2,RZ1+.5);
+cols.push({x0:-DW,x1:DW,z0:RZ1,z1:RZ1+1.2}); /* the doorway is solid too: the exit works with E at the door, nobody walks outside */
 function pn(w,h,c,x,y,z,ry){const m=new T.Mesh(new T.PlaneGeometry(w,h),new T.MeshBasicMaterial({color:c}));m.position.set(x,y,z);m.rotation.y=ry;sc.add(m);return m}
 function sign(L,bg,fg,w,h,fs,x,y,z,r){const c=document.createElement('canvas');c.width=256;c.height=Math.round(256*h/w);const g=c.getContext('2d');g.fillStyle=bg;g.fillRect(0,0,256,c.height);g.fillStyle=fg;g.font='bold '+fs+'px Fredoka,sans-serif';g.textAlign='center';g.textBaseline='middle';L.forEach((s,i)=>g.fillText(s,128,c.height*(i+.5)/L.length));
  const m=new T.Mesh(new T.PlaneGeometry(w,h),new T.MeshBasicMaterial({map:new T.CanvasTexture(c)}));m.position.set(x,y,z);m.rotation.y=r;sc.add(m);return m}
 sign(['PINTU KELUAR'],'#1c2f6b','#ffffff',2.6,.6,30,0,3.05,RZ1-.03,Math.PI);
 sign(['KANTIN SEKOLAH'],'#fff3d6','#b84a38',5,.9,30,0,2.5,RZ0+.14,0);
-(()=>{const ex=pn(2*DW-.2,2.5,'#f5f5f5',0,1.25,RZ1+.1,Math.PI);ex.position.y=1.25;[-1,1].forEach(s=>pn(.1,2.5,'#7a5236',s*(DW-.05),1.25,RZ1-.02,Math.PI))})();
+(()=>{pn(2*DW-.2,2.5,'#f5f5f5',0,1.25,RZ1+.1,Math.PI);[-1,1].forEach(s=>pn(.1,2.5,'#7a5236',s*(DW-.05),1.25,RZ1-.02,Math.PI))})();
 function plant(x,z){const p=new T.Mesh(new T.CylinderGeometry(.28,.2,.45,6),mat('#c0693f')),f=new T.Mesh(new T.IcosahedronGeometry(.42,0),mat('#3f9d54'));p.position.set(x,.225,z);f.position.set(x,.85,z);p.castShadow=f.castShadow=true;sc.add(p,f);cols.push({x0:x-.32,x1:x+.32,z0:z-.32,z1:z+.32})}
-plant(-18.3,9.8);plant(18.3,9.8);
-/* tables with benches and a few students sitting */
-function table(x,z,sit){bx(sc,4.6,.1,1.8,'#c8a26a',x,.9,z);[-1,1].forEach(a=>[-1,1].forEach(b=>bx(sc,.12,.85,.12,'#5a5f69',x+a*2,.42,z+b*.7)));
- [-1,1].forEach(s=>{bx(sc,4.6,.08,.5,'#a9744a',x,.46,z+s*1.5);[-1,1].forEach(a=>bx(sc,.12,.42,.12,'#5a5f69',x+a*2,.21,z+s*1.5))});
- cols.push({x0:x-2.4,x1:x+2.4,z0:z-2.1,z1:z+2.1});
- (sit||[]).forEach(a=>{const m=npc('murid');m.position.set(x+a[0],.04,z+a[1]*1.5);m.rotation.y=a[1]>0?Math.PI:0;m.userData.legs.forEach(l=>l.rotation.x=-Math.PI/2);sc.add(m)})}
-table(-6.5,.5,[[-1,1],[1,1]]);table(6.5,.5,[[0,-1]]);
+plant(-RX+.9,RZ1-.9);plant(RX-.9,RZ1-.9);
+/* ---- wall posters: plain colour panels (drawn shapes or an emoji + two lines), tiny textures ---- */
+function poster(i,x,y,z,ry){const d=KD.posters[i],c=document.createElement('canvas');c.width=256;c.height=320;const g=c.getContext('2d');
+ g.fillStyle='#ffffff';g.fillRect(0,0,256,320);g.fillStyle=d.c;g.fillRect(10,10,236,300);
+ if(d.s=='pyr'){const C=['#b266ff','#4aa3ff','#5ccf4a','#f4c542'],Y=[40,80,120,155,190],h=y=>80*(y-40)/150;C.forEach((col,k)=>{g.fillStyle=col;g.beginPath();g.moveTo(128-h(Y[k]),Y[k]);g.lineTo(128+h(Y[k]),Y[k]);g.lineTo(128+h(Y[k+1]),Y[k+1]);g.lineTo(128-h(Y[k+1]),Y[k+1]);g.closePath();g.fill()})}
+ else if(d.s=='plate'){const arc=(a0,a1,col)=>{g.fillStyle=col;g.beginPath();g.moveTo(128,120);g.arc(128,120,72,a0,a1);g.closePath();g.fill()};g.fillStyle='#ffffff';g.beginPath();g.arc(128,120,80,0,7);g.fill();arc(Math.PI/2,Math.PI*1.5,'#5ccf4a');arc(-Math.PI/2,0,'#ff9a3c');arc(0,Math.PI/2,'#f4c542')}
+ else{g.font='110px sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText(d.e,128,120)}
+ g.fillStyle='#ffffff';g.font='bold 31px Fredoka,sans-serif';g.textAlign='center';g.textBaseline='middle';d.t.forEach((s,k)=>g.fillText(s,128,232+k*38));
+ const m=new T.Mesh(new T.PlaneGeometry(1.9,2.4),new T.MeshBasicMaterial({map:new T.CanvasTexture(c)}));m.position.set(x,y,z);m.rotation.y=ry;sc.add(m)}
+[[0,-RX*.7],[1,-RX*.44],[2,RX*.44],[3,RX*.7]].forEach(a=>poster(a[0],a[1],1.95,RZ0+.08,0));
+poster(5,-6.1,2.25,RZ1-.03,Math.PI);poster(4,RX*.5,1.95,RZ1-.03,Math.PI);
+/* ---- tables: 4 sets with benches, students sitting ---- */
+function table(x,z,sit){bx(sc,3.7,.1,1.45,'#c8a26a',x,.9,z);[-1,1].forEach(a=>[-1,1].forEach(b=>bx(sc,.12,.85,.12,'#5a5f69',x+a*1.6,.42,z+b*.55)));
+ [-1,1].forEach(s=>{bx(sc,3.7,.08,.45,'#a9744a',x,.46,z+s*1.2);[-1,1].forEach(a=>bx(sc,.12,.42,.12,'#5a5f69',x+a*1.6,.21,z+s*1.2))});
+ cols.push({x0:x-2,x1:x+2,z0:z-1.7,z1:z+1.7});
+ (sit||[]).forEach(a=>{const m=npc('murid');m.position.set(x+a[0],.04,z+a[1]*1.2);m.rotation.y=a[1]>0?Math.PI:0;m.userData.legs.forEach(l=>l.rotation.x=-Math.PI/2);sc.add(m)})}
+const TBL=[[-TX,TZ[0],[[-.9,1],[.9,-1]]],[TX,TZ[0],[[0,1]]],[-TX,TZ[1],[[-.9,-1],[.9,-1]]],[TX,TZ[1],[[.9,1],[-.9,1]]]];
+TBL.forEach(t=>table(t[0],t[1],t[2]));
 /* ---- stalls ---- */
-const RES=[null,null,null,null,null],ST=[],SG=[],MK=[],SP=.78,POS=[[-17.7,-1.5,Math.PI/2],[-17.7,-9.5,Math.PI/2],[0,-13.2,0],[17.7,-9.5,-Math.PI/2],[17.7,-1.5,-Math.PI/2]];
+const RES=[null,null,null,null,null],ST=[],SG=[],MK=[],SP=.78,POS=[[-SX,ZN,Math.PI/2],[-SX,ZF,Math.PI/2],[0,ZB,0],[SX,ZF,-Math.PI/2],[SX,ZN,-Math.PI/2]];
 function msh(p,geo,c,x,y,z){const m=new T.Mesh(geo,mat(c));m.position.set(x,y,z);m.castShadow=true;p.add(m);return m}
 function food(g,i,col){
  if(i==0){[['#f4c542',2.2,.5],['#5ccf4a',1.5,.5],['#b266ff',.8,.5]].forEach((a,k)=>bx(g,a[1],a[2],.9,a[0],0,1.8+.25+k*.5,0))}
@@ -65,9 +82,38 @@ KD.stalls.forEach((d,i)=>{const p=POS[i],g=new T.Group(),col=d.c,th=p[2];
  ST.push({x:p[0],z:p[1],wx:p[0]+nx*1.9,wz:p[1]+nz*1.9,sb,line:null,col});drawSign(i)});
 /* exit door marker (shows when every stall is finished) */
 const EX={x:0,z:RZ1-1.1},em=new T.Mesh(new T.ConeGeometry(.4,.8,4),new T.MeshBasicMaterial({color:'#5ccf4a'}));em.rotation.x=Math.PI;em.visible=false;sc.add(em);
+/* ---- rubbish and bins (same mechanic as the hallway: pick up with E, put in the right bin, counts toward the Pelajar Prihatin badge) ---- */
+function mkItem(ty){const g=new T.Group(),a=(geo,c,x,y,z)=>{const m=new T.Mesh(geo,mat(c));m.position.set(x,y,z);m.castShadow=true;g.add(m);return m};
+ if(ty==0){a(new T.IcosahedronGeometry(.15,0),'#f4f4f4',0,.15,0);a(new T.IcosahedronGeometry(.09,0),'#cfe3ff',.1,.2,.05)}
+ else if(ty==1){a(new T.CylinderGeometry(.07,.07,.3,8),'#ffe0b8',0,.15,0);a(new T.CylinderGeometry(.04,.04,.07,8),'#e8730c',0,.33,0)}
+ else if(ty==2){a(new T.CylinderGeometry(.075,.075,.2,8),'#7a4a24',0,.1,0);a(new T.CylinderGeometry(.035,.035,.14,8),'#7a4a24',0,.27,0);a(new T.CylinderGeometry(.045,.045,.03,8),'#c9a227',0,.36,0)}
+ else{a(new T.BoxGeometry(.14,.07,.07),'#ff5fa2',0,.05,0);a(new T.ConeGeometry(.05,.08,4),'#ffd23f',.11,.05,0).rotation.z=-Math.PI/2;a(new T.ConeGeometry(.05,.08,4),'#ffd23f',-.11,.05,0).rotation.z=Math.PI/2}
+ return g}
+const NM=['Kertas','Botol plastik','Botol kaca','Bungkus gula-gula'],HM=[0,1,2,3].map(t=>{const g=mkItem(t);g.visible=false;g.scale.setScalar(1.15);g.position.set(0,-.42,.12);return g});
+const BN=[];[['#3b7fd0','KERTAS',0],['#e8923a','PLASTIK',1],['#7a5236','KACA',2],['#4d6a58','BIASA',3]].forEach((a,i)=>{const x=-(DW+2.4)-i*1.4,z=RZ1-.6,b=new T.Mesh(new T.CylinderGeometry(.27,.22,.7,6),mat(a[0]));b.position.set(x,.35,z);b.castShadow=true;sc.add(b);bx(sc,.6,.08,.6,'#222222',x,.7,z);cols.push({x0:x-.32,x1:x+.32,z0:z-.32,z1:z+.32});
+ sign([a[1]],a[0],'#ffffff',.9,.3,22,x,1.15,RZ1-.03,Math.PI);BN.push({x,z:z-.7,bx:x,bz:z,k:a[2]})});
+const SM=[[9.6,5.9],[-9.6,4.8],[.9,-3],[-LX,-5.6],[LX,-6],[-2.6,L0-.4]].map((a,i)=>{const x=a[0],z=a[1],k=[0,1,2,3].map(t=>{const g=mkItem(t),l=t==1||t==2;g.scale.setScalar(1.5);g.position.set(x,l?.11:0,z);g.rotation.set(0,rnd(0,6),l?Math.PI/2:0);g.visible=t==i%4;sc.add(g);return g});return{x,z,ty:i%4,cd:0,k}});
+let carry=-1,fly=null;
+function pick(s){carry=s.ty;s.k.forEach(g=>g.visible=false);s.cd=40;HM.forEach((g,i)=>g.visible=i==carry);say('Dapat '+NM[carry].toLowerCase()+'!');tone(500,0,.08,'sine',.12)}
+function throwIt(b){const H=['Kertas masuk tong biru.','Botol plastik masuk tong oren.','Botol kaca masuk tong coklat.','Bungkus gula-gula masuk tong biasa.'];
+ if(b.k!=carry){say('Salah tong! '+H[carry]);tone(200,0,.3,'sawtooth',.08);return}
+ const c=carry;carry=-1;HM.forEach(g=>g.visible=false);const g=mkItem(c);g.scale.setScalar(1.2);sc.add(g);fly={g,t:0,x0:P.x,z0:P.z,x1:b.bx,z1:b.bz};
+ say(R(['Bagus!','Pandai!','Terima kasih, kawan!']));tone(600,.2,.1,'sine',.15);tone(800,.3,.12,'sine',.15);
+ cur.s[c]++;save();if(cur.s[0]+cur.s[1]+cur.s[2]+cur.s[3]==12)award('sampah12','Pelajar Prihatin','Anda sudah membuang 12 sampah dengan betul.')}
+/* ---- students walking between the stalls (fixed loops through the open lanes; they never block the player for long) ---- */
+const WK=[],lp=(s)=>[[s*LX,LF],[s*LX,ZN],[s*WPX,ZN,2.5,s*SX,ZN],[s*LX,ZN],[s*LX,ZF],[s*WPX,ZF,2.5,s*SX,ZF],[s*LX,ZF],[s*LX,LF]];
+[lp(-1),lp(1),[[0,LF],[0,RZ0+3.7,2.5,0,ZB],[0,L0],[LX,L0],[LX,LF],[0,LF]],[[-LX,LM],[LX,LM],[LX,LF],[0,LF],[-LX,LF],[-LX,LM]]].forEach((pts,k)=>{const g=npc('murid');g.visible=true;sc.add(g);const i=(k*2+1)%pts.length,p=pts[i];WK.push({g,pts,i,x:p[0],z:p[1],pz:0,bk:0,o:k*1.7,sp:1.25+k*.1,fa:null});g.position.set(p[0],0,p[1])});
+function walkers(dt,t){WK.forEach(w=>{if(!w.g.visible)return;
+ if(w.pz>0){w.pz-=dt;if(w.fa!=null)w.g.rotation.y=la(w.g.rotation.y,w.fa,Math.min(1,dt*8));anim(w.g,t+w.o,false);return}
+ const p=w.pts[w.i],dx=p[0]-w.x,dz=p[1]-w.z,d=Math.hypot(dx,dz);
+ if(d<.15){w.pz=p[2]||0;w.fa=p[2]?Math.atan2(p[3]-w.x,p[4]-w.z):null;w.i=(w.i+1)%w.pts.length;return}
+ const ax=dx/d,az=dz/d,qx=P.x-w.x,qz=P.z-w.z,ahead=Math.hypot(qx,qz)<1.1&&qx*ax+qz*az>0;
+ if(ahead)w.bk+=dt;else w.bk=0;
+ if(ahead&&w.bk<1.2){anim(w.g,t+w.o,false);return} /* wait for the player; after 1.2 s walk on */
+ w.x+=ax*w.sp*dt;w.z+=az*w.sp*dt;w.g.position.set(w.x,0,w.z);w.g.rotation.y=la(w.g.rotation.y,Math.atan2(ax,az),Math.min(1,dt*8));anim(w.g,t+w.o,true)})}
 /* ---- player ---- */
-const P={x:0,z:9,y:0,vy:0,f:Math.PI},cp={x:P.x,z:P.z};let gen='m',pm,cy=0,hold=0,curL=null,recorded=false,grade=null;
-function mkP(){if(pm)sc.remove(pm);pm=player(gen,'uni',curL);sc.add(pm)}mkP();
+const P={x:0,z:RZ1-1.8,y:0,vy:0,f:Math.PI,slow:0},cp={x:P.x,z:P.z};let gen='m',pm,cy=0,hold=0,curL=null,recorded=false,grade=null;
+function mkP(){if(pm)sc.remove(pm);pm=player(gen,'uni',curL);sc.add(pm);pm.userData.arms[1].add(...HM)}mkP();
 const doneN=()=>RES.filter(Boolean).length;
 /* ---- input (same controls as world.html) ---- */
 const keys={},jv={x:0,z:0};let jmp=0;
@@ -83,6 +129,8 @@ function fit(){ren.setSize(innerWidth,innerHeight,false);cam.aspect=innerWidth/i
 let bt=0,bm;const bv=new T.Vector3();function say(t){const b=$('bub');b.textContent=t;b.style.display='block';bt=4;clearTimeout(bm);bm=setTimeout(()=>b.style.display='none',2200)}
 function nearSt(){let b=-1,bd=2.3;ST.forEach((s,i)=>{const k=Math.hypot(P.x-s.wx,P.z-s.wz);if(k<bd){bd=k;b=i}});return b}
 const nearDoor=()=>Math.hypot(P.x-EX.x,P.z-EX.z)<2.3;
+const nearBin=()=>{let b=null,bd=1.3;BN.forEach(n=>{const k=Math.hypot(P.x-n.x,P.z-n.z);if(k<bd){bd=k;b=n}});return b};
+const nearLit=()=>SM.find(u=>u.cd<=0&&Math.hypot(P.x-u.x,P.z-u.z)<1.1);
 /* ---- stalls, games and the way out ---- */
 function shut(){KG.close();document.body.classList.remove('mn');halt=false}
 function talk(i){const d=KD.stalls[i],r=RES[i];if(r){say('Gerai ini sudah selesai ✔');return}
@@ -96,14 +144,17 @@ function summary(){const rs=RES,avg=rs.reduce((a,r)=>a+r.score,0)/5;let g=null;h
  KG.show('<h2>Semua gerai selesai!</h2><div class="grg">'+rows+'</div>'+(STORY?'<p>Gred Kantin: <b class="'+gcls(g)+'" style="font-size:1.6em">'+g+'</b> · '+Math.round(avg)+'/100</p>':'<p class="kh">Gred hanya dikira dalam Mod Kelas.</p>')+'<div class="rw"><button onclick="KN.leave()">Keluar kantin ▶</button><button class="kx" onclick="KN.shut()">Kekal di sini</button></div>')}
 function leave(){SS.set('sk_ret',STORY&&grade?{grade:grade.g,score:grade.s}:{roam:1});KG.close();loading(()=>nav('world'))}
 window.KN={go(i){KG.start(i,cur.level,r=>onRes(i,r))},shut,leave};
-function act(){if(halt)return;const i=nearSt();if(i>=0){talk(i);return}
+function act(){if(halt)return;
+ if(carry>=0){const b=nearBin();if(b){throwIt(b);return}}else{const q=nearLit();if(q){pick(q);return}}
+ const i=nearSt();if(i>=0){talk(i);return}
  if(nearDoor()){if(doneN()==5)summary();else{const m=$('msg');m.textContent='Jumpa semua penjual dahulu! ('+doneN()+'/5 gerai siap)';m.style.display='block';clearTimeout(mt);mt=setTimeout(()=>m.style.display='none',2600);say('Belum boleh keluar!')}}}
 /* ---- minimap ---- */
-const mc=$('mm'),mg=mc.getContext('2d'),mb=document.createElement('canvas');mb.width=mb.height=320;const MS=7.6,mf=(x,z)=>[160+x*MS,160+(z-MZ)*MS];
-(()=>{const g=mb.getContext('2d');g.fillStyle='#2b2f38';g.fillRect(0,0,320,320);const a=mf(-RX,RZ0),b=mf(RX,RZ1);g.fillStyle='#c4c7cc';g.fillRect(a[0],a[1],b[0]-a[0],b[1]-a[1]);g.strokeStyle=WALL;g.lineWidth=5;g.strokeRect(a[0],a[1],b[0]-a[0],b[1]-a[1]);
- g.fillStyle='#c4c7cc';const d0=mf(-DW,RZ1),d1=mf(DW,RZ1);g.fillRect(d0[0],d0[1]-4,d1[0]-d0[0],10);
+const mc=$('mm'),mg=mc.getContext('2d'),mb=document.createElement('canvas');mb.width=mb.height=320;const MS=Math.min(300/(2*RX),300/(RZ1-RZ0+3)),mf=(x,z)=>[160+x*MS,160+(z-MZ)*MS];
+(()=>{const g=mb.getContext('2d');g.fillStyle='#2b2f38';g.fillRect(0,0,320,320);const a=mf(-RX,RZ0),b=mf(RX,RZ1);g.fillStyle='#a9aeb6';g.fillRect(a[0],a[1],b[0]-a[0],b[1]-a[1]);g.strokeStyle=WALL;g.lineWidth=5;g.strokeRect(a[0],a[1],b[0]-a[0],b[1]-a[1]);
+ g.fillStyle='#a9aeb6';const d0=mf(-DW,RZ1),d1=mf(DW,RZ1);g.fillRect(d0[0],d0[1]-4,d1[0]-d0[0],10);
  ST.forEach((s,i)=>{const th=POS[i][2],w=th==0?5.8:3.2,h=th==0?3.2:5.8,p=mf(s.x+(th>0?.45:th<0?-.45:0),s.z+(th==0?-.45:0));g.fillStyle=KD.stalls[i].c;g.fillRect(p[0]-w*MS/2,p[1]-h*MS/2,w*MS,h*MS);g.fillStyle='#fff';g.font='bold 20px Fredoka,sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText(i+1,p[0],p[1])});
- [[-6.5,.5],[6.5,.5]].forEach(t=>{const p=mf(t[0],t[1]);g.fillStyle='#c8a26a';g.fillRect(p[0]-2.3*MS,p[1]-.9*MS,4.6*MS,1.8*MS)})})();
+ TBL.forEach(t=>{const p=mf(t[0],t[1]);g.fillStyle='#c8a26a';g.fillRect(p[0]-1.85*MS,p[1]-.75*MS,3.7*MS,1.5*MS)});
+ BN.forEach((n,i)=>{const p=mf(n.bx,n.bz);g.fillStyle=['#3b7fd0','#e8923a','#7a5236','#4d6a58'][i];g.fillRect(p[0]-4,p[1]-4,8,8)})})();
 function drawMM(){mg.drawImage(mb,0,0);ST.forEach((s,i)=>{if(!RES[i])return;const p=mf(s.x+(POS[i][2]>0?.45:POS[i][2]<0?-.45:0),s.z+(POS[i][2]==0?-.45:0));mg.fillStyle='#2e9d4a';mg.beginPath();mg.arc(p[0],p[1],11,0,7);mg.fill();mg.fillStyle='#fff';mg.font='bold 16px sans-serif';mg.textAlign='center';mg.textBaseline='middle';mg.fillText('✓',p[0],p[1]+1)});
  const e=mf(EX.x,RZ1-.2);mg.fillStyle=doneN()==5?'#5ccf4a':'#ffd23f';mg.beginPath();mg.arc(e[0],e[1],8,0,7);mg.fill();
  const a=mf(P.x,P.z),s=Math.sin(P.f),c=Math.cos(P.f);mg.fillStyle='#2f6fd0';mg.strokeStyle='#fff';mg.lineWidth=3;mg.beginPath();mg.moveTo(a[0]+s*14,a[1]+c*14);mg.lineTo(a[0]-s*8+c*8,a[1]-c*8-s*8);mg.lineTo(a[0]-s*8-c*8,a[1]-c*8+s*8);mg.closePath();mg.fill();mg.stroke()}
@@ -114,24 +165,28 @@ $('pS').onclick=()=>{$('menu').style.display='none';halt=false;document.body.cla
 addEventListener('popstate',()=>{if(!on||!SR_TRAP)return;backKeep();const ld=$('ld');if(ld&&ld.style.display!='none')return;
 if(KG.open()){shut();return} /* back closes a mini game or card first */
 const m=$('menu');if(m.style.display=='flex'){const vp=$('vp');if(vp&&!vp.hidden)$('pS').click();else view('vp')}else pause()})})();
-window.gfxHook=()=>{ren.shadowMap.enabled=!SET.lo;dl.castShadow=!SET.lo;ren.setPixelRatio(SET.lo?1:Math.min(devicePixelRatio,2));fit();sc.traverse(o=>{if(o.material)o.material.needsUpdate=true})};
+window.gfxHook=()=>{ren.shadowMap.enabled=!SET.lo;dl.castShadow=!SET.lo;ren.setPixelRatio(SET.lo?1:Math.min(devicePixelRatio,2));WK.forEach((w,i)=>w.g.visible=!(SET.lo&&i>1)); /* low graphics: 2 walkers instead of 4 */ fit();sc.traverse(o=>{if(o.material)o.material.needsUpdate=true})};
 /* ---- main loop ---- */
-const CM=[6,1.2,.85,.6,.9],HI=KD.hi;let last=0;
+const CM=[6*CAMD,1.2,.85,.6,.9],HI=KD.hi;let last=0;
 function loop(ts){requestAnimationFrame(loop);const dt=Math.min((ts-last)/1000||0,.05),t=ts/1000;last=ts;
  if(halt){keys.KeyW=keys.KeyA=keys.KeyS=keys.KeyD=keys.ArrowUp=keys.ArrowDown=keys.ArrowLeft=keys.ArrowRight=keys.Space=0;jv.x=jv.z=0;jmp=0}
  let ix=(keys.KeyD||keys.ArrowRight?1:0)-(keys.KeyA||keys.ArrowLeft?1:0)+jv.x,iz=(keys.KeyS||keys.ArrowDown?1:0)-(keys.KeyW||keys.ArrowUp?1:0)+jv.z;const l=Math.hypot(ix,iz);if(l>1){ix/=l;iz/=l}
  const mv=l>.12&&!halt;
- if(mv){const s=Math.sin(cy),c=Math.cos(cy),mx=ix*c+iz*s,mz=-ix*s+iz*c,dx=mx*5*dt,dz=mz*5*dt;if(!hit(P.x+dx,P.z,.35))P.x+=dx;if(!hit(P.x,P.z+dz,.35))P.z+=dz;P.f=la(P.f,Math.atan2(mx,mz),Math.min(1,dt*14));if(SET.cf&&hold<=0&&iz<.3)cy=la(cy,Math.atan2(-mx,-mz),Math.min(1,dt*(iz<-.3?2.2:.9)))}hold-=dt;
+ if(mv){const s=Math.sin(cy),c=Math.cos(cy),mx=ix*c+iz*s,mz=-ix*s+iz*c,spd=P.slow>0?2.4:5,dx=mx*spd*dt,dz=mz*spd*dt;if(!hit(P.x+dx,P.z,.35))P.x+=dx;if(!hit(P.x,P.z+dz,.35))P.z+=dz;P.f=la(P.f,Math.atan2(mx,mz),Math.min(1,dt*14));if(SET.cf&&hold<=0&&iz<.3)cy=la(cy,Math.atan2(-mx,-mz),Math.min(1,dt*(iz<-.3?2.2:.9)))}hold-=dt;
+ P.x=Math.max(-RX+.4,Math.min(RX-.4,P.x));P.z=Math.max(RZ0+.4,Math.min(RZ1-.4,P.z)); /* never outside the room */
  if((keys.Space||jmp)&&P.y<=0)P.vy=6.8;P.vy-=22*dt;P.y+=P.vy*dt;if(P.y<=0){P.y=0;P.vy=0}
- pm.position.set(P.x,P.y,P.z);pm.rotation.y=P.f;anim(pm,t,mv&&P.y==0);
+ pm.position.set(P.x,P.y,P.z);pm.rotation.y=P.f;anim(pm,t,mv&&P.y==0);if(carry>=0)pm.userData.arms[1].rotation.x=-.9;
+ P.slow-=dt;SM.forEach(s=>{if(s.cd>0){s.cd-=dt;if(s.cd<=0){s.ty=(s.ty+1)%4;s.k.forEach((g,i)=>g.visible=i==s.ty)}return}if(P.slow<=0&&P.y<.5&&Math.hypot(P.x-s.x,P.z-s.z)<.45){P.slow=1.2;say('Ish, sampah!')}});
+ if(fly){fly.t+=dt/.5;const u=Math.min(fly.t,1);fly.g.position.set(fly.x0+(fly.x1-fly.x0)*u,1.3-.6*u+Math.sin(Math.PI*u)*.9,fly.z0+(fly.z1-fly.z0)*u);if(fly.t>=1){sc.remove(fly.g);fly=null}}
+ walkers(dt,t);
  const D=CM[0]*(cam.aspect<1?1.15:1);cp.x+=(P.x-cp.x)*Math.min(1,dt*10);cp.z+=(P.z-cp.z)*Math.min(1,dt*10);const sx=Math.sin(cy),sz=Math.cos(cy);
  /* the camera stays inside the room so walls never hide the player */
  cam.position.set(Math.max(-RX+.8,Math.min(RX-.8,cp.x+sx*D)),CM[1]+D*CM[2],Math.max(RZ0+.8,Math.min(RZ1-.8,cp.z+sz*D)));cam.lookAt(cp.x-sx*CM[3],CM[4],cp.z-sz*CM[3]);dl.position.set(cp.x+6,14,cp.z+8);dl.target.position.set(cp.x,0,cp.z);
  MK.forEach((m,i)=>{if(m.visible)m.position.set(ST[i].x,4.6+Math.abs(Math.sin(t*3))*.3,ST[i].z)});if(em.visible)em.position.set(EX.x,3.7+Math.abs(Math.sin(t*3))*.3,EX.z);
  bt-=dt;const cw=cv.clientWidth,ch=cv.clientHeight,bb=$('bub');if(bb.style.display=='block'){bv.set(P.x,P.y+2.3,P.z).project(cam);bb.style.left=(bv.x*.5+.5)*cw+'px';bb.style.top=(-bv.y*.5+.5)*ch+'px'}
  ST.forEach((s,i)=>{const near=!halt&&Math.hypot(P.x-s.x,P.z-s.z)<6.5;if(near){if(!s.line)s.line=RES[i]?'Terima kasih!':R(HI);bv.set(s.x,3.1,s.z).project(cam);s.sb.textContent=s.line;s.sb.style.left=(bv.x*.5+.5)*cw+'px';s.sb.style.top=(-bv.y*.5+.5)*ch+'px';s.sb.style.display='block'}else{s.line=null;s.sb.style.display='none'}});
- const ns=nearSt(),h=$('hint'),pe=document.body.classList.contains('touch')?'Tekan E':'E';
- if(halt)h.style.display='none';else if(ns>=0){h.textContent=RES[ns]?'Gerai '+(ns+1)+' sudah selesai ✔':pe+' · Cakap dengan '+KD.stalls[ns].v;h.style.display='block'}else if(nearDoor()){h.textContent=pe+(doneN()==5?' · Keluar kantin':' · Pintu keluar ('+doneN()+'/5 gerai)');h.style.display='block'}else h.style.display='none';
+ const ns=nearSt(),h=$('hint'),pe=document.body.classList.contains('touch')?'Tekan E':'E',bn=carry>=0&&nearBin(),sn=carry<0&&nearLit();
+ if(halt)h.style.display='none';else if(bn){h.textContent=pe+' · Buang sampah';h.style.display='block'}else if(sn){h.textContent=pe+' · Ambil sampah';h.style.display='block'}else if(ns>=0){h.textContent=RES[ns]?'Gerai '+(ns+1)+' sudah selesai ✔':pe+' · Cakap dengan '+KD.stalls[ns].v;h.style.display='block'}else if(nearDoor()){h.textContent=pe+(doneN()==5?' · Keluar kantin':' · Pintu keluar ('+doneN()+'/5 gerai)');h.style.display='block'}else h.style.display='none';
  drawMM();ren.render(sc,cam)}requestAnimationFrame(loop);
 /* ---- start ---- */
 function boot(){const k=LS.get('sk_cur',null);if(!OKGO||!k||!PF[k]){SS.del('sk_day');SS.del('sk_ret');nav('index');return}

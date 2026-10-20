@@ -4,6 +4,8 @@
    kantin-games.js will read KD.lv[level] first and fall back to the base values. Nothing to change for now.
    lim = seconds for full speed marks (slower than this lowers the stars). */
 window.KD={
+ /* wall posters: c = colour, s = drawn shape ('pyr' pyramid, 'plate' healthy plate) or e = emoji, t = text lines */
+ posters:[{c:'#2f6fd0',s:'pyr',t:['Piramid','Makanan']},{c:'#2e9d4a',s:'plate',t:['Suku Suku','Separuh']},{c:'#8e5bd1',e:'🧼',t:['Cuci tangan','sebelum makan']},{c:'#e8923a',e:'🥤',t:['Kurangkan','minuman manis']},{c:'#2fa8c9',e:'💧',t:['Minum air','kosong']},{c:'#d84a6b',e:'♻️',t:['Buang sampah','dalam tong']}],
  hi:['Hai!','Selamat datang!','Adik nak makan apa?','Lapar?','Pilih makanan seimbang!'],
  stalls:[
   {n:'Piramid Makanan',v:'Mak Cik Siti',c:'#e74c3c',lim:60,t:'Bina Piramid Makanan Malaysia! Letakkan setiap makanan di tempat yang betul pada piramid.'},
