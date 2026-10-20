@@ -25,6 +25,8 @@ Game web 3D low poly tentang kehidupan sekolah.
 - `_backup_round7/` : fail sebelum Round 7
 - Round 7b (pembaikan Kantin): bilik 85% saiz asal (tukar `ROOM` dan `CAMD` di atas `js/kantin.js`, 1 = asal), pintu pepejal dan pemain sentiasa dalam bilik, 4 set meja dan bangku, pelajar duduk dan 4 pelajar berjalan (laluan tetap, 2 sahaja bila Grafik Rendah), sampah dan 4 tong (mekanik sama seperti lorong, dikira untuk lencana Pelajar Prihatin), 6 poster dinding (data dalam `KD.posters`, `js/kantin-data.js`). Betulkan Snek Sihat: peraturan CSS `canvas` global menarik kanvas keluar dari kad, dan kini `touch-action:none` + tangkap penuding
 - `_backup_round7b/` : fail sebelum Round 7b
+- Round 7c: kamera kongsi dalam `js/core.js` (`CAMC`, `camMap`, `camStep`): pandangan tidak berpusing sendiri semasa berjalan; selepas 1.5 s terhalang atau berjalan >70 darjah dari hadapan, ia perlahan-lahan kembali ke belakang pemain; arah joystick dikunci kepada pandangan semasa ditekan supaya tidak terbalik (laluan lorong sempit tidak lagi menggila). Kantin: dinding dan gerai yang menghalang pemain menjadi lut sinar (`FADE`), kakitangan gerai lebih tinggi, poster sampah tidak menutup label tong, Mod Jalan-jalan boleh keluar bila-bila masa (peraturan 5 gerai hanya Mod Kelas). Topeng watak tidak lagi berkelip (`js/chars.js`), butang halaman watak di tengah, butang Lompat guna ikon, 'ketik' ditukar kepada 'pilih'
+- `_backup_round7c/` : fail sebelum Round 7c
 - `_backup_round6b/` : fail sebelum pembaikan Kembali dan sw.js
 - `_backup_round6/` : fail sebelum Round 6
 - `_backup_round5/` : logo, ikon dan index.html sebelum tajuk/ikon baharu

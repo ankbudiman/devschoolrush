@@ -17,6 +17,20 @@ const gradeOf=s=>(GRD.find(g=>s>=g[0])||GRD[GRD.length-1])[1];
 const stallScore=(wr,sec,lim)=>Math.max(15,Math.round(100-Math.min(60,wr*12)-(sec<=lim?0:Math.min(25,(sec-lim)/lim*40))));
 const starsOf=s=>s>=95?3:s>=70?2:1;
 const gcls=g=>'gd g'+({'A+':'AP','A':'A','B':'B','C':'C','D':'D'}[g]||'N');
+/* Round 7c: camera (shared by the hallway and the Kantin). The view never turns by itself while you walk. After CAMC.wait seconds of being blocked,
+   or of walking more than CAMC.away from straight ahead, it eases back behind the player. While the stick is held its directions stay tied to the
+   view you started with (CAMS.iy), so the easing never flips your walking direction; releasing the stick or turning it by CAMC.latch re-reads the view. */
+const CAMC={wait:1.5,away:70*Math.PI/180,ease:2.4,latch:30*Math.PI/180,block:.25},CAMS={iy:0,la:null,tb:0,ta:0,ez:0};
+const wrapA=a=>{while(a>Math.PI)a-=2*Math.PI;while(a<-Math.PI)a+=2*Math.PI;return a};
+function camMap(cy,ix,iz,mv,drag){if(!mv){CAMS.la=null;CAMS.iy=cy;return[0,0]}const a=Math.atan2(ix,iz);
+ if(drag||CAMS.la===null||Math.abs(wrapA(a-CAMS.la))>CAMC.latch){CAMS.iy=cy;CAMS.la=a}
+ const s=Math.sin(CAMS.iy),c=Math.cos(CAMS.iy);return[ix*c+iz*s,-ix*s+iz*c]}
+function camStep(cy,dt,mv,blocked,pf,hold){if(!SET.cf||hold>0){CAMS.tb=CAMS.ta=0;CAMS.ez=0;return cy}
+ const away=mv&&!blocked&&Math.abs(wrapA(pf-(cy+Math.PI)))>CAMC.away;
+ CAMS.tb=mv&&blocked?CAMS.tb+dt:0;CAMS.ta=away?CAMS.ta+dt:0;
+ if(CAMS.tb>=CAMC.wait||CAMS.ta>=CAMC.wait)CAMS.ez=1;
+ if(CAMS.ez){const tg=pf+Math.PI;if(Math.abs(wrapA(tg-cy))<.04){CAMS.ez=0;CAMS.tb=CAMS.ta=0;return tg}return la(cy,tg,Math.min(1,dt*CAMC.ease))}
+ return cy}
 function recRoom(id,score,stalls){const r=cur.rooms[id]||(cur.rooms[id]={best:0,n:0});r.n++;if(score>=r.best){r.best=score;r.g=gradeOf(score);r.st=stalls}save();return r}
 const BD=[['air8','Tabiat Sihat','Minum air 8 kali'],['sampah12','Pelajar Prihatin','Buang 12 sampah dengan betul'],['slip5','Kaki Licin','Terpijak kulit pisang 5 kali'],['gem5','Laju Kilat','Ambil 5 gem laju']],
 TIPS=['Jangan pijak kulit pisang! Licin tau.','Tong biru untuk kertas, tong oren untuk plastik.','Minum air, badan segar!','Wuuu, kejar loceng!','Lompat! Sampah pun boleh dielak.','Botol kaca masuk tong coklat.','Prefect tengah perhati... senyum sikit.','Hati-hati kat selekoh tu!','Cikgu dah masuk kelas... cepat sikit!','Pengawas tengah ronda, buat-buat rajin.','Loceng berbunyi, kaki jangan malas!','Jangan lewat, nanti kena kejar dengan pengawas.'];

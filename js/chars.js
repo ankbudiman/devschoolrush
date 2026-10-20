@@ -40,7 +40,7 @@ bx(B,.5,.5,.5,o.skin,0,1.22,0);const f=new T.Mesh(new T.PlaneGeometry(.42,.42),f
 if(tud){bx(B,.55,.07,.55,tud,0,1.5,0);bx(B,.55,.62,.06,tud,0,1.2,-.27);bx(B,.05,.62,.52,tud,-.275,1.2,-.01);bx(B,.05,.62,.52,tud,.275,1.2,-.01);
 bx(B,.5,.08,.05,tud,0,1.44,.265);bx(B,.05,.52,.04,tud,-.26,1.19,.27);bx(B,.05,.52,.04,tud,.26,1.19,.27);bx(B,.56,.09,.1,tud,0,.97,.24);bx(B,.56,.16,.32,tud,0,.9,0)}
 else{bx(B,.06,.12,.08,o.skin,-.28,1.2,0);bx(B,.06,.12,.08,o.skin,.28,1.2,0);hair(B,o.hs,o.hc);if(o.rib){bx(B,.1,.09,.07,o.rib,.14,1.56,.22);bx(B,.1,.09,.07,o.rib,.3,1.56,.22);bx(B,.06,.06,.08,o.rib,.22,1.56,.23)}}
-if(o.mask){const mc='#a8d8ea';bx(B,.44,.17,.03,mc,0,1.085,.268);bx(B,.03,.17,.1,mc,-.235,1.085,.22);bx(B,.03,.17,.1,mc,.235,1.085,.22)}
+if(o.mask){const mc='#a8d8ea';bx(B,.52,.17,.06,mc,0,1.085,.275);bx(B,.024,.17,.24,mc,-.262,1.085,.14);bx(B,.024,.17,.24,mc,.262,1.085,.14)} /* 7c: no face shares a surface with the head or the face plane any more (that caused the flicker) */
 G.scale.setScalar(o.h||1);G.userData={legs,arms,B,ph:Math.random()*6};G.traverse(m=>{if(m.isMesh)m.castShadow=true});return G}
 const OUT={uni:{m:{top:'#f4f6fa',bot:'#1c2650',shoe:'#f4f4f4'},f:{top:'#f4f6fa',bot:'#1c2650',shoe:'#f4f4f4',skirt:.3,ls:1,tud:'#f6f7fb'}},
 pe:{m:{top:'#2a58c8',bot:'#2150c4',shoe:'#9a9ea6',collar:'#c8293a',cuff:'#c8293a',stripe:1},f:{top:'#f6f7fb',sl:'#2a58c8',cuff:'#c8293a',bot:'#2150c4',shoe:'#f4f4f4',stripe:1,ls:1,tud:'#f6f7fb'}},

@@ -2,6 +2,7 @@
    Rule: every stall must be finished before the exit door works. Mod Kelas: the result is saved as the Kantin grade and carried
    back to world.html. Mod Jalan-jalan: casual revision, nothing is graded or saved. The player can only get here from world.html
    (sk_go token), so a killed or reloaded app goes back to the start screen and the day restarts.
+   7c: Mod Jalan-jalan can leave any time (the all-5-stalls rule is Mod Kelas only), taller stall staff, see-through walls and stalls, shared camera (core.js).
    7b: room size and camera in ROOM / CAMD below, 4 table sets, walking students, rubbish + bins (same mechanic as the hallway), wall posters. */
 const ROOM=.85;   /* room size, 1 = first Kantin build (try .8 or .9) */
 const CAMD=.9;    /* camera distance, 1 = first build, lower = closer */
@@ -20,31 +21,32 @@ const gm=new T.Mesh(new T.PlaneGeometry(300,300),mat('#8fc27a'));gm.rotation.x=-
 (()=>{const w=2*RX,d=RZ1-RZ0,c=document.createElement('canvas');c.width=c.height=2;const g=c.getContext('2d');g.fillStyle='#a9aeb6';g.fillRect(0,0,2,2);g.fillStyle='#949ba5';g.fillRect(0,0,1,1);g.fillRect(1,1,1,1);
  const t=new T.CanvasTexture(c);t.magFilter=T.NearestFilter;t.wrapS=t.wrapT=T.RepeatWrapping;t.repeat.set(w/3,d/3);
  const m=new T.Mesh(new T.PlaneGeometry(w,d),new T.MeshPhongMaterial({map:t,shininess:0,specular:0}));m.rotation.x=-Math.PI/2;m.position.set(0,.01,MZ);m.receiveShadow=true;sc.add(m)})();
-bx(sc,2*RX+2,WH,1,WALL,0,WH/2,RZ0-.5);cols.push({x0:-RX-1,x1:RX+1,z0:RZ0-1,z1:RZ0});
-[-1,1].forEach(s=>{bx(sc,1,WH,RZ1-RZ0+2,WALL,s*(RX+.5),WH/2,MZ);cols.push({x0:s>0?RX:-RX-1,x1:s>0?RX+1:-RX,z0:RZ0-1,z1:RZ1+1.2});
- bx(sc,.12,.9,RZ1-RZ0,'#b84a38',s*(RX-.06),.45,MZ)});
-bx(sc,2*RX,.9,.12,'#b84a38',0,.45,RZ0+.06);
-[-1,1].forEach(s=>{const a=DW,b=RX+1,w=b-a;bx(sc,w,WH,1,WALL,s*(a+w/2),WH/2,RZ1+.5);cols.push({x0:s>0?a:-b,x1:s>0?b:-a,z0:RZ1,z1:RZ1+1.2})});
-bx(sc,2*DW,WH-2.5,1,WALL,0,2.5+(WH-2.5)/2,RZ1+.5);
+const FG={back:[],left:[],right:[],front:[]},FDS=[]; /* wall pieces (and what hangs on them) that fade when they block the view of the player */
+FG.back.push(bx(sc,2*RX+2,WH,1,WALL,0,WH/2,RZ0-.5));cols.push({x0:-RX-1,x1:RX+1,z0:RZ0-1,z1:RZ0});
+[-1,1].forEach(s=>{(s<0?FG.left:FG.right).push(bx(sc,1,WH,RZ1-RZ0+2,WALL,s*(RX+.5),WH/2,MZ));cols.push({x0:s>0?RX:-RX-1,x1:s>0?RX+1:-RX,z0:RZ0-1,z1:RZ1+1.2});
+ (s<0?FG.left:FG.right).push(bx(sc,.12,.9,RZ1-RZ0,'#b84a38',s*(RX-.06),.45,MZ))});
+FG.back.push(bx(sc,2*RX,.9,.12,'#b84a38',0,.45,RZ0+.06));
+[-1,1].forEach(s=>{const a=DW,b=RX+1,w=b-a;FG.front.push(bx(sc,w,WH,1,WALL,s*(a+w/2),WH/2,RZ1+.5));cols.push({x0:s>0?a:-b,x1:s>0?b:-a,z0:RZ1,z1:RZ1+1.2})});
+FG.front.push(bx(sc,2*DW,WH-2.5,1,WALL,0,2.5+(WH-2.5)/2,RZ1+.5));
 cols.push({x0:-DW,x1:DW,z0:RZ1,z1:RZ1+1.2}); /* the doorway is solid too: the exit works with E at the door, nobody walks outside */
 function pn(w,h,c,x,y,z,ry){const m=new T.Mesh(new T.PlaneGeometry(w,h),new T.MeshBasicMaterial({color:c}));m.position.set(x,y,z);m.rotation.y=ry;sc.add(m);return m}
 function sign(L,bg,fg,w,h,fs,x,y,z,r){const c=document.createElement('canvas');c.width=256;c.height=Math.round(256*h/w);const g=c.getContext('2d');g.fillStyle=bg;g.fillRect(0,0,256,c.height);g.fillStyle=fg;g.font='bold '+fs+'px Fredoka,sans-serif';g.textAlign='center';g.textBaseline='middle';L.forEach((s,i)=>g.fillText(s,128,c.height*(i+.5)/L.length));
  const m=new T.Mesh(new T.PlaneGeometry(w,h),new T.MeshBasicMaterial({map:new T.CanvasTexture(c)}));m.position.set(x,y,z);m.rotation.y=r;sc.add(m);return m}
-sign(['PINTU KELUAR'],'#1c2f6b','#ffffff',2.6,.6,30,0,3.05,RZ1-.03,Math.PI);
-sign(['KANTIN SEKOLAH'],'#fff3d6','#b84a38',5,.9,30,0,2.5,RZ0+.14,0);
-(()=>{pn(2*DW-.2,2.5,'#f5f5f5',0,1.25,RZ1+.1,Math.PI);[-1,1].forEach(s=>pn(.1,2.5,'#7a5236',s*(DW-.05),1.25,RZ1-.02,Math.PI))})();
+FG.front.push(sign(['PINTU KELUAR'],'#1c2f6b','#ffffff',2.6,.6,30,0,3.05,RZ1-.03,Math.PI));
+FG.back.push(sign(['KANTIN SEKOLAH'],'#fff3d6','#b84a38',5,.9,30,0,2.5,RZ0+.14,0));
+(()=>{FG.front.push(pn(2*DW-.2,2.5,'#f5f5f5',0,1.25,RZ1+.1,Math.PI));[-1,1].forEach(s=>FG.front.push(pn(.1,2.5,'#7a5236',s*(DW-.05),1.25,RZ1-.02,Math.PI)))})();
 function plant(x,z){const p=new T.Mesh(new T.CylinderGeometry(.28,.2,.45,6),mat('#c0693f')),f=new T.Mesh(new T.IcosahedronGeometry(.42,0),mat('#3f9d54'));p.position.set(x,.225,z);f.position.set(x,.85,z);p.castShadow=f.castShadow=true;sc.add(p,f);cols.push({x0:x-.32,x1:x+.32,z0:z-.32,z1:z+.32})}
 plant(-RX+.9,RZ1-.9);plant(RX-.9,RZ1-.9);
 /* ---- wall posters: plain colour panels (drawn shapes or an emoji + two lines), tiny textures ---- */
-function poster(i,x,y,z,ry){const d=KD.posters[i],c=document.createElement('canvas');c.width=256;c.height=320;const g=c.getContext('2d');
+function poster(i,x,y,z,ry,pw,ph){const d=KD.posters[i],c=document.createElement('canvas');c.width=256;c.height=320;const g=c.getContext('2d');
  g.fillStyle='#ffffff';g.fillRect(0,0,256,320);g.fillStyle=d.c;g.fillRect(10,10,236,300);
  if(d.s=='pyr'){const C=['#b266ff','#4aa3ff','#5ccf4a','#f4c542'],Y=[40,80,120,155,190],h=y=>80*(y-40)/150;C.forEach((col,k)=>{g.fillStyle=col;g.beginPath();g.moveTo(128-h(Y[k]),Y[k]);g.lineTo(128+h(Y[k]),Y[k]);g.lineTo(128+h(Y[k+1]),Y[k+1]);g.lineTo(128-h(Y[k+1]),Y[k+1]);g.closePath();g.fill()})}
  else if(d.s=='plate'){const arc=(a0,a1,col)=>{g.fillStyle=col;g.beginPath();g.moveTo(128,120);g.arc(128,120,72,a0,a1);g.closePath();g.fill()};g.fillStyle='#ffffff';g.beginPath();g.arc(128,120,80,0,7);g.fill();arc(Math.PI/2,Math.PI*1.5,'#5ccf4a');arc(-Math.PI/2,0,'#ff9a3c');arc(0,Math.PI/2,'#f4c542')}
  else{g.font='110px sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText(d.e,128,120)}
  g.fillStyle='#ffffff';g.font='bold 31px Fredoka,sans-serif';g.textAlign='center';g.textBaseline='middle';d.t.forEach((s,k)=>g.fillText(s,128,232+k*38));
- const m=new T.Mesh(new T.PlaneGeometry(1.9,2.4),new T.MeshBasicMaterial({map:new T.CanvasTexture(c)}));m.position.set(x,y,z);m.rotation.y=ry;sc.add(m)}
-[[0,-RX*.7],[1,-RX*.44],[2,RX*.44],[3,RX*.7]].forEach(a=>poster(a[0],a[1],1.95,RZ0+.08,0));
-poster(5,-6.1,2.25,RZ1-.03,Math.PI);poster(4,RX*.5,1.95,RZ1-.03,Math.PI);
+ const m=new T.Mesh(new T.PlaneGeometry(pw||1.9,ph||2.4),new T.MeshBasicMaterial({map:new T.CanvasTexture(c)}));m.position.set(x,y,z);m.rotation.y=ry;sc.add(m);return m}
+[[0,-RX*.7],[1,-RX*.44],[2,RX*.44],[3,RX*.7]].forEach(a=>FG.back.push(poster(a[0],a[1],1.95,RZ0+.08,0)));
+FG.front.push(poster(5,-6.2,2.35,RZ1-.03,Math.PI,1.5,1.9),poster(4,RX*.5,1.95,RZ1-.03,Math.PI)); /* the sampah poster sits above the bin labels */
 /* ---- tables: 4 sets with benches, students sitting ---- */
 function table(x,z,sit){bx(sc,3.7,.1,1.45,'#c8a26a',x,.9,z);[-1,1].forEach(a=>[-1,1].forEach(b=>bx(sc,.12,.85,.12,'#5a5f69',x+a*1.6,.42,z+b*.55)));
  [-1,1].forEach(s=>{bx(sc,3.7,.08,.45,'#a9744a',x,.46,z+s*1.2);[-1,1].forEach(a=>bx(sc,.12,.42,.12,'#5a5f69',x+a*1.6,.21,z+s*1.2))});
@@ -61,7 +63,7 @@ function food(g,i,col){
  else if(i==2){msh(g,new T.CylinderGeometry(.9,.6,.4,10),'#c0693f',0,1.7,0);[['#e24b4b',-.3,0],['#ffd23f',.25,.15],['#ff9a3c',.05,-.3]].forEach(a=>msh(g,new T.IcosahedronGeometry(.28,0),a[0],a[1],2,a[2]))}
  else if(i==3){[[-1.8,'#4aa3ff'],[-.6,'#ff6b81'],[.6,'#f4c542'],[1.8,'#7ed957']].forEach(a=>{msh(g,new T.CylinderGeometry(.25,.2,.6,8),a[1],1.8,0).position.x=a[0];bx(g,.05,.5,.05,'#ffffff',a[0]+.1,2.3,0)})}
  else{[[-1.6,'#7ed957'],[-.7,'#4aa3ff']].forEach(a=>msh(g,new T.CylinderGeometry(.2,.22,.7,8),a[1],1.85,0).position.x=a[0]);bx(g,.8,.14,.6,'#ffffff',1,1.6,0);bx(g,.8,.14,.6,'#ffffff',1,1.74,0)}}
-function mkSeller(i){const f=i%2==0,c=KD.stalls[i].c,o={skin:R(SK),hc:R(HC),h:1.3,w:1.05,mouth:0,es:1,bw:4};
+function mkSeller(i){const f=i%2==0,c=KD.stalls[i].c,o={skin:R(SK),hc:R(HC),h:1.8,w:1.05,mouth:0,es:1,bw:4}; /* tall enough to stand above the counter */
  if(f){o.o={top:'#f6f7fb',bot:'#f6f7fb',long:1,shoe:'#2a2a30',ls:1,ap:c};o.tud=R(['#f6f7fb','#e8d6c0',c])}else{o.o={top:'#f4f6fa',bot:'#222633',shoe:'#1a1a1e',ls:1,ap:c};o.hs='short';o.stache=Math.random()<.5}
  const G=build(o);G.userData.g=f?'f':'m';return G}
 function drawSign(i){const s=SG[i],g=s.cv.getContext('2d'),d=KD.stalls[i],r=RES[i];g.fillStyle=d.c;g.fillRect(0,0,512,128);g.fillStyle='#fff';g.font='bold '+((i+1+'. '+d.n).length>16?44:54)+'px Fredoka,sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText((i+1)+'. '+d.n,256,r?44:64);
@@ -70,16 +72,18 @@ KD.stalls.forEach((d,i)=>{const p=POS[i],g=new T.Group(),col=d.c,th=p[2];
  bx(g,7,1.4,1.8,'#8a5a3a',0,.7,0);bx(g,7.3,.14,2.1,'#e8d6b0',0,1.47,0);bx(g,6.4,.55,.08,col,0,.7,.92);
  [-3.2,3.2].forEach(x=>bx(g,.18,3.4,.18,'#666666',x,1.7,.95));
  for(let k=0;k<7;k++){const m=bx(g,1,.14,2.8,k%2?'#ffffff':col,k-3,3.45,.4);m.rotation.x=.12}
- bx(g,6.6,2.3,.2,'#6b4a30',0,1.6,-1.95);bx(g,6.4,.1,.6,'#a67c52',0,1.75,-1.65);bx(g,6.4,.1,.6,'#a67c52',0,2.5,-1.65);
+ bx(g,6.6,2.3,.2,'#6b4a30',0,1.6,-2.4);bx(g,6.4,.1,.6,'#a67c52',0,1.75,-2.05);bx(g,6.4,.1,.6,'#a67c52',0,2.5,-2.05);
  food(g,i,col);
- const sl=mkSeller(i);sl.position.set(0,0,-1.2);g.add(sl);
  const cn=document.createElement('canvas');cn.width=512;cn.height=128;const tex=new T.CanvasTexture(cn),sm=new T.Mesh(new T.PlaneGeometry(5.6,1.4),new T.MeshBasicMaterial({map:tex}));sm.position.set(0,4.55,.5);sm.rotation.x=-.25;g.add(sm);SG.push({cv:cn,tex});
+ const fm=[];g.traverse(o=>{if(o.isMesh)fm.push(o)}); /* the stall fades when it blocks the view; the seller stays solid */
+ const sl=mkSeller(i);sl.position.set(0,0,-1.3);sl.userData.arms.forEach(a=>a.rotation.x=-1.2);g.add(sl);
  g.scale.setScalar(SP);g.position.set(p[0],0,p[1]);g.rotation.y=th;sc.add(g);
  const nx=Math.sin(th),nz=Math.cos(th),b=th==0?[p[0]-2.9,p[0]+2.9,p[1]-1.7,p[1]+.78]:th>0?[p[0]-1.7,p[0]+.78,p[1]-2.9,p[1]+2.9]:[p[0]-.78,p[0]+1.7,p[1]-2.9,p[1]+2.9];
  cols.push({x0:b[0],x1:b[1],z0:b[2],z1:b[3]});
  const sb=document.createElement('div');sb.className='sb';document.body.appendChild(sb);
  const mk=new T.Mesh(new T.ConeGeometry(.4,.8,4),new T.MeshBasicMaterial({color:'#ffd23f'}));mk.rotation.x=Math.PI;sc.add(mk);MK.push(mk);
- ST.push({x:p[0],z:p[1],wx:p[0]+nx*1.9,wz:p[1]+nz*1.9,sb,line:null,col});drawSign(i)});
+ const fb=th==0?[p[0]-2.9,p[0]+2.9,0,4.2,p[1]-1.95,p[1]+1.48]:th>0?[p[0]-1.95,p[0]+1.48,0,4.2,p[1]-2.9,p[1]+2.9]:[p[0]-1.48,p[0]+1.95,0,4.2,p[1]-2.9,p[1]+2.9],fd={m:fm,boxes:[fb],op:1,tg:1};FDS.push(fd);
+ ST.push({x:p[0],z:p[1],wx:p[0]+nx*1.9,wz:p[1]+nz*1.9,sb,line:null,col,fd});drawSign(i)});
 /* exit door marker (shows when every stall is finished) */
 const EX={x:0,z:RZ1-1.1},em=new T.Mesh(new T.ConeGeometry(.4,.8,4),new T.MeshBasicMaterial({color:'#5ccf4a'}));em.rotation.x=Math.PI;em.visible=false;sc.add(em);
 /* ---- rubbish and bins (same mechanic as the hallway: pick up with E, put in the right bin, counts toward the Pelajar Prihatin badge) ---- */
@@ -100,6 +104,8 @@ function throwIt(b){const H=['Kertas masuk tong biru.','Botol plastik masuk tong
  const c=carry;carry=-1;HM.forEach(g=>g.visible=false);const g=mkItem(c);g.scale.setScalar(1.2);sc.add(g);fly={g,t:0,x0:P.x,z0:P.z,x1:b.bx,z1:b.bz};
  say(R(['Bagus!','Pandai!','Terima kasih, kawan!']));tone(600,.2,.1,'sine',.15);tone(800,.3,.12,'sine',.15);
  cur.s[c]++;save();if(cur.s[0]+cur.s[1]+cur.s[2]+cur.s[3]==12)award('sampah12','Pelajar Prihatin','Anda sudah membuang 12 sampah dengan betul.')}
+FDS.push({m:FG.back,boxes:[[-RX-1,RX+1,0,WH,RZ0-1,RZ0]],op:1,tg:1},{m:FG.left,boxes:[[-RX-1,-RX,0,WH,RZ0-1,RZ1+1.2]],op:1,tg:1},{m:FG.right,boxes:[[RX,RX+1,0,WH,RZ0-1,RZ1+1.2]],op:1,tg:1},
+ {m:FG.front,boxes:[[-RX-1,-DW,0,WH,RZ1,RZ1+1.2],[DW,RX+1,0,WH,RZ1,RZ1+1.2],[-DW,DW,2.5,WH,RZ1,RZ1+1.2]],op:1,tg:1});
 /* ---- students walking between the stalls (fixed loops through the open lanes; they never block the player for long) ---- */
 const WK=[],lp=(s)=>[[s*LX,LF],[s*LX,ZN],[s*WPX,ZN,2.5,s*SX,ZN],[s*LX,ZN],[s*LX,ZF],[s*WPX,ZF,2.5,s*SX,ZF],[s*LX,ZF],[s*LX,LF]];
 [lp(-1),lp(1),[[0,LF],[0,RZ0+3.7,2.5,0,ZB],[0,L0],[LX,L0],[LX,LF],[0,LF]],[[-LX,LM],[LX,LM],[LX,LF],[0,LF],[-LX,LF],[-LX,LM]]].forEach((pts,k)=>{const g=npc('murid');g.visible=true;sc.add(g);const i=(k*2+1)%pts.length,p=pts[i];WK.push({g,pts,i,x:p[0],z:p[1],pz:0,bk:0,o:k*1.7,sp:1.25+k*.1,fa:null});g.position.set(p[0],0,p[1])});
@@ -137,7 +143,7 @@ function talk(i){const d=KD.stalls[i],r=RES[i];if(r){say('Gerai ini sudah selesa
  halt=true;document.body.classList.add('mn');
  KG.show('<h3>'+d.n+'</h3><p><b>'+d.v+'</b>: Hai! '+d.t+'</p><p class="kh">Siap dalam '+d.lim+' saat tanpa kesilapan untuk bintang penuh ⭐</p><div class="rw"><button onclick="KN.go('+i+')">Mula ▶</button><button class="kx" onclick="KN.shut()">Nanti dulu</button></div>')}
 function onRes(i,res){if(!res||res.exit){shut();return}RES[i]=res;drawSign(i);MK[i].visible=false;const n=doneN();$('scr').textContent='Gerai '+n+'/5';
- if(n==5){em.visible=true;summary()}else{shut();toast('Gerai '+KD.stalls[i].n+' siap! '+n+'/5',2400)}}
+ if(n==5){em.visible=STORY;summary()}else{shut();toast('Gerai '+KD.stalls[i].n+' siap! '+n+'/5',2400)}}
 function summary(){const rs=RES,avg=rs.reduce((a,r)=>a+r.score,0)/5;let g=null;halt=true;document.body.classList.add('mn');
  if(STORY){g=gradeOf(avg);if(!recorded){recorded=true;recRoom('kantin',avg,rs.map(r=>r.score));grade={g,s:Math.round(avg)}}}
  const rows=KD.stalls.map((d,i)=>'<div class="gr1"><span>'+(i+1)+'. '+d.n+'</span><b>'+'⭐'.repeat(rs[i].stars)+'</b></div>').join('');
@@ -147,7 +153,7 @@ window.KN={go(i){KG.start(i,cur.level,r=>onRes(i,r))},shut,leave};
 function act(){if(halt)return;
  if(carry>=0){const b=nearBin();if(b){throwIt(b);return}}else{const q=nearLit();if(q){pick(q);return}}
  const i=nearSt();if(i>=0){talk(i);return}
- if(nearDoor()){if(doneN()==5)summary();else{const m=$('msg');m.textContent='Jumpa semua penjual dahulu! ('+doneN()+'/5 gerai siap)';m.style.display='block';clearTimeout(mt);mt=setTimeout(()=>m.style.display='none',2600);say('Belum boleh keluar!')}}}
+ if(nearDoor()){if(!STORY)leave();else if(doneN()==5)summary();else{const m=$('msg');m.textContent='Jumpa semua penjual dahulu! ('+doneN()+'/5 gerai siap)';m.style.display='block';clearTimeout(mt);mt=setTimeout(()=>m.style.display='none',2600);say('Belum boleh keluar!')}}}
 /* ---- minimap ---- */
 const mc=$('mm'),mg=mc.getContext('2d'),mb=document.createElement('canvas');mb.width=mb.height=320;const MS=Math.min(300/(2*RX),300/(RZ1-RZ0+3)),mf=(x,z)=>[160+x*MS,160+(z-MZ)*MS];
 (()=>{const g=mb.getContext('2d');g.fillStyle='#2b2f38';g.fillRect(0,0,320,320);const a=mf(-RX,RZ0),b=mf(RX,RZ1);g.fillStyle='#a9aeb6';g.fillRect(a[0],a[1],b[0]-a[0],b[1]-a[1]);g.strokeStyle=WALL;g.lineWidth=5;g.strokeRect(a[0],a[1],b[0]-a[0],b[1]-a[1]);
@@ -166,27 +172,35 @@ addEventListener('popstate',()=>{if(!on||!SR_TRAP)return;backKeep();const ld=$('
 if(KG.open()){shut();return} /* back closes a mini game or card first */
 const m=$('menu');if(m.style.display=='flex'){const vp=$('vp');if(vp&&!vp.hidden)$('pS').click();else view('vp')}else pause()})})();
 window.gfxHook=()=>{ren.shadowMap.enabled=!SET.lo;dl.castShadow=!SET.lo;ren.setPixelRatio(SET.lo?1:Math.min(devicePixelRatio,2));WK.forEach((w,i)=>w.g.visible=!(SET.lo&&i>1)); /* low graphics: 2 walkers instead of 4 */ fit();sc.traverse(o=>{if(o.material)o.material.needsUpdate=true})};
+/* ---- see-through: a wall or stall that is between the camera and the player fades to 25% ---- */
+const CAMP={x:0,y:6,z:0},FADE=.25;
+function segBox(C,Q,b){let t0=0,t1=1;const d=[Q.x-C.x,Q.y-C.y,Q.z-C.z],o=[C.x,C.y,C.z];
+ for(let i=0;i<3;i++){const lo=b[i*2]-.12,hi=b[i*2+1]+.12;if(Math.abs(d[i])<1e-6){if(o[i]<lo||o[i]>hi)return false}else{let a=(lo-o[i])/d[i],c=(hi-o[i])/d[i];if(a>c){const k=a;a=c;c=k}t0=Math.max(t0,a);t1=Math.min(t1,c);if(t0>t1)return false}}return true}
+function fades(dt){const Q={x:P.x,y:P.y+1.1,z:P.z};FDS.forEach(f=>{f.tg=f.boxes.some(b=>segBox(CAMP,Q,b))?FADE:1;if(f.op===f.tg)return;
+ const k=SET.lo?1:Math.min(1,dt*10);f.op=Math.abs(f.tg-f.op)<.01?f.tg:f.op+(f.tg-f.op)*k;const tr=f.op<.995;
+ f.m.forEach(m=>{const mt=m.material;mt.opacity=f.op;if(mt.transparent!==tr){mt.transparent=tr;mt.needsUpdate=true}})})}
 /* ---- main loop ---- */
 const CM=[6*CAMD,1.2,.85,.6,.9],HI=KD.hi;let last=0;
 function loop(ts){requestAnimationFrame(loop);const dt=Math.min((ts-last)/1000||0,.05),t=ts/1000;last=ts;
  if(halt){keys.KeyW=keys.KeyA=keys.KeyS=keys.KeyD=keys.ArrowUp=keys.ArrowDown=keys.ArrowLeft=keys.ArrowRight=keys.Space=0;jv.x=jv.z=0;jmp=0}
  let ix=(keys.KeyD||keys.ArrowRight?1:0)-(keys.KeyA||keys.ArrowLeft?1:0)+jv.x,iz=(keys.KeyS||keys.ArrowDown?1:0)-(keys.KeyW||keys.ArrowUp?1:0)+jv.z;const l=Math.hypot(ix,iz);if(l>1){ix/=l;iz/=l}
  const mv=l>.12&&!halt;
- if(mv){const s=Math.sin(cy),c=Math.cos(cy),mx=ix*c+iz*s,mz=-ix*s+iz*c,spd=P.slow>0?2.4:5,dx=mx*spd*dt,dz=mz*spd*dt;if(!hit(P.x+dx,P.z,.35))P.x+=dx;if(!hit(P.x,P.z+dz,.35))P.z+=dz;P.f=la(P.f,Math.atan2(mx,mz),Math.min(1,dt*14));if(SET.cf&&hold<=0&&iz<.3)cy=la(cy,Math.atan2(-mx,-mz),Math.min(1,dt*(iz<-.3?2.2:.9)))}hold-=dt;
+ const ox=P.x,oz=P.z;let want=0;if(mv){const m=camMap(cy,ix,iz,true,od||hold>0),mx=m[0],mz=m[1],spd=P.slow>0?2.4:5,dx=mx*spd*dt,dz=mz*spd*dt;want=Math.hypot(dx,dz);if(!hit(P.x+dx,P.z,.35))P.x+=dx;if(!hit(P.x,P.z+dz,.35))P.z+=dz;P.f=la(P.f,Math.atan2(mx,mz),Math.min(1,dt*14))}else camMap(cy,0,0,false,false);
  P.x=Math.max(-RX+.4,Math.min(RX-.4,P.x));P.z=Math.max(RZ0+.4,Math.min(RZ1-.4,P.z)); /* never outside the room */
+ cy=camStep(cy,dt,mv,mv&&Math.hypot(P.x-ox,P.z-oz)<CAMC.block*want,P.f,hold);hold-=dt; /* camera: see camStep in core.js; blocked = stick held but (almost) not moving */
  if((keys.Space||jmp)&&P.y<=0)P.vy=6.8;P.vy-=22*dt;P.y+=P.vy*dt;if(P.y<=0){P.y=0;P.vy=0}
  pm.position.set(P.x,P.y,P.z);pm.rotation.y=P.f;anim(pm,t,mv&&P.y==0);if(carry>=0)pm.userData.arms[1].rotation.x=-.9;
  P.slow-=dt;SM.forEach(s=>{if(s.cd>0){s.cd-=dt;if(s.cd<=0){s.ty=(s.ty+1)%4;s.k.forEach((g,i)=>g.visible=i==s.ty)}return}if(P.slow<=0&&P.y<.5&&Math.hypot(P.x-s.x,P.z-s.z)<.45){P.slow=1.2;say('Ish, sampah!')}});
  if(fly){fly.t+=dt/.5;const u=Math.min(fly.t,1);fly.g.position.set(fly.x0+(fly.x1-fly.x0)*u,1.3-.6*u+Math.sin(Math.PI*u)*.9,fly.z0+(fly.z1-fly.z0)*u);if(fly.t>=1){sc.remove(fly.g);fly=null}}
  walkers(dt,t);
  const D=CM[0]*(cam.aspect<1?1.15:1);cp.x+=(P.x-cp.x)*Math.min(1,dt*10);cp.z+=(P.z-cp.z)*Math.min(1,dt*10);const sx=Math.sin(cy),sz=Math.cos(cy);
- /* the camera stays inside the room so walls never hide the player */
- cam.position.set(Math.max(-RX+.8,Math.min(RX-.8,cp.x+sx*D)),CM[1]+D*CM[2],Math.max(RZ0+.8,Math.min(RZ1-.8,cp.z+sz*D)));cam.lookAt(cp.x-sx*CM[3],CM[4],cp.z-sz*CM[3]);dl.position.set(cp.x+6,14,cp.z+8);dl.target.position.set(cp.x,0,cp.z);
+ CAMP.x=cp.x+sx*D;CAMP.y=CM[1]+D*CM[2];CAMP.z=cp.z+sz*D;cam.position.set(CAMP.x,CAMP.y,CAMP.z);cam.lookAt(cp.x-sx*CM[3],CM[4],cp.z-sz*CM[3]);dl.position.set(cp.x+6,14,cp.z+8);dl.target.position.set(cp.x,0,cp.z);
+ fades(dt);
  MK.forEach((m,i)=>{if(m.visible)m.position.set(ST[i].x,4.6+Math.abs(Math.sin(t*3))*.3,ST[i].z)});if(em.visible)em.position.set(EX.x,3.7+Math.abs(Math.sin(t*3))*.3,EX.z);
  bt-=dt;const cw=cv.clientWidth,ch=cv.clientHeight,bb=$('bub');if(bb.style.display=='block'){bv.set(P.x,P.y+2.3,P.z).project(cam);bb.style.left=(bv.x*.5+.5)*cw+'px';bb.style.top=(-bv.y*.5+.5)*ch+'px'}
  ST.forEach((s,i)=>{const near=!halt&&Math.hypot(P.x-s.x,P.z-s.z)<6.5;if(near){if(!s.line)s.line=RES[i]?'Terima kasih!':R(HI);bv.set(s.x,3.1,s.z).project(cam);s.sb.textContent=s.line;s.sb.style.left=(bv.x*.5+.5)*cw+'px';s.sb.style.top=(-bv.y*.5+.5)*ch+'px';s.sb.style.display='block'}else{s.line=null;s.sb.style.display='none'}});
  const ns=nearSt(),h=$('hint'),pe=document.body.classList.contains('touch')?'Tekan E':'E',bn=carry>=0&&nearBin(),sn=carry<0&&nearLit();
- if(halt)h.style.display='none';else if(bn){h.textContent=pe+' · Buang sampah';h.style.display='block'}else if(sn){h.textContent=pe+' · Ambil sampah';h.style.display='block'}else if(ns>=0){h.textContent=RES[ns]?'Gerai '+(ns+1)+' sudah selesai ✔':pe+' · Cakap dengan '+KD.stalls[ns].v;h.style.display='block'}else if(nearDoor()){h.textContent=pe+(doneN()==5?' · Keluar kantin':' · Pintu keluar ('+doneN()+'/5 gerai)');h.style.display='block'}else h.style.display='none';
+ if(halt)h.style.display='none';else if(bn){h.textContent=pe+' · Buang sampah';h.style.display='block'}else if(sn){h.textContent=pe+' · Ambil sampah';h.style.display='block'}else if(ns>=0){h.textContent=RES[ns]?'Gerai '+(ns+1)+' sudah selesai ✔':pe+' · Cakap dengan '+KD.stalls[ns].v;h.style.display='block'}else if(nearDoor()){h.textContent=pe+(!STORY||doneN()==5?' · Keluar kantin':' · Pintu keluar ('+doneN()+'/5 gerai)');h.style.display='block'}else h.style.display='none';
  drawMM();ren.render(sc,cam)}requestAnimationFrame(loop);
 /* ---- start ---- */
 function boot(){const k=LS.get('sk_cur',null);if(!OKGO||!k||!PF[k]){SS.del('sk_day');SS.del('sk_ret');nav('index');return}

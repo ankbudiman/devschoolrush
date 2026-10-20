@@ -166,3 +166,7 @@ body.mn .sb{display:none!important}
 #gc{position:static;inset:auto;width:auto;height:auto;display:block;touch-action:none;border-radius:.5em;background:#9ad7ff;max-width:100%} /* overrides the global canvas rule, which pulled this canvas out of its card */#kfb{min-height:1.3em;font-size:.9em}
 @media(max-width:559px){.gm{grid-template-columns:1fr}}
 @media(orientation:landscape) and (max-height:560px){.kcd{font-size:.88em}.kcd h2{font-size:1.4em}.kcd h3{font-size:1em}.py2{width:min(100%,24em,58vh)}.pl{width:min(100%,18em,54vh)}}
+
+/* --- Round 7c: jump icon, centred character page buttons --- */
+#bj svg{width:58%;height:58%;fill:none;stroke:currentColor;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;display:block;margin:auto;pointer-events:none}
+#cpw .r2{width:100%;align-self:stretch}

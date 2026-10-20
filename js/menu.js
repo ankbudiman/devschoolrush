@@ -12,7 +12,7 @@ const BS=[['short','Pendek'],['fringe','Poni'],['spiky','Terpacak'],['side','Bel
 TUD=[['#f6f7fb','Putih'],['#4f8ad0','Biru'],['#1c2f6b','Biru tua']],RIB=[[null,'Tiada'],['#e24b4b','Merah'],['#ffd23f','Kuning'],['#d6568f','Merah jambu'],['#4a86c8','Biru']],
 HC4=[HC[0],HC[2],HC[3],HC[4]],TABS=['Kulit','Rambut','Muka','Topeng'];
 function opts(arr,isOn,fn,sw){const d=document.createElement('div');d.className='ops';arr.forEach(a=>{const b=document.createElement('button');if(sw){b.className='sw'+(isOn(a[0])?' on':'');b.style.background=a[0]}else{b.textContent=a[1];if(isOn(a[0]))b.className='on'}b.onclick=()=>fn(a[0]);d.appendChild(b)});return d}
-function renderCP(){const c=$('cp');c.innerHTML='';if(!selG){const h=document.createElement('div');h.className='hn';h.textContent='Ketik watak untuk memilih';c.appendChild(h);return}
+function renderCP(){const c=$('cp');c.innerHTML='';if(!selG){const h=document.createElement('div');h.className='hn';h.textContent='Pilih watak anda';c.appendChild(h);return}
 const g=selG,L=LK[g],tb=document.createElement('div');tb.className='ops';
 TABS.forEach((n,i)=>{const b=document.createElement('button');b.textContent=n;if(i==tab)b.className='on';b.onclick=()=>{tab=i;renderCP()};tb.appendChild(b)});
 const rd=document.createElement('button');rd.textContent='Rawak';rd.onclick=rawak;tb.appendChild(rd);c.appendChild(tb);
