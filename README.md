@@ -23,6 +23,8 @@ Game web 3D low poly tentang kehidupan sekolah.
 - Bintang 1-3 dari kesilapan DAN masa (`stallScore`, `starsOf` dalam `js/core.js`). Gred bilik = purata skor gerai; A+ (98), A (85), B (70), C (55), D, ubah dalam `GRD` (`js/core.js`). Gred hanya dikira dalam Mod Kelas (disimpan dalam `cur.rooms`, simpanan versi 2, ada medan `level` untuk pemilih tahap kemudian). Mod Jalan-jalan = ulang kaji santai: tiada gred. Lencana dibahagi dua: Pencapaian Mod Kelas (gred setiap kelas + keseluruhan) dan Lencana Cabaran. Kad Laporan di kad 'Sekolah tamat'
 - Hari Mod Kelas disimpan dalam `sessionStorage` semasa ke Kantin dan kembali ke `world.html` (`sk_day`, `sk_ret`, `sk_go`). Jika app ditutup/dimuat semula, hari bermula semula dari skrin utama. Pintu Kantin dalam Mod Jalan-jalan membuka bilik yang sama tanpa loceng
 - `_backup_round7/` : fail sebelum Round 7
+- Round 7b (pembaikan Kantin): bilik 85% saiz asal (tukar `ROOM` dan `CAMD` di atas `js/kantin.js`, 1 = asal), pintu pepejal dan pemain sentiasa dalam bilik, 4 set meja dan bangku, pelajar duduk dan 4 pelajar berjalan (laluan tetap, 2 sahaja bila Grafik Rendah), sampah dan 4 tong (mekanik sama seperti lorong, dikira untuk lencana Pelajar Prihatin), 6 poster dinding (data dalam `KD.posters`, `js/kantin-data.js`). Betulkan Snek Sihat: peraturan CSS `canvas` global menarik kanvas keluar dari kad, dan kini `touch-action:none` + tangkap penuding
+- `_backup_round7b/` : fail sebelum Round 7b
 - `_backup_round6b/` : fail sebelum pembaikan Kembali dan sw.js
 - `_backup_round6/` : fail sebelum Round 6
 - `_backup_round5/` : logo, ikon dan index.html sebelum tajuk/ikon baharu
