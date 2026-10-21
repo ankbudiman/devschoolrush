@@ -3,8 +3,8 @@ const SK=['#b87a50','#8d5a3b','#a8693f','#c68a5a','#6e4328','#d9a57a','#f0c9a0']
 let mt=0,halt=true,au=null;
 const LS={get(k,d){try{const v=JSON.parse(localStorage.getItem(k));return v==null?d:v}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
 /* Round 7: save version 2 adds rooms (best result per room, Mod Kelas only) and level (difficulty, selector comes in a later round). Old saves are upgraded on load. */
-const NP=()=>({v:2,drinks:0,s:[0,0,0,0],slip:0,gem:0,badges:{},rooms:{},level:'sederhana'});
-function fixP(p){p.v=2;p.rooms=p.rooms||{};p.level=p.level||'sederhana';return p}
+const NP=()=>({v:2,drinks:0,s:[0,0,0,0],slip:0,gem:0,gol:0,badges:{},rooms:{},level:'sederhana'});
+function fixP(p){p.v=2;p.gol=p.gol||0;p.rooms=p.rooms||{};p.level=p.level||'sederhana';return p}
 let cur=NP();
 let PF=LS.get('sk_profiles',{}),rc=null,frm='vm';{Object.keys(PF).forEach(k=>fixP(PF[k]));const k=LS.get('sk_cur',null);if(k&&PF[k])cur=PF[k]}
 const SET=Object.assign({snd:1,vol:.8,ts:1,lh:0,cf:1,lo:0,mus:1,mvol:.6},LS.get('sk_set',{}));
@@ -32,7 +32,7 @@ function camStep(cy,dt,mv,blocked,pf,hold){if(!SET.cf||hold>0){CAMS.tb=CAMS.ta=0
  if(CAMS.ez){const tg=pf+Math.PI;if(Math.abs(wrapA(tg-cy))<.04){CAMS.ez=0;CAMS.tb=CAMS.ta=0;return tg}return la(cy,tg,Math.min(1,dt*CAMC.ease))}
  return cy}
 function recRoom(id,score,stalls){const r=cur.rooms[id]||(cur.rooms[id]={best:0,n:0});r.n++;if(score>=r.best){r.best=score;r.g=gradeOf(score);r.st=stalls}save();return r}
-const BD=[['air8','Tabiat Sihat','Minum air 8 kali'],['sampah12','Pelajar Prihatin','Buang 12 sampah dengan betul'],['slip5','Kaki Licin','Terpijak kulit pisang 5 kali'],['gem5','Laju Kilat','Ambil 5 gem laju']],
+const BD=[['air8','Tabiat Sihat','Minum air 8 kali'],['sampah12','Pelajar Prihatin','Buang 12 sampah dengan betul'],['slip5','Kaki Licin','Terpijak kulit pisang 5 kali'],['gem5','Laju Kilat','Ambil 5 gem laju'],['gol5','Penjaring','Jaring 5 gol di padang']],
 TIPS=['Jangan pijak kulit pisang! Licin tau.','Tong biru untuk kertas, tong oren untuk plastik.','Minum air, badan segar!','Wuuu, kejar loceng!','Lompat! Sampah pun boleh dielak.','Botol kaca masuk tong coklat.','Prefect tengah perhati... senyum sikit.','Hati-hati kat selekoh tu!','Cikgu dah masuk kelas... cepat sikit!','Pengawas tengah ronda, buat-buat rajin.','Loceng berbunyi, kaki jangan malas!','Jangan lewat, nanti kena kejar dengan pengawas.'];
 function toast(t,ms){const m=$('msg');m.textContent=t;m.style.display='block';clearTimeout(mt);mt=setTimeout(()=>m.style.display='none',ms||2600)}
 function award(id,t,d){if(cur.badges[id])return;cur.badges[id]=Date.now();save();toast('Lencana baharu: '+t+'! '+d,3800);[0,1,2].forEach(i=>tone(600+i*150,i*.12,.15,'triangle',.12))}

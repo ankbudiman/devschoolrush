@@ -170,3 +170,19 @@ body.mn .sb{display:none!important}
 /* --- Round 7c: jump icon, centred character page buttons --- */
 #bj svg{width:58%;height:58%;fill:none;stroke:currentColor;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;display:block;margin:auto;pointer-events:none}
 #cpw .r2{width:100%;align-self:stretch}
+
+/* --- Round 9: Padang Balapan stage HUD (top bar, big L / R / LOMPAT buttons, countdown banner). Only shown while a mini game runs (body.sg). --- */
+#sh{position:absolute;top:calc(env(safe-area-inset-top,0px) + .5em);left:.6em;right:.6em;display:flex;flex-wrap:wrap;gap:.4em;align-items:center;justify-content:space-between;z-index:5;pointer-events:none}
+#sh>*{pointer-events:none;margin:0}#sh #sx{pointer-events:auto;cursor:pointer}
+#stm2{font-variant-numeric:tabular-nums;min-width:5.5em;text-align:center}
+.sbtn{position:absolute;bottom:calc(env(safe-area-inset-bottom,0px) + 5vmin);width:26vmin;height:26vmin;max-width:150px;max-height:150px;border-radius:50%;background:var(--pn);border:3px solid var(--ac);color:inherit;font:700 2.4em/1 Fredoka,sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;z-index:6}
+.sbtn[hidden]{display:none!important}
+#sL{left:5vmin}#sR{right:5vmin}
+#sJ{left:50%;transform:translateX(-50%);width:42vmin;max-width:230px;height:22vmin;max-height:120px;border-radius:2em;font-size:1em;gap:.1em}
+#sJ svg{width:1.6em;height:1.6em;fill:none;stroke:currentColor;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}#sJ span{font-weight:700;font-size:1em;pointer-events:none}
+.sbtn.dn{background:var(--ac);color:#fff}#sL.dn,#sR.dn{transform:scale(.93)}#sJ.dn{transform:translateX(-50%) scale(.95)}
+#cd{position:absolute;top:36%;left:50%;transform:translate(-50%,-50%);display:none;z-index:5;pointer-events:none;white-space:nowrap;font-weight:700;font-size:min(3em,11vw);color:#fff;text-shadow:0 .06em .18em rgba(0,0,0,.65)}
+body:not(.sg) #sh,body:not(.sg) .sbtn,body:not(.sg) #cd{display:none!important}
+body.sg #hud,body.sg #mm,body.sg #help,body.sg #hint,body.sg #bub,body.sg #jz,body.sg #tb{display:none!important}
+body.sg #msg{top:3.4em}
+@media(max-width:559px){#sh #sn{order:1;flex:1 1 auto}#sh #sx{order:2}#sh #stm2,#sh #sd{order:3;flex:1 1 40%;text-align:center;min-width:0}}

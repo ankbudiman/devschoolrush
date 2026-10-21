@@ -1,7 +1,7 @@
 /* Mod Kelas (Story Mode). Loaded before world.js; only does anything when sk_mode = 'story'.
    Hooks used by world.js: storyBoot() after loading, storyDoor(door) on E at a door, storyTick(dt,t) every frame.
    The analog clock is the timer: 1 real second = 1/4 clock minute (CFG.RATE).
-   Tweak the numbers in CFG. The Kantin is a real room page (kantin.html, Round 7); the other rooms still use the placeholder card in enterRoom(). */
+   Tweak the numbers in CFG. The Kantin (Round 7) and the Padang Balapan (Round 9) are real room pages (see RP); the other rooms still use the placeholder card in enterRoom(). */
 (function(){
 const MODE=LS.get('sk_mode','roam')=='story'?'story':'roam';
 if(MODE=='story'){const l=$('mdl');if(l)l.textContent='SCHOOL RUSH · Mod Kelas'}
@@ -12,6 +12,7 @@ const CFG={DAY:6,
   FIRST:[6,10],BREAK:[6,12],       /* real seconds of free time before a bell */
   NEAR:.3,NEARMIN:8,ONTIME:100,BONUS:2,LATE:30,CAUGHT:20,PSPD:4,PDELAY:2,CATCH:.85};
 const LAB=['Sains','Bahasa Melayu','Matematik','English','Pendidikan Jasmani','Waktu Rehat']; /* index = DR index; 5 = Kantin */
+const RP={4:'padang',5:'kantin'}; /* DR index -> real room page (the others still use the placeholder card) */
 let st='off',order=[],n=0,cls=-1,tleft=0,ttot=0,score=0,ok=0,lt=0,navOn=false,ph=null,bd=null,bt=0,clk=0,ringT=0,ew=0,bd2=0,gr={}; /* gr = today's grades by class index, filled when a real room is finished (Round 7: Kantin) */
 const shuf=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
 const fmt=s=>{s=Math.max(0,Math.ceil(s));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')};
@@ -68,7 +69,7 @@ function closeCard(){room().style.display='none'}
 function enterRoom(i,caught){const lateNow=caught||st=='late';let g;
  if(lateNow){lt++;g=caught?'Lewat dan kena hantar pengawas.':'Lewat! Cikgu jeling kamu.'}else{const b=CFG.ONTIME+Math.floor(tleft)*CFG.BONUS;score+=b;ok++;g=(i==5?'Sempat rehat! +':'Tepat masa! +')+b+' mata.';}
  st='room';ringT=0;setNav(false);hidePref();pills();
- if(i==5){SS.set('sk_day',{order,n,score,ok,lt,gr,g});SS.set('sk_go',1);loading(()=>nav('kantin'));return} /* Round 7: Kantin is a real room page; the day is kept for this session only */
+ if(RP[i]){SS.set('sk_day',{order,n,score,ok,lt,gr,g});SS.set('sk_go',1);loading(()=>nav(RP[i]));return} /* real room pages (Kantin Round 7, Padang Round 9); the day is kept for this session only */
  loading(()=>{ /* TODO later rounds: Padang Balapan and the classrooms go to their own pages like the Kantin */
   card(i==5?'Kantin belum siap':'Bilik belum siap',[[i==5?'Waktu Rehat · Kantin':LAB[i]+' · '+DR[i][6]],[g,1],[i==5?'Mini game kantin akan datang. Sabar ya!':'Cikgu belum sampai lagi. Sabar ya!']],[['Keluar',()=>{closeCard();leave(i)}]])})}
 function place(i){const d=DR[i];P.x=d[7];P.z=d[8];P.y=0;P.vy=0;P.stun=0;P.slow=0;P.f=Math.atan2(d[4],d[5]);cp.x=P.x;cp.z=P.z;cy=P.f+Math.PI;hold=0}
@@ -88,16 +89,16 @@ function report(){const f=document.createElement('div'),w=document.createElement
 function freeRoam(){closeCard();document.body.classList.remove('mn');st='free';ringT=0;setNav(false);hidePref();$('ck').hidden=true;$('bl').hidden=true;$('stm').hidden=true;halt=false;pills();toast('Sekolah dah tamat. Jalan-jalan sepuasnya!',3200)}
 /* ---- hooks ---- */
 window.storyBoot=function(){const day=SS.get('sk_day'),ret=SS.get('sk_ret');SS.del('sk_ret');
- if(MODE!='story'){if(ret&&ret.roam)place(5);halt=false;return} /* Mod Jalan-jalan: back from the Kantin, stand at its door */
+ if(MODE!='story'){if(ret&&ret.roam)place(ret.room!=null?ret.room:5);halt=false;return} /* Mod Jalan-jalan: back from a room page, stand at its door */
  if(day&&ret&&!ret.roam&&Array.isArray(day.order)){ /* back from the Kantin: carry on the same day */
-  SS.del('sk_day');order=day.order;n=day.n+1;score=day.score;ok=day.ok;lt=day.lt;gr=day.gr||{};if(ret.grade)gr[5]={g:ret.grade,s:ret.score};st='off';
+  SS.del('sk_day');order=day.order;n=day.n+1;score=day.score;ok=day.ok;lt=day.lt;gr=day.gr||{};const rr=ret.room!=null?ret.room:5;if(ret.grade)gr[rr]={g:ret.grade,s:ret.score};st='off';
   $('scr').hidden=false;$('ck').hidden=false;$('bl').hidden=false;$('stm').hidden=true;
-  after(5,(day.g?day.g+' ':'')+(ret.grade?'Gred Kantin: '+ret.grade+'. ':'')+'Masa berlalu... loceng akan berbunyi lagi.');return}
+  after(rr,(day.g?day.g+' ':'')+(ret.grade?'Gred '+(rr==5?'Kantin':LAB[rr])+': '+ret.grade+'. ':'')+'Masa berlalu... loceng akan berbunyi lagi.');return}
  SS.del('sk_day');
  order=plan();n=0;score=ok=lt=0;st='off';$('scr').hidden=false;$('ck').hidden=false;$('bl').hidden=false;clk=bellAt(0)-2;pills();$('stm').hidden=true;drawClock();
  card('Hari sekolah bermula!',[['Lihat jam dan loceng. Loceng berbunyi dahulu.'],['Sampai ke kelas dalam 30 saat.'],['Pukul 9:30 ialah Waktu Rehat di Kantin.'],['Lewat? Pengawas akan kejar kamu!']],[['Jom!',()=>{closeCard();document.body.classList.remove('mn');halt=false;sched(true)}]])};
 window.storyDoor=function(d){const i=DR.indexOf(d);
- if(MODE!='story'){if(i==5){SS.set('sk_go',1);loading(()=>nav('kantin'));return true}return false} /* Mod Jalan-jalan: only the Kantin is a real room so far */
+ if(MODE!='story'){if(RP[i]){SS.set('sk_go',1);loading(()=>nav(RP[i]));return true}return false} /* Mod Jalan-jalan: only the Kantin and the Padang are real rooms so far */
  if(st=='class'||st=='late'){if(i==cls)enterRoom(i,false);else say(cls==5?'Bukan sini! Pergi ke Kantin.':'Bukan kelas ini! Cari '+LAB[cls]+'.');return true}
  if(st=='free'){say('Sekolah dah tamat. Bilik dikunci.');return true}
  if(st=='endwalk'||st=='balik'||st=='done'){say('Kelas dah habis. Jom balik!');return true}
