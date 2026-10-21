@@ -28,7 +28,9 @@ Game web 3D low poly tentang kehidupan sekolah.
 - Round 7c: kamera kongsi dalam `js/core.js` (`CAMC`, `camMap`, `camStep`): pandangan tidak berpusing sendiri semasa berjalan; selepas 1.0 s (`CAMC.wait`) terhalang atau berjalan >70 darjah dari hadapan, ia perlahan-lahan kembali ke belakang pemain; arah joystick dikunci kepada pandangan semasa ditekan supaya tidak terbalik (laluan lorong sempit tidak lagi menggila). Kantin: dinding dan gerai yang menghalang pemain menjadi lut sinar (`FADE`), kakitangan gerai lebih tinggi, poster sampah tidak menutup label tong, Mod Jalan-jalan boleh keluar bila-bila masa (peraturan 5 gerai hanya Mod Kelas). Topeng watak tidak lagi berkelip (`js/chars.js`), butang halaman watak di tengah, butang Lompat guna ikon, 'ketik' ditukar kepada 'pilih'
 - `_backup_round7c/` : fail sebelum Round 7c
 - Round 8a: kamera kembali ke belakang pemain selepas 1.0 s (dahulu 1.5 s). Lorong kini ada dinding lut sinar seperti Kantin: dinding atau bumbung (dan poster, papan tanda, jam, jalur dan tingkap yang melekat padanya) pudar kepada 25% hanya apabila ia berada di antara kamera dan pemain (`WL` dan `FDS` dalam `js/world-build.js`, `fades()` dalam `js/world.js`; tukar `FADE` untuk kelegapan)
+- Round 8b: poster dan hiasan dinding berkelip bila dinding kembali pepejal. Pembaikan: bahan dinding dan hiasannya kekal dalam mod lut sinar (hanya kelegapan berubah, tiada tukar mod di hujung), dan susunan lukisan tetap (dinding dahulu, hiasan kemudian)
 - `_backup_round7d/` : fail sebelum Round 8a
+- `_backup_round8a/` : fail sebelum Round 8b
 - `_backup_round6b/` : fail sebelum pembaikan Kembali dan sw.js
 - `_backup_round6/` : fail sebelum Round 6
 - `_backup_round5/` : logo, ikon dan index.html sebelum tajuk/ikon baharu
