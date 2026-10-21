@@ -47,9 +47,12 @@ window.gfxHook=()=>{ren.shadowMap.enabled=!SET.lo;dl.castShadow=!SET.lo;ren.setP
 const FADE=.25;
 function segBox(C,Q,b){let t0=0,t1=1;const d=[Q.x-C.x,Q.y-C.y,Q.z-C.z],o=[C.x,C.y,C.z];
  for(let i=0;i<3;i++){const lo=b[i*2]-.12,hi=b[i*2+1]+.12;if(Math.abs(d[i])<1e-6){if(o[i]<lo||o[i]>hi)return false}else{let a=(lo-o[i])/d[i],c=(hi-o[i])/d[i];if(a>c){const k=a;a=c;c=k}t0=Math.max(t0,a);t1=Math.min(t1,c);if(t0>t1)return false}}return true}
-function fades(dt){const Q={x:P.x,y:P.y+1.1,z:P.z},C=cam.position;FDS.forEach(f=>{f.tg=f.boxes.some(b=>segBox(C,Q,b))?FADE:1;if(f.op===f.tg)return;
- const k=SET.lo?1:Math.min(1,dt*10);f.op=Math.abs(f.tg-f.op)<.01?f.tg:f.op+(f.tg-f.op)*k;const fd=f.op<.995;
- f.m.forEach(m=>{const mt=m.mt;mt.opacity=m.b*f.op;const tr=m.tr||fd;if(mt.transparent!==tr){mt.transparent=tr;mt.needsUpdate=true}mt.depthWrite=fd?false:m.dw})})}
+function fades(dt){const Q={x:P.x,y:P.y+1.1,z:P.z},C=cam.position;FDS.forEach(f=>{f.tg=f.boxes.some(b=>segBox(C,Q,b))?FADE:1;
+ if(f.op!==f.tg){const k=SET.lo?1:Math.min(1,dt*10);f.op=Math.abs(f.tg-f.op)<.01?f.tg:f.op+(f.tg-f.op)*k;const fd=f.op<.995;
+  f.m.forEach(m=>{const mt=m.mt;mt.opacity=m.b*f.op;const tr=m.tr||fd;if(mt.transparent!==tr){mt.transparent=tr;mt.needsUpdate=true}mt.depthWrite=fd?false:m.dw})}
+ /* Round 8b2: while a wall is see-through, draw back to front by hand every frame: what is behind it first (1), the wall (2), what is in front (3),
+    so posters, windows and doors behind a nearly solid wall cannot show through it. Back to normal (0) once solid */
+ const on=f.op<.995;if(on||f.ro){f.m.forEach(m=>{const d=m.sd;m.o.renderOrder=!on?0:!d?2:((C[d.ax]-d.mid)*d.sg>0?3:1)});f.ro=on}})}
 let last=0;function loop(ts){requestAnimationFrame(loop);const dt=Math.min((ts-last)/1000||0,.05),t=ts/1000;last=ts;
 if(halt){keys.KeyW=keys.KeyA=keys.KeyS=keys.KeyD=keys.ArrowUp=keys.ArrowDown=keys.ArrowLeft=keys.ArrowRight=keys.Space=0;jv.x=jv.z=0;jmp=0}
 let ix=(keys.KeyD||keys.ArrowRight?1:0)-(keys.KeyA||keys.ArrowLeft?1:0)+jv.x,iz=(keys.KeyS||keys.ArrowDown?1:0)-(keys.KeyW||keys.ArrowUp?1:0)+jv.z;const l=Math.hypot(ix,iz);if(l>1){ix/=l;iz/=l}

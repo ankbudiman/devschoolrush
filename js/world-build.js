@@ -114,9 +114,11 @@ const TD=[toilet(100,168,1,0,'LELAKI','#2f6fd0',0).concat('Tandas Lelaki','m'),t
 sc.traverse(o=>{if(o.isMesh&&/Plane|Circle/.test(o.geometry.type)&&o.rotation.x!=-Math.PI/2){const m=o.material;m.polygonOffset=true;m.polygonOffsetFactor=-2;m.polygonOffsetUnits=-2}});
 /* Round 8a: see-through walls. Every wall or roof piece (WL) fades together with what hangs on it (posters, signs, clocks, stripes, windows)
    while it is between the camera and the player. The test and the fading run in fades() in world.js. */
-(()=>{const E=.3,wm=new Set(WL.map(w=>w.m)),sets=WL.map(w=>({boxes:[w.b],meshes:[w.m],op:1,tg:1}));
+(()=>{const E=.3,wm=new Set(WL.map(w=>w.m)),sets=WL.map(w=>({boxes:[w.b],meshes:[w.m],side:[null],op:1,tg:1}));
  sc.children.slice().forEach(c=>{if(wm.has(c)||c.isLight||c===cam)return;const p=c.position;
   if(c.isMesh&&(c.rotation.x==-Math.PI/2||/Octahedron/.test(c.geometry.type)))return; /* floors, ground and gems stay solid */
   const k=WL.findIndex(w=>p.x>=w.b[0]-E&&p.x<=w.b[1]+E&&p.z>=w.b[4]-E&&p.z<=w.b[5]+E&&p.y>=w.b[2]-.05&&p.y<=w.b[3]+.05);if(k<0)return;
-  c.traverse(o=>{if(o.isMesh)sets[k].meshes.push(o)})});
- sets.forEach(f=>{f.m=f.meshes.map(o=>{const mt=Array.isArray(o.material)?o.material[0]:o.material,cl=mt.clone();o.material=cl;return{mt:cl,b:cl.opacity,tr:cl.transparent,dw:cl.depthWrite}});delete f.meshes;FDS.push(f)})})();
+  const w=WL[k].b,ox=Math.max(w[0]-p.x,p.x-w[1]),oz=Math.max(w[4]-p.z,p.z-w[5]),ax=ox>=oz?'x':'z',sg=ax=='x'?Math.sign(p.x-(w[0]+w[1])/2)||1:Math.sign(p.z-(w[4]+w[5])/2)||1,mid=ax=='x'?(w[0]+w[1])/2:(w[4]+w[5])/2;
+  c.traverse(o=>{if(o.isMesh){sets[k].meshes.push(o);sets[k].side.push({ax,sg,mid})}})});
+ /* Round 8b2: o and sd are kept so fades() can draw back to front: what is behind the wall first, then the wall, then what is in front of it */
+ sets.forEach(f=>{f.m=f.meshes.map((o,j)=>{const mt=Array.isArray(o.material)?o.material[0]:o.material,cl=mt.clone();o.material=cl;return{mt:cl,b:cl.opacity,tr:cl.transparent,dw:cl.depthWrite,o,sd:f.side[j]}});delete f.meshes;delete f.side;FDS.push(f)})})();
