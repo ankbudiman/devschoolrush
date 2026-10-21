@@ -119,6 +119,4 @@ sc.traverse(o=>{if(o.isMesh&&/Plane|Circle/.test(o.geometry.type)&&o.rotation.x!
   if(c.isMesh&&(c.rotation.x==-Math.PI/2||/Octahedron/.test(c.geometry.type)))return; /* floors, ground and gems stay solid */
   const k=WL.findIndex(w=>p.x>=w.b[0]-E&&p.x<=w.b[1]+E&&p.z>=w.b[4]-E&&p.z<=w.b[5]+E&&p.y>=w.b[2]-.05&&p.y<=w.b[3]+.05);if(k<0)return;
   c.traverse(o=>{if(o.isMesh)sets[k].meshes.push(o)})});
- /* Round 8b: these materials stay in the transparent pass for good (no solid/transparent switch at the end of a fade, which made posters flicker).
-   Draw order is fixed: the wall first (renderOrder 1), what hangs on it after (2). */
- sets.forEach(f=>{f.m=f.meshes.map((o,j)=>{const mt=Array.isArray(o.material)?o.material[0]:o.material,cl=mt.clone();o.material=cl;o.renderOrder=j?2:1;const r={mt:cl,b:cl.opacity,dw:cl.depthWrite};cl.transparent=true;cl.needsUpdate=true;return r});delete f.meshes;FDS.push(f)})})();
+ sets.forEach(f=>{f.m=f.meshes.map(o=>{const mt=Array.isArray(o.material)?o.material[0]:o.material,cl=mt.clone();o.material=cl;return{mt:cl,b:cl.opacity,tr:cl.transparent,dw:cl.depthWrite}});delete f.meshes;FDS.push(f)})})();
