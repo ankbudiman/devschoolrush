@@ -50,9 +50,11 @@ function segBox(C,Q,b){let t0=0,t1=1;const d=[Q.x-C.x,Q.y-C.y,Q.z-C.z],o=[C.x,C.
 function fades(dt){const Q={x:P.x,y:P.y+1.1,z:P.z},C=cam.position;FDS.forEach(f=>{f.tg=f.boxes.some(b=>segBox(C,Q,b))?FADE:1;
  if(f.op!==f.tg){const k=SET.lo?1:Math.min(1,dt*10);f.op=Math.abs(f.tg-f.op)<.01?f.tg:f.op+(f.tg-f.op)*k;const fd=f.op<.995;
   f.m.forEach(m=>{const mt=m.mt;mt.opacity=m.b*f.op;const tr=m.tr||fd;if(mt.transparent!==tr){mt.transparent=tr;mt.needsUpdate=true}mt.depthWrite=fd?false:m.dw})}
- /* Round 8b2: while a wall is see-through, draw back to front by hand every frame: what is behind it first (1), the wall (2), what is in front (3),
-    so posters, windows and doors behind a nearly solid wall cannot show through it. Back to normal (0) once solid */
- const on=f.op<.995;if(on||f.ro){f.m.forEach(m=>{const d=m.sd;m.o.renderOrder=!on?0:!d?2:((C[d.ax]-d.mid)*d.sg>0?3:1)});f.ro=on}})}
+ /* Round 8b2: while a wall is see-through, draw back to front by hand every frame, layer by layer. The wall is 1000. Decor on the camera side is
+    1001 + its layer q (cm off the wall face), so the stripe (2) goes first, then door, window frame, poster (6) and what is stacked on them (9, 10).
+    Decor on the far side is 999 - q, the layer farthest from the camera first. Back to normal (0) once solid. Without this the stripe could be
+    painted over the door, and posters and windows lost their layers, until the wall turned solid again */
+ const on=f.op<.995;if(on||f.ro){f.m.forEach(m=>{const d=m.sd;m.o.renderOrder=!on?0:!d?1000:((C[d.ax]-d.mid)*d.sg>0?1001+d.q:999-d.q)});f.ro=on}})}
 let last=0;function loop(ts){requestAnimationFrame(loop);const dt=Math.min((ts-last)/1000||0,.05),t=ts/1000;last=ts;
 if(halt){keys.KeyW=keys.KeyA=keys.KeyS=keys.KeyD=keys.ArrowUp=keys.ArrowDown=keys.ArrowLeft=keys.ArrowRight=keys.Space=0;jv.x=jv.z=0;jmp=0}
 let ix=(keys.KeyD||keys.ArrowRight?1:0)-(keys.KeyA||keys.ArrowLeft?1:0)+jv.x,iz=(keys.KeyS||keys.ArrowDown?1:0)-(keys.KeyW||keys.ArrowUp?1:0)+jv.z;const l=Math.hypot(ix,iz);if(l>1){ix/=l;iz/=l}

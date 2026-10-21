@@ -118,7 +118,7 @@ sc.traverse(o=>{if(o.isMesh&&/Plane|Circle/.test(o.geometry.type)&&o.rotation.x!
  sc.children.slice().forEach(c=>{if(wm.has(c)||c.isLight||c===cam)return;const p=c.position;
   if(c.isMesh&&(c.rotation.x==-Math.PI/2||/Octahedron/.test(c.geometry.type)))return; /* floors, ground and gems stay solid */
   const k=WL.findIndex(w=>p.x>=w.b[0]-E&&p.x<=w.b[1]+E&&p.z>=w.b[4]-E&&p.z<=w.b[5]+E&&p.y>=w.b[2]-.05&&p.y<=w.b[3]+.05);if(k<0)return;
-  const w=WL[k].b,ox=Math.max(w[0]-p.x,p.x-w[1]),oz=Math.max(w[4]-p.z,p.z-w[5]),ax=ox>=oz?'x':'z',sg=ax=='x'?Math.sign(p.x-(w[0]+w[1])/2)||1:Math.sign(p.z-(w[4]+w[5])/2)||1,mid=ax=='x'?(w[0]+w[1])/2:(w[4]+w[5])/2;
-  c.traverse(o=>{if(o.isMesh){sets[k].meshes.push(o);sets[k].side.push({ax,sg,mid})}})});
+  const w=WL[k].b,ox=Math.max(w[0]-p.x,p.x-w[1]),oz=Math.max(w[4]-p.z,p.z-w[5]),ax=ox>=oz?'x':'z',sg=ax=='x'?Math.sign(p.x-(w[0]+w[1])/2)||1:Math.sign(p.z-(w[4]+w[5])/2)||1,mid=ax=='x'?(w[0]+w[1])/2:(w[4]+w[5])/2;const off=ax=='x'?(sg>0?p.x-w[1]:w[0]-p.x):(sg>0?p.z-w[5]:w[4]-p.z),q=Math.min(400,Math.round(Math.max(0,off)*100)); /* q = how far the decor sits off the wall face, in cm: its layer */
+  c.traverse(o=>{if(o.isMesh){sets[k].meshes.push(o);sets[k].side.push({ax,sg,mid,q})}})});
  /* Round 8b2: o and sd are kept so fades() can draw back to front: what is behind the wall first, then the wall, then what is in front of it */
  sets.forEach(f=>{f.m=f.meshes.map((o,j)=>{const mt=Array.isArray(o.material)?o.material[0]:o.material,cl=mt.clone();o.material=cl;return{mt:cl,b:cl.opacity,tr:cl.transparent,dw:cl.depthWrite,o,sd:f.side[j]}});delete f.meshes;delete f.side;FDS.push(f)})})();
