@@ -1,4 +1,4 @@
-/* Padang Balapan (Round 9). An open field with an oval track, 3 stations (E at a sign), a long jump venue outside the track, props,
+/* Padang Balapan (Round 9, layout changed in Round 9b). An open field with an oval track, 3 stations (stand on a painted start line, E), a vertical long jump venue outside the track, props,
    and stray balls to push into the goals. Each station opens one PJ mini game (js/padang-games.js) in a 2.5D side view: the camera glides
    from the walking camera to a low side camera and back. Same hand-off as the Kantin: only reachable from world.html (sk_go token).
    Mod Kelas: all 3 stations must be finished before the gate works, the grade (average) is saved as the PJ grade with recRoom('pj',...).
@@ -17,7 +17,8 @@ const sc=new T.Scene();sc.background=new T.Color('#bfe3f5');sc.fog=new T.Fog('#b
 sc.add(new T.HemisphereLight(0xffffff,0x9aa7b8,.95));
 const dl=new T.DirectionalLight(0xffffff,.55);dl.castShadow=true;dl.shadow.mapSize.set(1024,1024);Object.assign(dl.shadow.camera,{left:-14,right:14,top:14,bottom:-14,near:1,far:50});sc.add(dl,dl.target);
 /* ---- layout: track = stadium shape (straights 2*SL long, inner radius RI, lane width LW) ---- */
-const SL=14,RI=8,LW=5,RO=RI+LW,BX0=-31,BX1=61,BZ0=-19,BZ1=19,VZ=3,EX={x:0,z:BZ1-1.1};
+const SL=14,RI=8,LW=5,RO=RI+LW,BX0=-31,BX1=42,BZ0=-19,BZ1=19,EX={x:0,z:BZ1-1.1};
+const VX=36,VZ0=-13.5,VB=5.5,JV=PD.g[2],PIT0=VB+JV.rz+1.2,PITL=6.4; /* long jump venue: runway centre x, runway start z, board z (north to south), pit start and length */
 const cols=[],hit=(x,z,r)=>cols.some(c=>x+r>c.x0&&x-r<c.x1&&z+r>c.z0&&z-r<c.z1);
 const colBox=(x,z,hx,hz)=>cols.push({x0:x-hx,x1:x+hx,z0:z-hz,z1:z+hz});
 function flat(geo,c,y){const m=new T.Mesh(geo,mat(c));m.rotation.x=-Math.PI/2;m.position.y=y;m.receiveShadow=true;sc.add(m);return m}
@@ -40,8 +41,8 @@ function sign(L,bg,fg,w,h,fs,x,y,z,r){const c=document.createElement('canvas');c
 /* ---- trees (far away outside the fence, just for depth) ---- */
 const TRG=[new T.CylinderGeometry(.18,.24,1.2,5),new T.ConeGeometry(1.2,2.2,6),new T.ConeGeometry(.9,1.8,6)],TRM=[mat('#7a5236'),mat('#3f9d54'),mat('#4aae5f')],LOWH=[];
 function mkTree(p,x,z,s){const g=new T.Group();[[0,.6,0],[1,2.1,0],[2,3.3,0]].forEach(a=>{const m=new T.Mesh(TRG[a[0]],TRM[a[0]]);m.position.set(0,a[1],0);m.castShadow=false;g.add(m)});g.position.set(x,0,z);g.scale.setScalar(s||1);p.add(g);return g}
-for(let x=-44;x<=76;x+=8){[-30,-36].forEach((z,k)=>LOWH.push(mkTree(sc,x+k*4,z,1+((x+99)%5)*.08)));if(x<-8||x>8)LOWH.push(mkTree(sc,x+2,31+(x%3),1+((x+50)%4)*.1))}
-[-42,-37].forEach(x=>{for(let z=-24;z<=24;z+=8)LOWH.push(mkTree(sc,x,z,1.1))});[70,75].forEach(x=>{for(let z=-24;z<=24;z+=8)LOWH.push(mkTree(sc,x,z,1.1))});
+for(let x=-44;x<=56;x+=8){[-30,-36].forEach((z,k)=>LOWH.push(mkTree(sc,x+k*4,z,1+((x+99)%5)*.08)));if(x<-8||x>8)LOWH.push(mkTree(sc,x+2,31+(x%3),1+((x+50)%4)*.1))}
+[-42,-37].forEach(x=>{for(let z=-24;z<=24;z+=8)LOWH.push(mkTree(sc,x,z,1.1))});[48,53].forEach(x=>{for(let z=-24;z<=24;z+=8)LOWH.push(mkTree(sc,x,z,1.1))});
 /* ---- goals: football goals at both ends of the green infield ---- */
 const GL=[];
 function goal(s){const f=s*19.4,b=s*21.2,m=(f+b)/2,net=o=>{o.material.transparent=true;o.material.opacity=.4;return o};
@@ -52,15 +53,29 @@ goal(-1);goal(1);
 const CHEER=[];
 function bench(x,z,ry,sit){bx(sc,2.2,.08,.5,'#a9744a',x,.46,z);bx(sc,2.2,.5,.07,'#a9744a',x,.8,z-Math.cos(ry)*.27);[-1,1].forEach(a=>bx(sc,.1,.42,.1,'#5a5f69',x+a*.95,.21,z));colBox(x,z,1.15,.4);
  (sit||[]).forEach(a=>{const m=npc('murid');m.position.set(x+a,.04,z);m.rotation.y=ry;m.userData.legs.forEach(l=>l.rotation.x=-Math.PI/2);sc.add(m);LOWH.push(m)})}
-[[-8,[-.5]],[0,[.4]],[8,[-.4,.5]]].forEach(a=>bench(a[0],-16.4,0,a[1]));[[-12,[0]],[12,[0]]].forEach(a=>bench(a[0],16.6,Math.PI,a[1]));
-[[-11,-17.9],[-4,-18],[4,-17.9],[11,-18],[-16,16.9]].forEach((a,i)=>{const m=npc('murid');m.position.set(a[0],0,a[1]);m.rotation.y=a[1]<0?0:Math.PI;sc.add(m);CHEER.push({m,ph:i*1.3});if(i%2)LOWH.push(m)});
+[[-1,[-.5]],[7,[.4]],[15,[-.4,.5]]].forEach(a=>bench(a[0],-16.4,0,a[1]));[[8,[0]],[18,[0]]].forEach(a=>bench(a[0],16.6,Math.PI,a[1]));
+[[-4,-17.9],[3,-18],[11,-17.9],[19,-18],[24,16.9]].forEach((a,i)=>{const m=npc('murid');m.position.set(a[0],0,a[1]);m.rotation.y=a[1]<0?0:Math.PI;sc.add(m);CHEER.push({m,ph:i*1.3});if(i%2)LOWH.push(m)});
 {const cg=new T.ConeGeometry(.22,.5,6),cm=mat('#ff7a1a'),cone=(x,z)=>{const m=new T.Mesh(cg,cm);m.position.set(x,.25,z);sc.add(m)};
- [-12,-6,0,6,12].forEach(x=>{cone(x,-(RI-.5));cone(x,RI-.5)});[-1,1].forEach(s=>{cone(32.5,VZ+s*1.8);cone(34.2,VZ+s*1.8)})}
-/* ---- long jump venue (outside the track, to the right): runway, green and red zone, board, sand pit ---- */
-(function(){const J=PD.g[2],x0=32,bd=47,Z=VZ;bx(sc,bd+1-x0,.05,2.4,'#d2694a',(x0+bd+1)/2,0,Z);bx(sc,J.gz,.03,2.4,'#4ccf5a',bd-J.gz/2,.035,Z);bx(sc,J.rz,.03,2.4,'#e04a4a',bd+J.rz/2,.035,Z);bx(sc,.3,.05,2.4,'#ffffff',bd,.04,Z);
- const p0=bd+J.rz+1.2;bx(sc,6.6,.08,3,'#a67c52',p0+3.3,.02,Z);bx(sc,6.4,.06,2.8,'#ead08a',p0+3.3,.03,Z)})();
+ [-12,-6,0,6,12].forEach(x=>{cone(x,-(RI-.5));cone(x,RI-.5)});[-1,1].forEach(s=>{cone(VX+s*1.9,VZ0-.6);cone(VX+s*1.9,VZ0+1.6)})}
+/* ---- painted start boxes: thick start line at the back (stand here), START + event name painted ahead of it, thin closing line.
+   dir 'x' = runs along +x, dir 'z' = runs along +z. Text is painted so it reads for a runner facing the run direction (START ahead = upper line). ---- */
+function paintMat(c){return new T.MeshBasicMaterial({color:c,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2})}
+function startBox(x,z,dir,W,n2,len){const g=new T.Group();g.position.set(x,0,z);g.rotation.y=dir=='z'?-Math.PI/2:0;sc.add(g);
+ const strip=(w,lx,c)=>{const m=new T.Mesh(new T.PlaneGeometry(w,W),paintMat(c));m.rotation.x=-Math.PI/2;m.position.set(lx,.045,0);g.add(m)};
+ strip(.35,.175,'#ffffff');strip(.15,len,'#ffffff');
+ const tl=len-.7,cn=document.createElement('canvas');cn.width=W>3?512:256;cn.height=Math.round(cn.width*tl/W);const c2=cn.getContext('2d');c2.fillStyle='#ffffff';c2.textAlign='center';c2.textBaseline='middle';
+ c2.font='bold '+Math.round(cn.width*.19)+'px Fredoka,sans-serif';c2.fillText('START',cn.width/2,cn.height*.3);c2.font='bold '+Math.round(cn.width*(n2.length>11?.095:.115))+'px Fredoka,sans-serif';c2.fillText(n2,cn.width/2,cn.height*.72);
+ const tg=new T.Group();tg.rotation.y=-Math.PI/2;tg.position.set(.5+tl/2,.05,0);g.add(tg);
+ const t=new T.Mesh(new T.PlaneGeometry(W,tl),new T.MeshBasicMaterial({map:new T.CanvasTexture(cn),transparent:true,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-3,polygonOffsetUnits:-3}));t.rotation.x=-Math.PI/2;tg.add(t)}
+startBox(-12.4,-(RI+RO)/2,'x',LW,'LARI BERPAGAR',3.4);startBox(-12.4,(RI+RO)/2,'x',LW,'100M PECUT',3.4);
+/* ---- long jump venue (vertical, outside the track to the right): runway runs north to south: start line, green zone, board, red zone, sand pit.
+   The sand and its wooden frame are separate boards (no overlapping tops), so the sand does not flicker. ---- */
+(function(){const J=JV,w=2.4,zE=PIT0+PITL+.9;bx(sc,w,.05,VB+1-VZ0,'#d2694a',VX,0,(VZ0+VB+1)/2);bx(sc,w,.03,J.gz,'#4ccf5a',VX,.035,VB-J.gz/2);bx(sc,w,.03,J.rz,'#e04a4a',VX,.035,VB+J.rz/2);bx(sc,w,.1,.3,'#ffffff',VX,.05,VB);
+ const pm=PIT0+PITL/2;bx(sc,2.8,.08,PITL,'#ead08a',VX,.04,pm);[-1,1].forEach(k=>bx(sc,.1,.14,PITL+.4,'#a67c52',VX+k*1.45,.07,pm));bx(sc,2.8,.14,.1,'#a67c52',VX,.07,PIT0-.05);bx(sc,2.8,.14,.1,'#a67c52',VX,.07,PIT0+PITL+.05);
+ [-1,1].forEach(k=>bx(sc,.12,.04,zE-VZ0+1.4,'#ffffff',VX+k*2.3,.02,(VZ0-.7+zE)/2));bx(sc,4.72,.04,.12,'#ffffff',VX,.02,VZ0-.7);bx(sc,4.72,.04,.12,'#ffffff',VX,.02,zE);
+ startBox(VX,VZ0,'z',w,'LOMPAT JAUH',3.2)})();
 /* ---- stations: signs ---- */
-const RES=[null,null,null],STN=[],MK=[],SGN=[],SD=[[-29.5,0,Math.PI/2,-25,0],[0,-15.2,0,0,-10.5],[33.6,.6,-Math.PI/2,31.2,VZ]];
+const RES=[null,null,null],STN=[],MK=[],SGN=[],SD=[[-10.8,14.6,Math.PI,-12.4,(RI+RO)/2],[-10.8,-14.6,0,-12.4,-(RI+RO)/2],[VX-3.4,VZ0+.9,Math.PI/2,VX,VZ0+.4]]; /* sign x,z,rotation, stand point on the start line (E here); order = games: 100m (bottom straight), pagar (top straight), lompat jauh */
 const mkMark=c=>{const m=new T.Mesh(new T.ConeGeometry(.35,.7,4),mat(c));m.rotation.x=Math.PI;sc.add(m);return m};
 function drawSign(i){const s=SGN[i],g=s.cv.getContext('2d'),d=PD.g[i],r=RES[i];g.fillStyle=d.c;g.fillRect(0,0,512,128);g.fillStyle='#fff';g.textAlign='center';g.textBaseline='middle';g.font='bold 52px Fredoka,sans-serif';g.fillText(d.s,256,r?36:44);
  g.font=r?'34px sans-serif':'bold 28px Fredoka,sans-serif';g.fillText(r?'⭐'.repeat(r.stars)+'☆'.repeat(3-r.stars)+'  ✔':(i+1)+'. '+d.sub,256,98);s.tex.needsUpdate=true}
@@ -88,7 +103,7 @@ $('bj').onpointerdown=()=>jmp=1;$('bj').onpointerup=$('bj').onpointercancel=()=>
 let od=null;cv.onpointerdown=e=>{od=e;cv.setPointerCapture(e.pointerId)};cv.onpointermove=e=>{if(od&&e.pointerId==od.pointerId){cy-=(e.clientX-od.clientX)*.007;od=e;hold=1.5}};cv.onpointerup=cv.onpointercancel=()=>od=null;
 function fit(){ren.setSize(innerWidth,innerHeight,false);cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix()}addEventListener('resize',fit);fit();
 let bt=0,bm;const bv=new T.Vector3();function say(t){const b=$('bub');b.textContent=t;b.style.display='block';bt=4;clearTimeout(bm);bm=setTimeout(()=>b.style.display='none',2200)}
-function nearSt(){let b=-1,bd=2.5;STN.forEach((s,i)=>{const k=Math.hypot(P.x-s.wx,P.z-s.wz);if(k<bd){bd=k;b=i}});return b}
+function nearSt(){let b=-1,bd=3;STN.forEach((s,i)=>{const k=Math.hypot(P.x-s.wx,P.z-s.wz);if(k<bd){bd=k;b=i}});return b}
 const nearDoor=()=>Math.hypot(P.x-EX.x,P.z-EX.z)<2.3;
 /* ---- cards (same look as the Kantin cards) ---- */
 const kov=document.createElement('div');kov.id='kov';document.body.appendChild(kov);let cardBack=null;
@@ -133,12 +148,12 @@ function balls(dt,pspd){const r=BALL.r;BL.forEach((b,i)=>{if(!b.m.visible)return
  b.m.position.set(b.x,r,b.z);b.m.rotation.z-=b.vx*dt/r;b.m.rotation.x+=b.vz*dt/r;
  if(live){if(GL.some(g=>Math.sign(b.x)==g.s&&Math.abs(b.x)>Math.abs(g.f)+.05&&Math.abs(b.z)<2.1)){b.cd=1.6;gol()}}else{b.cd-=dt;if(b.cd<=0)spawn(b)}})}
 /* ---- minimap ---- */
-const mc=$('mm'),mg=mc.getContext('2d'),mb=document.createElement('canvas');mb.width=320;mb.height=136;const MS=Math.min(300/(BX1-BX0),124/(BZ1-BZ0)),MCX=(BX0+BX1)/2,mf=(x,z)=>[160+(x-MCX)*MS,68+z*MS]; /* the field is wide, so this minimap is a wide box (see the #mm style in padang.html) */
-(()=>{const g=mb.getContext('2d');g.fillStyle='#2b2f38';g.fillRect(0,0,320,136);const a=mf(BX0,BZ0),b=mf(BX1,BZ1);g.fillStyle='#79c06a';g.fillRect(a[0],a[1],b[0]-a[0],b[1]-a[1]);g.strokeStyle='#ffffff';g.lineWidth=3;g.strokeRect(a[0],a[1],b[0]-a[0],b[1]-a[1]);
+const mc=$('mm'),mg=mc.getContext('2d'),mb=document.createElement('canvas');mb.width=320;mb.height=168;const MS=Math.min(300/(BX1-BX0),156/(BZ1-BZ0)),MCX=(BX0+BX1)/2,mf=(x,z)=>[160+(x-MCX)*MS,84+z*MS]; /* the field is wide, so this minimap is a wide box (see the #mm style in padang.html) */
+(()=>{const g=mb.getContext('2d');g.fillStyle='#2b2f38';g.fillRect(0,0,320,168);const a=mf(BX0,BZ0),b=mf(BX1,BZ1);g.fillStyle='#79c06a';g.fillRect(a[0],a[1],b[0]-a[0],b[1]-a[1]);g.strokeStyle='#ffffff';g.lineWidth=3;g.strokeRect(a[0],a[1],b[0]-a[0],b[1]-a[1]);
  const m=(RI+RO)/2,L=mf(-SL,0),Rr=mf(SL,0);g.strokeStyle='#c9633f';g.lineWidth=LW*MS;g.beginPath();g.moveTo(L[0],L[1]-m*MS);g.lineTo(Rr[0],Rr[1]-m*MS);g.arc(Rr[0],Rr[1],m*MS,-Math.PI/2,Math.PI/2);g.lineTo(L[0],L[1]+m*MS);g.arc(L[0],L[1],m*MS,Math.PI/2,Math.PI*1.5);g.closePath();g.stroke();
- const rw=mf(32,VZ-1.2),re=mf(56,VZ+1.2);g.fillStyle='#d2694a';g.fillRect(rw[0],rw[1],mf(47,0)[0]-rw[0],re[1]-rw[1]);g.fillStyle='#ead08a';g.fillRect(mf(49.2,0)[0],rw[1],mf(55.8,0)[0]-mf(49.2,0)[0],re[1]-rw[1]);
+ const r1=mf(VX-1.2,VZ0),r2=mf(VX+1.2,VB+1);g.fillStyle='#d2694a';g.fillRect(r1[0],r1[1],r2[0]-r1[0],r2[1]-r1[1]);const q1=mf(VX-1.4,PIT0),q2=mf(VX+1.4,PIT0+PITL);g.fillStyle='#ead08a';g.fillRect(q1[0],q1[1],q2[0]-q1[0],q2[1]-q1[1]);
  g.fillStyle='#ffffff';GL.forEach(x=>{const p=mf(x.f,-2.2);g.fillRect(Math.min(p[0],mf(x.b,0)[0]),p[1],Math.abs(mf(x.b,0)[0]-p[0])+1,4.4*MS)});
- [-8,0,8].forEach(x=>{const p=mf(x,-16.4);g.fillStyle='#a9744a';g.fillRect(p[0]-1.1*MS,p[1]-3,2.2*MS,6)});
+ [-1,7,15].forEach(x=>{const p=mf(x,-16.4);g.fillStyle='#a9744a';g.fillRect(p[0]-1.1*MS,p[1]-3,2.2*MS,6)});
  STN.forEach((s,i)=>{const p=mf(s.wx,s.wz);g.fillStyle=PD.g[i].c;g.beginPath();g.arc(p[0],p[1],11,0,7);g.fill();g.fillStyle='#fff';g.font='bold 17px Fredoka,sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText(i+1,p[0],p[1]+1)})})();
 function drawMM(){mg.drawImage(mb,0,0);STN.forEach((s,i)=>{if(!RES[i])return;const p=mf(s.wx,s.wz);mg.fillStyle='#2e9d4a';mg.beginPath();mg.arc(p[0],p[1],11,0,7);mg.fill();mg.fillStyle='#fff';mg.font='bold 16px sans-serif';mg.textAlign='center';mg.textBaseline='middle';mg.fillText('✓',p[0],p[1]+1)});
  const e=mf(EX.x,BZ1-.2);mg.fillStyle=doneN()==3?'#5ccf4a':'#ffd23f';mg.beginPath();mg.arc(e[0],e[1],8,0,7);mg.fill();

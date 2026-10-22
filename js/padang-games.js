@@ -24,9 +24,10 @@ function init(){if(stg)return;stg=new T.Group();stg.visible=false;sc.add(stg);
  [-1,1].forEach(s=>bx(fin,.1,1.7,.1,'#ffffff',0,.85,s*3.8));bx(fin,.06,.35,7.7,'#e24b4b',0,1.55,0);fin.position.z=SZ;stg.add(fin);
  for(let k=0;k<6;k++){const h=new T.Group();[-1,1].forEach(s=>bx(h,.07,.55,.07,'#f5f5f5',0,.275,s*1.0));bx(h,.08,.12,2.1,'#e8730c',0,.5,0);bx(h,.085,.06,2.1,'#ffffff',0,.38,0);h.position.z=SZ;stg.add(h);hur.push(h)}
  const J=PD.g[2],B=J.board;jmpG=new T.Group();stg.add(jmpG);
- bx(jmpG,J.gz,.03,2.3,'#4ccf5a',B-J.gz/2,.035,SZ);bx(jmpG,J.rz,.03,2.3,'#e04a4a',B+J.rz/2,.035,SZ);bx(jmpG,.3,.05,2.3,'#ffffff',B,.04,SZ);
- const p0=B+J.rz+1.2;bx(jmpG,6.6,.08,3.0,'#a67c52',p0+3.3,.02,SZ);bx(jmpG,6.4,.06,2.8,'#ead08a',p0+3.3,.03,SZ);
- for(let k=1;k<6;k++)bx(jmpG,.04,.07,2.8,'#c9a95a',p0+k,.035,SZ);
+ bx(jmpG,J.gz,.03,2.3,'#4ccf5a',B-J.gz/2,.035,SZ);bx(jmpG,J.rz,.03,2.3,'#e04a4a',B+J.rz/2,.035,SZ);bx(jmpG,.3,.1,2.3,'#ffffff',B,.05,SZ);
+ const p0=B+J.rz+1.2,pl=6.4,pm=p0+pl/2; /* sand and frame are separate boards (no overlapping tops = no flicker) */
+ bx(jmpG,pl,.08,2.8,'#ead08a',pm,.04,SZ);[-1,1].forEach(k=>bx(jmpG,pl+.4,.14,.1,'#a67c52',pm,.07,SZ+k*1.45));bx(jmpG,.1,.14,2.8,'#a67c52',p0-.05,.07,SZ);bx(jmpG,.1,.14,2.8,'#a67c52',p0+pl+.05,.07,SZ);
+ for(let k=1;k<6;k++)bx(jmpG,.04,.11,2.8,'#c9a95a',p0+k,.055,SZ);
  flag=new T.Group();bx(flag,.04,.9,.04,'#ffffff',0,.45,0);bx(flag,.4,.25,.03,'#e24b4b',.2,.8,0);flag.position.z=SZ+1.6;flag.visible=false;stg.add(flag);
  const press=(el,fn)=>{el.onpointerdown=e=>{e.preventDefault();el.classList.add('dn');fn()};el.onpointerup=el.onpointercancel=el.onpointerleave=()=>el.classList.remove('dn');el.oncontextmenu=e=>e.preventDefault()};
  press($('sL'),()=>tap('L'));press($('sR'),()=>tap('R'));press($('sJ'),()=>jump());$('sx').onclick=()=>quit();
