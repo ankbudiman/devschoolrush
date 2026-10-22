@@ -4,9 +4,15 @@ let mt=0,halt=true,au=null;
 const LS={get(k,d){try{const v=JSON.parse(localStorage.getItem(k));return v==null?d:v}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
 /* Round 7: save version 2 adds rooms (best result per room, Mod Kelas only) and level (difficulty, selector comes in a later round). Old saves are upgraded on load. */
 const NP=()=>({v:2,drinks:0,s:[0,0,0,0],slip:0,gem:0,gol:0,badges:{},rooms:{},level:'sederhana'});
-function fixP(p){p.v=2;p.gol=p.gol||0;p.rooms=p.rooms||{};p.level=p.level||'sederhana';return p}
+function fixP(p){p.v=2;p.gol=p.gol||0;p.lp=p.lp||0;p.rooms=p.rooms||{};p.level=p.level||'sederhana';return p}
+/* Round 9e: 6 save slots. One slot = one profile object holding everything for that player (name, character, badges, records, counters, last played). Slots are stored under the keys s1..s6.
+   Older saves were stored under the lowercase name: they move into the first free slots on the first load. The old data is copied once to sk_profiles_bak, so nothing is lost (a 7th or later old profile stays only in that backup). Settings (sk_set) stay device-wide. */
+function migrateSlots(){const ks=Object.keys(PF),isS=k=>/^s[1-6]$/.test(k);if(ks.every(isS))return;if(localStorage.getItem('sk_profiles_bak')==null)LS.set('sk_profiles_bak',PF);
+ const out={},cc=LS.get('sk_cur',null);let nc=null;ks.filter(isS).forEach(k=>out[k]=PF[k]);
+ ks.filter(k=>!isS(k)).forEach(k=>{for(let i=1;i<=6;i++)if(!out['s'+i]){out['s'+i]=PF[k];if(k==cc)nc='s'+i;break}});
+ PF=out;LS.set('sk_cur',nc||(cc&&out[cc]?cc:null));LS.set('sk_profiles',PF)}
 let cur=NP();
-let PF=LS.get('sk_profiles',{}),rc=null,frm='vm';{Object.keys(PF).forEach(k=>fixP(PF[k]));const k=LS.get('sk_cur',null);if(k&&PF[k])cur=PF[k]}
+let PF=LS.get('sk_profiles',{}),rc=null,frm='vm';{migrateSlots();Object.keys(PF).forEach(k=>fixP(PF[k]));const k=LS.get('sk_cur',null);if(k&&PF[k])cur=PF[k]}
 const SET=Object.assign({snd:1,vol:.8,ts:1,lh:0,cf:1,lo:0,mus:1,mvol:.6},LS.get('sk_set',{}));
 function save(){LS.set('sk_profiles',PF)}
 /* Round 7: session storage (cleared when the app is closed, so a killed app restarts the day) */

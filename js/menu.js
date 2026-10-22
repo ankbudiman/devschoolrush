@@ -24,16 +24,27 @@ if(tab==3)add('Topeng muka',[[false,'Tiada'],[true,'Pakai topeng']],'mask')}
 function rawak(){const g=selG,L=LK[g];L.sk=R(SK);L.hc=R(HC4);L.mo=R([0,1,2]);L.es=R([.8,1,1.2]);if(g=='m')L.hs=R(BS)[0];else{L.nt=Math.random()<.5;L.hs=R(GS)[0];L.tud=R(TUD)[0];L.rib=R(RIB)[0]}buildPV();renderCP()}
 function chk(){$('go').disabled=!(selG&&$('nm').value.trim())}
 function pickG(g){selG=g;tab=0;renderCP();chk();tone(660,0,.08,'sine',.12)}
-function showMenu(){inMenu=true;$('menu').style.display='flex';view('vm');const k=curKey();$('mC').hidden=!PF[k];if(PF[k])$('mC').textContent='Teruskan: '+PF[k].name+' ('+MODN[getMode()]+')'}
+function showMenu(){inMenu=true;$('menu').style.display='flex';view('vm');const k=curKey();$('mC').hidden=!PF[k];if(PF[k])$('mC').textContent='Teruskan: '+PF[k].name+(/^s\d$/.test(k)?' · Slot '+k.slice(1):'')+' ('+MODN[getMode()]+')'}
 function startFlow(){LK=defL();selG=null;tab=0;$('nm').value='';$('go').disabled=true;ring.visible=false;buildPV();renderCP();view('vn')}
-function startGame(cont){if(cont){cur=PF[curKey()];if(!cur)return}else{const nm=$('nm').value.replace(/[<>]/g,'').trim().slice(0,12);if(!nm||!selG)return;const k=nm.toLowerCase();PF[k]=PF[k]||Object.assign(NP(),{name:nm});cur=PF[k];cur.name=nm;cur.gen=selG;cur.L=Object.assign({},LK[selG]);LS.set('sk_cur',k);save()}
+function startGame(cont){if(cont){cur=PF[curKey()];if(!cur)return;cur.lp=Date.now();save()}else{const nm=$('nm').value.replace(/[<>]/g,'').trim().slice(0,12);if(!nm||!selG||!newSlot||PF[newSlot])return;const k=newSlot;PF[k]=Object.assign(NP(),{name:nm});cur=PF[k];cur.gen=selG;cur.L=Object.assign({},LK[selG]);cur.lp=Date.now();LS.set('sk_cur',k);save()}
 inMenu=false;stageOn=false;$('menu').style.display='none';loading(()=>nav('world'))}
+/* Round 9e: save slots (6). Mod Kelas / Mod Jalan-jalan opens this screen. Empty slot = create the character; used slot = continue in the chosen mode; Padam asks twice. */
+let newSlot=null;
+function slotCard(i){const k='s'+i,p=PF[k],c=document.createElement('div');c.className='slc'+(p?'':' em');c.setAttribute('role','button');c.tabIndex=0;
+ const add=(tag,t,cl)=>{const e=document.createElement(tag);e.textContent=t;if(cl)e.className=cl;c.appendChild(e);return e};add('span','Slot '+i,'sn');
+ if(!p){add('b','Kosong');add('small','Permainan baru');c.onclick=()=>{newSlot=k;startFlow()}}
+ else{const rs=Object.values(p.rooms||{}).filter(x=>x&&x.g),g=rs.length?gradeOf(rs.reduce((a,x)=>a+x.best,0)/rs.length):'—';let dt='';try{if(p.lp)dt=new Date(p.lp).toLocaleDateString('ms-MY',{day:'numeric',month:'short'})}catch(e){}
+  add('b',(p.gen=='f'?'👧 ':'👦 ')+(p.name||'?'));add('small','Gred '+g+' · Lencana '+Object.keys(p.badges||{}).length+'/'+BD.length);if(dt)add('small','Dimainkan '+dt);
+  const d=add('button','Padam','sd');two(d,()=>{delete PF[k];if(curKey()==k){LS.set('sk_cur',null);cur=NP()}save();openSlots()},'Padam');const f=d.onclick;d.onclick=e=>{e.stopPropagation();f()};
+  c.onclick=()=>{LS.set('sk_cur',k);startGame(true)}}
+ c.onkeydown=e=>{if((e.key=='Enter'||e.key==' ')&&e.target===c){e.preventDefault();c.click()}};return c}
+function openSlots(){newSlot=null;$('sls').textContent=MODN[getMode()];const g=$('sl');g.innerHTML='';for(let i=1;i<=6;i++)g.appendChild(slotCard(i));view('vs')}
 function bell(){bellSound(1.8)}
 const MODN={story:'Mod Kelas',roam:'Mod Jalan-jalan'},getMode=()=>LS.get('sk_mode','roam')=='story'?'story':'roam';
 $('menu').addEventListener('pointerdown',()=>{if(!bellDone){bellDone=1;bell()}});$('bellw').onclick=bell;
-$('mK').onclick=()=>{LS.set('sk_mode','story');startFlow()};
-$('mR').onclick=()=>{LS.set('sk_mode','roam');startFlow()};$('mC').onclick=()=>startGame(true);$('mL').onclick=()=>{drawBd();frm='vm';view('vl')};$('mS').onclick=()=>{frm='vm';applySet();view('vt')};$('mH').onclick=()=>{frm='vm';view('vh')};$('mKr').onclick=()=>{frm='vm';view('vk')};
-$('bk').onclick=()=>view('vm');$('go').onclick=()=>startGame(false);
+$('mK').onclick=()=>{LS.set('sk_mode','story');openSlots()};
+$('mR').onclick=()=>{LS.set('sk_mode','roam');openSlots()};$('mC').onclick=()=>startGame(true);$('mL').onclick=()=>{drawBd();frm='vm';view('vl')};$('mS').onclick=()=>{frm='vm';applySet();view('vt')};$('mH').onclick=()=>{frm='vm';view('vh')};$('mKr').onclick=()=>{frm='vm';view('vk')};
+$('bk').onclick=()=>view('vs');$('slb').onclick=()=>view('vm');$('go').onclick=()=>startGame(false);
 $('stg').onclick=e=>{const r=$('stg').getBoundingClientRect();pickG(e.clientX-r.left<r.width/2?'m':'f')};
 $('nm').oninput=chk;$('nm').onkeydown=e=>{if(e.key=='Enter'&&!$('go').disabled)startGame(false)};
 const rt=$('rt');if(matchMedia('(pointer:coarse)').matches&&innerHeight>innerWidth)rt.style.display='flex';$('rtk').onclick=()=>rt.style.display='none';addEventListener('resize',()=>{if(innerWidth>innerHeight)rt.style.display='none'});

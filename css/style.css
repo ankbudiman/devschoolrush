@@ -186,3 +186,14 @@ body:not(.sg) #sh,body:not(.sg) .sbtn,body:not(.sg) #cd{display:none!important}
 body.sg #hud,body.sg #mm,body.sg #help,body.sg #hint,body.sg #bub,body.sg #jz,body.sg #tb{display:none!important}
 body.sg #msg{top:3.4em}
 @media(max-width:559px){#sh #sn{order:1;flex:1 1 auto}#sh #sx{order:2}#sh #stm2,#sh #sd{order:3;flex:1 1 40%;text-align:center;min-width:0}}
+
+/* --- Round 9e: save slot screen (6 slots) --- */
+#vs{gap:.7em;padding:.6em 0}
+#slh{display:flex;flex-direction:column;gap:.1em;align-items:center}#slh b{font-size:1.3em}#slh small{opacity:.85}
+#sl{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.55em;width:min(94vw,40em)}
+@media(orientation:portrait){#sl{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.slc{display:flex;flex-direction:column;gap:.12em;align-items:center;justify-content:center;min-height:5.6em;padding:.5em .4em;border-radius:1em;background:rgba(255,255,255,.14);border:2px solid rgba(255,255,255,.35);cursor:pointer;text-align:center;overflow:hidden;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+.slc.em{border-style:dashed;background:rgba(255,255,255,.07)}.slc:focus-visible{outline:3px solid #ffd23f}
+.slc b{font-size:1.05em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}.slc small{font-size:.78em;opacity:.9;line-height:1.2}.slc .sn{font-size:.72em;opacity:.8}
+#menu .slc button.sd{font-size:.72em;padding:.25em .8em;margin-top:.2em;background:rgba(255,255,255,.2);color:#fff;border-radius:.8em}
+@media(orientation:landscape) and (max-height:560px){#vs{gap:.35em;padding:.2em 0}#sl{width:min(94vw,44em);gap:.4em}.slc{min-height:4.1em;padding:.3em .3em}#slh b{font-size:1.1em}}
