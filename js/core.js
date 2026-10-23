@@ -3,8 +3,10 @@ const SK=['#b87a50','#8d5a3b','#a8693f','#c68a5a','#6e4328','#d9a57a','#f0c9a0']
 let mt=0,halt=true,au=null;
 const LS={get(k,d){try{const v=JSON.parse(localStorage.getItem(k));return v==null?d:v}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
 /* Round 7: save version 2 adds rooms (best result per room, Mod Kelas only) and level (difficulty, selector comes in a later round). Old saves are upgraded on load. */
-const NP=()=>({v:2,drinks:0,s:[0,0,0,0],slip:0,gem:0,gol:0,badges:{},rooms:{},level:'sederhana'});
-function fixP(p){p.v=2;p.gol=p.gol||0;p.lp=p.lp||0;p.rooms=p.rooms||{};p.level=p.level||'sederhana';return p}
+const NP=()=>({v:2,drinks:0,s:[0,0,0,0],slip:0,gem:0,gol:0,badges:{},rooms:{},level:'sederhana',save:null,pos:null});
+function fixP(p){p.v=2;p.gol=p.gol||0;p.lp=p.lp||0;p.rooms=p.rooms||{};p.level=p.level||'sederhana';p.save=p.save||null;p.pos=p.pos||null;return p}
+/* Round 9f: save.save = the Mod Kelas day in progress (written at class boundaries, cleared at Sekolah tamat or Mula baru); save.pos = Mod Jalan-jalan last position {x,z,f}. Both live in the slot profile. dayOk() checks a saved day before it is used */
+const dayOk=s=>!!s&&Array.isArray(s.order)&&s.order.length==6&&s.order.every(k=>Number.isInteger(k)&&k>=0&&k<=5)&&Number.isInteger(s.n)&&s.n>=1&&s.n<=6&&Number.isFinite(s.score)&&Number.isFinite(s.ok)&&Number.isFinite(s.lt)&&Number.isInteger(s.room)&&s.room>=0&&s.room<=5;
 /* Round 9e: 6 save slots. One slot = one profile object holding everything for that player (name, character, badges, records, counters, last played). Slots are stored under the keys s1..s6.
    Older saves were stored under the lowercase name: they move into the first free slots on the first load. The old data is copied once to sk_profiles_bak, so nothing is lost (a 7th or later old profile stays only in that backup). Settings (sk_set) stay device-wide. */
 function migrateSlots(){const ks=Object.keys(PF),isS=k=>/^s[1-6]$/.test(k);if(ks.every(isS))return;if(localStorage.getItem('sk_profiles_bak')==null)LS.set('sk_profiles_bak',PF);

@@ -35,7 +35,7 @@ function drawMM(){mg.drawImage(mb,0,0);const f=(x,z)=>[((x/K+340)-92)/496*320,((
 if(dist){const p=path(400);mg.strokeStyle='#ffd23f';mg.lineWidth=5;mg.beginPath();let a=f(P.x,P.z);mg.moveTo(a[0],a[1]);p.forEach(c=>{a=f(c[0],c[1]);mg.lineTo(a[0],a[1])});mg.stroke()}
 if(tgt>=0){const a=f(DR[tgt][7],DR[tgt][8]);mg.fillStyle='#e24b4b';mg.beginPath();mg.arc(a[0],a[1],9,0,7);mg.fill()}
 const a=f(P.x,P.z),s=Math.sin(P.f),c=Math.cos(P.f);mg.fillStyle='#2f6fd0';mg.strokeStyle='#fff';mg.lineWidth=3;mg.beginPath();mg.moveTo(a[0]+s*14,a[1]+c*14);mg.lineTo(a[0]-s*8+c*8,a[1]-c*8-s*8);mg.lineTo(a[0]-s*8-c*8,a[1]-c*8+s*8);mg.closePath();mg.fill();mg.stroke()}
-function pause(){halt=true;$('menu').classList.add('pz');$('menu').style.display='flex';document.body.classList.add('mn');view('vp')}
+function pause(){if(window.savePos)savePos();halt=true;$('menu').classList.add('pz');$('menu').style.display='flex';document.body.classList.add('mn');view('vp')}
 $('pS').onclick=()=>{$('menu').style.display='none';halt=false;document.body.classList.remove('mn')};$('pH').onclick=()=>{frm='vp';view('vh')};$('pT').onclick=()=>{frm='vp';applySet();view('vt')};$('pQ').onclick=()=>nav('index');
 /* Round 6: Android back button opens Pause (and closes it again) instead of leaving the game.
    The history entry is added on the first touch/key press, because Chrome skips entries added without interaction. */

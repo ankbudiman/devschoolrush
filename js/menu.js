@@ -34,7 +34,7 @@ function slotCard(i){const k='s'+i,p=PF[k],c=document.createElement('div');c.cla
  const add=(tag,t,cl)=>{const e=document.createElement(tag);e.textContent=t;if(cl)e.className=cl;c.appendChild(e);return e};add('span','Slot '+i,'sn');
  if(!p){add('b','Kosong');add('small','Permainan baru');c.onclick=()=>{newSlot=k;startFlow()}}
  else{const rs=Object.values(p.rooms||{}).filter(x=>x&&x.g),g=rs.length?gradeOf(rs.reduce((a,x)=>a+x.best,0)/rs.length):'—';let dt='';try{if(p.lp)dt=new Date(p.lp).toLocaleDateString('ms-MY',{day:'numeric',month:'short'})}catch(e){}
-  add('b',(p.gen=='f'?'👧 ':'👦 ')+(p.name||'?'));add('small','Gred '+g+' · Lencana '+Object.keys(p.badges||{}).length+'/'+BD.length);if(dt)add('small','Dimainkan '+dt);
+  add('b',(p.gen=='f'?'👧 ':'👦 ')+(p.name||'?'));add('small','Gred '+g+' · Lencana '+Object.keys(p.badges||{}).length+'/'+BD.length);if(getMode()=='story'&&dayOk(p.save))add('small','Hari sekolah: Kelas '+p.save.n+'/6','sv');if(dt)add('small','Dimainkan '+dt);
   const d=add('button','Padam','sd');two(d,()=>{delete PF[k];if(curKey()==k){LS.set('sk_cur',null);cur=NP()}save();openSlots()},'Padam');const f=d.onclick;d.onclick=e=>{e.stopPropagation();f()};
   c.onclick=()=>{LS.set('sk_cur',k);startGame(true)}}
  c.onkeydown=e=>{if((e.key=='Enter'||e.key==' ')&&e.target===c){e.preventDefault();c.click()}};return c}
