@@ -1,5 +1,7 @@
 /* Classroom page (Round 10, roam only). One page for Matematik and English; the subject comes from sessionStorage key sk_kelas ('mat'|'eng'), data in js/kelas-data.js.
-   No quiz, lesson notes or hidden items yet (next rounds): the player walks in, looks around and leaves by the door.
+   Round 10b2: vase easter egg in the back-right corner (key click only, VASE_NEED/vaseHit in core.js) and a locked back door next to the bookshelf (opens after the ritual; the outside side comes with the world round).
+   Round 10b: E triggers (board and map info cards, poster bubbles, hidden note 1 at the bookshelf, sit on the quiz chair). The quiz itself is not built yet (Round 10c).
+   Round 10: the player walks in, looks around and leaves by the door.
    Mod Kelas: coming in counts as attended (no grade yet). Mod Jalan-jalan: free in and out. No windows (the classes sit in the middle of the building).
    Same pattern as kantin.js: shared camera (core.js), see-through walls, minimap, pause, Android back. Layout numbers are in the room block below. */
 const CAMD=.8;   /* camera distance, 1 = Kantin value, lower = closer */
@@ -32,7 +34,7 @@ function sign(L,bg,fg,w,h,fs,x,y,z,r){const c=document.createElement('canvas');c
  const m=new T.Mesh(new T.PlaneGeometry(w,h),new T.MeshBasicMaterial({map:new T.CanvasTexture(c)}));m.position.set(x,y,z);m.rotation.y=r;sc.add(m);return m}
 FG.front.push(sign(['KELUAR'],'#1c2f6b','#ffffff',2,.5,26,DX,3.0,RZ1-.03,Math.PI));
 /* ---- front wall (north): board, ledge, clock, notice board, lockers ---- */
-FG.back.push(bx(sc,6.6,2.2,.12,'#ececec',0,1.95,RZ0+.07),sign(K.board,'#2f6f5e','#f4f4f4',6.2,2,38,0,1.95,RZ0+.14,0),bx(sc,6.2,.06,.2,'#d8d8d8',0,.93,RZ0+.12));
+FG.back.push(bx(sc,6.6,2.2,.12,'#ececec',0,1.95,RZ0+.07),sign(K.board,'#2f6f5e','#f4f4f4',6.2,2,30,0,1.95,RZ0+.14,0),bx(sc,6.2,.06,.2,'#d8d8d8',0,.93,RZ0+.12));
 (()=>{const c=document.createElement('canvas');c.width=c.height=64;const g=c.getContext('2d');g.fillStyle='#ffffff';g.beginPath();g.arc(32,32,30,0,7);g.fill();g.strokeStyle='#333';g.lineWidth=5;g.beginPath();g.arc(32,32,30,0,7);g.stroke();g.lineWidth=4;g.beginPath();g.moveTo(32,32);g.lineTo(32,12);g.moveTo(32,32);g.lineTo(46,38);g.stroke();
  const m=new T.Mesh(new T.PlaneGeometry(.5,.5),new T.MeshBasicMaterial({map:new T.CanvasTexture(c),transparent:true}));m.position.set(0,3.12,RZ0+.1);sc.add(m);FG.back.push(m)})();
 FG.back.push(bx(sc,1.9,1.4,.08,'#8a5a3a',-5.7,1.95,RZ0+.06),bx(sc,1.7,1.2,.08,'#c9955a',-5.7,1.95,RZ0+.1));
@@ -46,7 +48,7 @@ function fset(g,box){const fm=[];g.traverse(o=>{if(o.isMesh)fm.push(o)});FDS.pus
  g.strokeStyle='#ffffff';g.lineWidth=14;g.strokeRect(0,0,512,300);
  const m=new T.Mesh(new T.PlaneGeometry(3.6,2.1),new T.MeshBasicMaterial({map:new T.CanvasTexture(c)}));m.position.set(-RX+.08,1.95,-3.2);m.rotation.y=Math.PI/2;sc.add(m);FG.left.push(m)})();
 FG.left.push(sign(K.posters[0].t,K.posters[0].c,'#ffffff',1.7,2.1,22,-RX+.08,1.95,1.6,Math.PI/2),sign(K.posters[1].t,K.posters[1].c,'#ffffff',1.7,2.1,22,-RX+.08,1.95,4.4,Math.PI/2));
-FG.right.push(sign(K.posters[2].t,K.posters[2].c,'#ffffff',1.7,2.1,22,RX-.08,1.95,.2,-Math.PI/2),sign(K.posters[0].t,K.posters[0].c,'#ffffff',1.7,2.1,22,RX-.08,1.95,3.2,-Math.PI/2));
+FG.right.push(sign(K.posters[2].t,K.posters[2].c,'#ffffff',1.7,2.1,22,RX-.08,1.95,.2,-Math.PI/2),sign(K.posters[3].t,K.posters[3].c,'#ffffff',1.7,2.1,22,RX-.08,1.95,3.2,-Math.PI/2));
 (()=>{const g=new T.Group(),x=RX-.45,z=-3.7,W='#d9b184';bx(g,.7,2.4,.08,W,0,1.2,-.96);bx(g,.7,2.4,.08,W,0,1.2,.96);bx(g,.08,2.4,2,W,.31,1.2,0);
  [.05,.8,1.5,2.2].forEach((y,i)=>{bx(g,.7,.07,2,W,0,y+.03,0);if(i<3)for(let k=0;k<5;k++)bx(g,.45,.5+((k+i)%3)*.08,.2,['#e24b4b','#4aa3ff','#f4c542','#5ccf4a','#b266ff'][(k+i)%5],0,y+.35,-.75+k*.37)});
  const p=new T.Mesh(new T.CylinderGeometry(.2,.15,.3,6),mat('#c0693f')),f=new T.Mesh(new T.IcosahedronGeometry(.3,0),mat('#3f9d54'));p.position.set(0,2.55,.5);f.position.set(0,2.95,.5);g.add(p,f);
@@ -54,23 +56,33 @@ FG.right.push(sign(K.posters[2].t,K.posters[2].c,'#ffffff',1.7,2.1,22,RX-.08,1.9
 /* ---- teacher platform, desk and teacher ---- */
 (()=>{const z=RZ0+1.5;bx(sc,6.4,.18,2.6,'#b8956a',0,.09,z);cols.push({x0:-3.2,x1:3.2,z0:RZ0,z1:RZ0+2.8});
  bx(sc,2.8,.1,1.05,'#d2b183',0,1.02,z+.45);[-1,1].forEach(s=>bx(sc,.1,.77,.95,'#a9814f',s*1.3,.57,z+.45));bx(sc,2.5,.7,.06,'#a9814f',0,.62,z+.9);
- [['#e24b4b',-.8],['#4aa3ff',-.55],['#f4c542',.9]].forEach(a=>bx(sc,.35,.07,.5,a[0],a[1],1.1,z+.4));bx(sc,.14,.2,.14,'#6b4a30',.55,1.17,z+.2)})();
+ [['#e24b4b',-1],['#4aa3ff',-.5],['#f4c542',.9]].forEach(a=>bx(sc,.35,.07,.5,a[0],a[1],1.1,z+.4));bx(sc,.14,.2,.14,'#6b4a30',.55,1.17,z+.2)})();
 const TCH=npc('guru');TCH.position.set(0,.18,RZ0+1.05);TCH.rotation.y=0;sc.add(TCH);
 /* ---- student desks (2 rows x 2) with chairs and a few students ---- */
 function chair(x,z){bx(sc,.56,.07,.5,'#c8a26a',x,.46,z);bx(sc,.56,.5,.07,'#c8a26a',x,.8,z+.25);[-1,1].forEach(s=>bx(sc,.05,.46,.46,'#4a4f58',x+s*.24,.23,z))}
-const SEATS=[];
+const SEATS=[],QC=[2.2,3.4]; /* QC = the quiz chair (always empty): left chair at the right desk of the row nearest the door */
 function desk(x,z){bx(sc,3.4,.08,1,'#d9b88a',x,.88,z);[-1,1].forEach(s=>bx(sc,.08,.8,.9,'#5a5f69',x+s*1.6,.44,z));bx(sc,3.1,.5,.06,'#b79866',x,.6,z-.4);
  bx(sc,.45,.06,.32,'#4aa3ff',x-.8,.95,z);bx(sc,.45,.06,.32,'#e24b4b',x+.8,.95,z-.05);
  [-.8,.8].forEach(o=>{chair(x+o,z+1);SEATS.push([x+o,z+1.05])});cols.push({x0:x-1.8,x1:x+1.8,z0:z-.6,z1:z+1.4})}
 [[-3,-2],[3,-2],[-3,2.4],[3,2.4]].forEach(a=>desk(a[0],a[1]));
-SEATS.sort(()=>Math.random()-.5).slice(0,5).forEach(s=>{const m=npc('murid');m.position.set(s[0],.04,s[1]);m.rotation.y=Math.PI;m.userData.legs.forEach(l=>l.rotation.x=-Math.PI/2);sc.add(m)});
+SEATS.filter(s=>!(Math.abs(s[0]-QC[0])<.01&&Math.abs(s[1]-(QC[1]+.05))<.01)).sort(()=>Math.random()-.5).slice(0,5).forEach(s=>{const m=npc('murid');m.position.set(s[0],.04,s[1]);m.rotation.y=Math.PI;m.userData.legs.forEach(l=>l.rotation.x=-Math.PI/2);sc.add(m)});
 /* ---- small things: red bin, plant, two balls ---- */
 (()=>{const x=-RX+.8,z=RZ1-.8,b=new T.Mesh(new T.CylinderGeometry(.3,.24,.55,8),mat('#e0463a'));b.position.set(x,.275,z);b.castShadow=true;sc.add(b);cols.push({x0:x-.34,x1:x+.34,z0:z-.34,z1:z+.34});
  const p=new T.Mesh(new T.CylinderGeometry(.28,.2,.45,6),mat('#c0693f')),f=new T.Mesh(new T.IcosahedronGeometry(.42,0),mat('#3f9d54'));p.position.set(-RX+.9,.225,RZ0+.9);f.position.set(-RX+.9,.85,RZ0+.9);sc.add(p,f);cols.push({x0:-RX+.58,x1:-RX+1.22,z0:RZ0+.58,z1:RZ0+1.22});
  [['#f4f4f4',-6.4,3.6],['#e8923a',-.6,-3.9]].forEach(a=>{const m=new T.Mesh(new T.SphereGeometry(.22,10,8),mat(a[0]));m.position.set(a[1],.22,a[2]);m.castShadow=true;sc.add(m)})})();
+/* ---- Round 10b2: the vase in the back-right corner (easter egg, no hint) and the locked back door next to the bookshelf ---- */
+const VX=7.7,VZ=RZ0+.8,BDZ=-1.6;
+(()=>{const b=new T.Mesh(new T.CylinderGeometry(.24,.3,.55,10),mat('#3f7fd0')),n=new T.Mesh(new T.CylinderGeometry(.12,.2,.28,10),mat('#3f7fd0')),r=new T.Mesh(new T.CylinderGeometry(.17,.12,.06,10),mat('#ffffff')),s=new T.Mesh(new T.CylinderGeometry(.285,.285,.07,10),mat('#ffffff'));
+ b.position.set(VX,.275,VZ);n.position.set(VX,.69,VZ);r.position.set(VX,.86,VZ);s.position.set(VX,.28,VZ);[b,n,r,s].forEach(m=>{m.castShadow=true;sc.add(m)});cols.push({x0:VX-.35,x1:VX+.35,z0:VZ-.35,z1:VZ+.35})})();
+let LK;
+(()=>{FG.right.push(pn(1.6,2.4,'#8a5a3a',RX-.05,1.2,BDZ,-Math.PI/2),bx(sc,.1,2.5,.12,'#5a3a22',RX-.07,1.25,BDZ-.86),bx(sc,.1,2.5,.12,'#5a3a22',RX-.07,1.25,BDZ+.86),bx(sc,.1,.14,1.84,'#5a3a22',RX-.07,2.45,BDZ),bx(sc,.06,.9,.5,'#6f4a2c',RX-.09,1.2,BDZ));
+ LK=bx(sc,.14,.3,.22,'#444444',RX-.12,1.1,BDZ+.55);FG.right.push(LK)})();
+function refreshBack(){LK.material.color.set(backOpen()?'#5ccf4a':'#444444')}
+function backTap(){if(backOpen())say('Pintu belakang sudah terbuka. Laluan di luar akan siap kemudian.',3200);else say('Berkunci.',1800)}
 FDS.push({m:FG.back,boxes:[[-RX-1,RX+1,0,WH,RZ0-1,RZ0]],op:1,tg:1},{m:FG.left,boxes:[[-RX-1,-RX,0,WH,RZ0-1,RZ1+1.2]],op:1,tg:1},{m:FG.right,boxes:[[RX,RX+1,0,WH,RZ0-1,RZ1+1.2]],op:1,tg:1},
  {m:FG.front,boxes:[[-RX-1,DX-DW,0,WH,RZ1,RZ1+1.2],[DX+DW,RX+1,0,WH,RZ1,RZ1+1.2],[DX-DW,DX+DW,2.5,WH,RZ1,RZ1+1.2]],op:1,tg:1});
 const EX={x:DX,z:RZ1-1.1},em=new T.Mesh(new T.ConeGeometry(.4,.8,4),new T.MeshBasicMaterial({color:'#5ccf4a'}));em.rotation.x=Math.PI;sc.add(em);
+const qm=new T.Mesh(new T.ConeGeometry(.3,.6,4),new T.MeshBasicMaterial({color:'#ffd23f'}));qm.rotation.x=Math.PI;sc.add(qm); /* yellow marker over the quiz chair */
 /* ---- teacher speech bubble ---- */
 const sb=document.createElement('div');sb.className='sb';document.body.appendChild(sb);let tline=null;
 /* ---- player ---- */
@@ -89,9 +101,29 @@ let od=null;cv.onpointerdown=e=>{od=e;cv.setPointerCapture(e.pointerId)};cv.onpo
 function fit(){ren.setSize(innerWidth,innerHeight,false);cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix()}addEventListener('resize',fit);fit();
 const bv=new T.Vector3();
 const nearDoor=()=>Math.hypot(P.x-EX.x,P.z-EX.z)<2.3;
+let bt=0,bm,sitting=false;function say(t,ms){const b=$('bub');b.textContent=t;b.style.whiteSpace='normal';b.style.width='min(78vw,300px)';b.style.textAlign='center';b.style.display='block';clearTimeout(bm);bm=setTimeout(()=>b.style.display='none',ms||3600)}
+/* ---- info cards (board, map, hidden note, sitting): small overlay, text only ---- */
+const ov=document.createElement('div');ov.style.cssText='position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.35);z-index:30;padding:16px';
+const cd=document.createElement('div');cd.style.cssText='background:var(--pn);color:var(--fg);border-radius:18px;padding:18px 20px;max-width:440px;width:100%;max-height:80%;overflow:auto;box-shadow:0 8px 30px rgba(0,0,0,.35);font-family:Fredoka,sans-serif;line-height:1.35';ov.appendChild(cd);document.body.appendChild(ov);
+const cardOpen=()=>ov.style.display=='flex';
+function card(title,lines,btns){cd.innerHTML='';const h=document.createElement('h2');h.textContent=title;h.style.margin='0 0 10px';cd.appendChild(h);
+ lines.forEach(l=>{const p=document.createElement('p');p.textContent=l;p.style.margin='6px 0';cd.appendChild(p)});
+ const r=document.createElement('div');r.style.cssText='display:flex;gap:10px;margin-top:14px;flex-wrap:wrap';btns.forEach(b=>{const e=document.createElement('button');e.textContent=b[0];e.style.cssText='background:var(--ac);color:#fff;border:0;border-radius:12px;padding:10px 18px;font:inherit;font-weight:700;cursor:pointer';e.onclick=b[1];r.appendChild(e)});cd.appendChild(r);
+ ov.style.display='flex';halt=true;document.body.classList.add('mn')}
+function stand(){if(!sitting)return;sitting=false;P.x=QC[0];P.z=QC[1]+.95;P.f=Math.PI}
+function shut(){ov.style.display='none';stand();document.body.classList.remove('mn');halt=false}
+const info=d=>card(d.t,d.l,[['Tutup',shut]]);
+function findNote(){cur.sec=cur.sec||{};const first=!cur.sec[K.hid.id];if(first){cur.sec[K.hid.id]=Date.now();save()}card(K.hid.t,K.hid.l,[['Tutup',shut]]);if(first)toast('Nota tersembunyi dijumpai!',2600)}
+function sit(){sitting=true;P.x=QC[0];P.z=QC[1];P.f=Math.PI;P.y=0;P.vy=0;card('Mini Kuiz '+K.n,['Kuiz akan datang tidak lama lagi. Sabar ya!'],[['Bangun',shut]])}
+/* ---- E triggers: [x, z, radius, hint, action]; the nearest one inside its radius wins ---- */
+const TR=[[0,RZ0+3.3,3,'Baca papan',()=>info(K.nb)],[-RX+.7,-3.2,2.1,'Lihat peta dunia',()=>info(K.nm)],
+ [-RX+.7,1.6,1.4,'Baca poster',()=>say(K.posters[0].b)],[-RX+.7,4.4,1.4,'Baca poster',()=>say(K.posters[1].b)],[RX-.7,.2,1.4,'Baca poster',()=>say(K.posters[2].b)],[RX-.7,3.2,1.4,'Baca poster',()=>say(K.posters[3].b)],
+ [RX-1.5,-3.7,1.8,'Periksa rak buku',findNote],[QC[0],QC[1]+.9,1.3,'Duduk',sit],
+ [VX,VZ,1.5,'',()=>{if(vaseHit(SUB+'_vase'))refreshBack()}],[RX-1.2,BDZ,1.4,'Pintu belakang',backTap]];
+const nearTr=()=>{let b=null,bd=1e9;TR.forEach(a=>{const d=Math.hypot(P.x-a[0],P.z-a[1]);if(d<a[2]&&d<bd){bd=d;b=a}});return b};
 /* ---- the way out: Mod Kelas = attended (no grade yet), Mod Jalan-jalan = free ---- */
 function leave(){SS.set('sk_ret',STORY?{room:K.room}:{room:K.room,roam:1});loading(()=>nav('world'))}
-function act(){if(halt)return;if(nearDoor())leave()}
+function act(){if(halt)return;if(nearDoor()){leave();return}const a=nearTr();if(a)a[4]()}
 /* ---- minimap ---- */
 const mc=$('mm'),mg=mc.getContext('2d'),mb=document.createElement('canvas');mb.width=mb.height=320;const MS=Math.min(300/(2*RX),300/(RZ1-RZ0+3)),mf=(x,z)=>[160+x*MS,160+(z-MZ)*MS];
 (()=>{const g=mb.getContext('2d');g.fillStyle='#2b2f38';g.fillRect(0,0,320,320);const a=mf(-RX,RZ0),b=mf(RX,RZ1);g.fillStyle='#b8bdc5';g.fillRect(a[0],a[1],b[0]-a[0],b[1]-a[1]);g.strokeStyle=STR;g.lineWidth=6;g.strokeRect(a[0],a[1],b[0]-a[0],b[1]-a[1]);
@@ -105,6 +137,7 @@ function pause(){halt=true;$('menu').classList.add('pz');$('menu').style.display
 $('pS').onclick=()=>{$('menu').style.display='none';halt=false;document.body.classList.remove('mn')};$('pH').onclick=()=>{frm='vp';view('vh')};$('pT').onclick=()=>{frm='vp';applySet();view('vt')};$('pQ').onclick=()=>{SS.del('sk_day');SS.del('sk_ret');nav('index')};
 (function(){if(SR_IFR)return;let on=0;const E=['pointerdown','keydown','touchend'],arm=()=>{if(on)return;on=1;backKeep();E.forEach(e=>removeEventListener(e,arm,true))};E.forEach(e=>addEventListener(e,arm,true));
 addEventListener('popstate',()=>{if(!on||!SR_TRAP)return;backKeep();const ld=$('ld');if(ld&&ld.style.display!='none')return;
+if(cardOpen()){shut();return}
 const m=$('menu');if(m.style.display=='flex'){const vp=$('vp');if(vp&&!vp.hidden)$('pS').click();else view('vp')}else pause()})})();
 window.gfxHook=()=>{ren.shadowMap.enabled=!SET.lo;dl.castShadow=!SET.lo;ren.setPixelRatio(SET.lo?1:Math.min(devicePixelRatio,2));fit();sc.traverse(o=>{if(o.material)o.material.needsUpdate=true})};
 /* ---- see-through: a wall or cupboard that is between the camera and the player fades to 25% (same code as the Kantin) ---- */
@@ -124,18 +157,19 @@ function loop(ts){requestAnimationFrame(loop);const dt=Math.min((ts-last)/1000||
  P.x=Math.max(-RX+.4,Math.min(RX-.4,P.x));P.z=Math.max(RZ0+.4,Math.min(RZ1-.4,P.z)); /* never outside the room */
  cy=camStep(cy,dt,mv,mv&&Math.hypot(P.x-ox,P.z-oz)<CAMC.block*want,P.f,hold);hold-=dt;
  if((keys.Space||jmp)&&P.y<=0)P.vy=6.8;P.vy-=22*dt;P.y+=P.vy*dt;if(P.y<=0){P.y=0;P.vy=0}
- pm.position.set(P.x,P.y,P.z);pm.rotation.y=P.f;anim(pm,t,mv&&P.y==0);
+ pm.position.set(P.x,sitting?.04:P.y,P.z);pm.rotation.y=P.f;if(sitting)pm.userData.legs.forEach(l=>l.rotation.x=-Math.PI/2);else anim(pm,t,mv&&P.y==0);
  const D=CM[0]*(cam.aspect<1?1.15:1);cp.x+=(P.x-cp.x)*Math.min(1,dt*10);cp.z+=(P.z-cp.z)*Math.min(1,dt*10);const sx=Math.sin(cy),sz=Math.cos(cy);
  CAMP.x=cp.x+sx*D;CAMP.y=CM[1]+D*CM[2];CAMP.z=cp.z+sz*D;cam.position.set(CAMP.x,CAMP.y,CAMP.z);cam.lookAt(cp.x-sx*CM[3],CM[4],cp.z-sz*CM[3]);dl.position.set(cp.x+6,14,cp.z+8);dl.target.position.set(cp.x,0,cp.z);
  fades(dt);
- em.position.set(EX.x,3.2+Math.abs(Math.sin(t*3))*.3,EX.z);
+ em.position.set(EX.x,3.2+Math.abs(Math.sin(t*3))*.3,EX.z);qm.visible=!sitting;qm.position.set(QC[0],1.9+Math.abs(Math.sin(t*3))*.25,QC[1]);
+ const bb=$('bub');if(bb.style.display=='block'){bv.set(P.x,P.y+2.3,P.z).project(cam);bb.style.left=(bv.x*.5+.5)*cv.clientWidth+'px';bb.style.top=(-bv.y*.5+.5)*cv.clientHeight+'px'}
  const cw=cv.clientWidth,ch=cv.clientHeight,near=!halt&&Math.hypot(P.x-TCH.position.x,P.z-TCH.position.z)<5;
  if(near){if(!tline)tline=R(K.teach);bv.set(TCH.position.x,2.9,TCH.position.z).project(cam);sb.textContent=tline;sb.style.left=(bv.x*.5+.5)*cw+'px';sb.style.top=(-bv.y*.5+.5)*ch+'px';sb.style.display='block'}else{tline=null;sb.style.display='none'}
  const h=$('hint'),pe=document.body.classList.contains('touch')?'Tekan E':'E';
- if(!halt&&nearDoor()){h.textContent=pe+' · Keluar kelas';h.style.display='block'}else h.style.display='none';
+ const nt=nearTr();if(!halt&&nearDoor()){h.textContent=pe+' · Keluar kelas';h.style.display='block'}else if(!halt&&nt&&nt[3]){h.textContent=pe+' · '+nt[3];h.style.display='block'}else h.style.display='none';
  drawMM();ren.render(sc,cam)}requestAnimationFrame(loop);
 /* ---- start ---- */
 function boot(){const k=LS.get('sk_cur',null);if(!OKGO||!k||!PF[k]){SS.del('sk_day');SS.del('sk_ret');nav('index');return}
- cur=PF[k];gen=cur.gen||'m';curL=cur.L||null;mkP();applySet();$('scr').style.display='none';$('mdl').textContent=K.n+' · '+(STORY?'Mod Kelas':'Mod Jalan-jalan');
+ cur=PF[k];gen=cur.gen||'m';curL=cur.L||null;mkP();applySet();$('scr').style.display='none';refreshBack();$('mdl').textContent=K.n+' · '+(STORY?'Mod Kelas':'Mod Jalan-jalan');
  loading(()=>{document.body.classList.remove('mn');halt=false;toast(K.hello,2600)})}
 boot();

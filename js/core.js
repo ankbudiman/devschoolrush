@@ -43,6 +43,13 @@ function recRoom(id,score,stalls){const r=cur.rooms[id]||(cur.rooms[id]={best:0,
 const BD=[['air8','Tabiat Sihat','Minum air 8 kali'],['sampah12','Pelajar Prihatin','Buang 12 sampah dengan betul'],['slip5','Kaki Licin','Terpijak kulit pisang 5 kali'],['gem5','Laju Kilat','Ambil 5 gem laju'],['gol5','Penjaring','Jaring 5 gol di padang']],
 TIPS=['Jangan pijak kulit pisang! Licin tau.','Tong biru untuk kertas, tong oren untuk plastik.','Minum air, badan segar!','Wuuu, kejar loceng!','Lompat! Sampah pun boleh dielak.','Botol kaca masuk tong coklat.','Prefect tengah perhati... senyum sikit.','Hati-hati kat selekoh tu!','Cikgu dah masuk kelas... cepat sikit!','Pengawas tengah ronda, buat-buat rajin.','Loceng berbunyi, kaki jangan malas!','Jangan lewat, nanti kena kejar dengan pengawas.'];
 function toast(t,ms){const m=$('msg');m.textContent=t;m.style.display='block';clearTimeout(mt);mt=setTimeout(()=>m.style.display='none',ms||2600)}
+/* Round 10b2: the vase ritual (easter egg). vaseHit(id) = a key click and nothing else; the vases found are saved quietly in cur.sec (no counter anywhere in the game).
+   When VASE_NEED different vases have been triggered, the pop message shows once and cur.sec.ritual is set (backOpen() = every back door is unlocked).
+   VASE_NEED is 10 for real (6 hallway + 4 classroom vases); set it lower only to test. Returns true on the very moment the ritual completes. */
+const VASE_NEED=10;
+const backOpen=()=>!!(cur&&cur.sec&&cur.sec.ritual);
+function vaseHit(id){tone(1500,0,.03,'square',.12);tone(900,.05,.05,'square',.1);if(!cur)return false;cur.sec=cur.sec||{};const k='v_'+id;if(!cur.sec[k]){cur.sec[k]=Date.now();save()}
+ if(!cur.sec.ritual&&Object.keys(cur.sec).filter(x=>x.slice(0,2)=='v_').length>=VASE_NEED){cur.sec.ritual=Date.now();save();setTimeout(()=>{toast('Ritual Pasu selesai. Semua pintu belakang dibuka!',6000);[0,1,2,3].forEach(i=>tone(520+i*130,.1+i*.14,.18,'triangle',.16))},350);return true}return false}
 function award(id,t,d){if(cur.badges[id])return;cur.badges[id]=Date.now();save();toast('Lencana baharu: '+t+'! '+d,3800);[0,1,2].forEach(i=>tone(600+i*150,i*.12,.15,'triangle',.12))}
 function loading(fn){halt=true;$('tip').textContent=R(TIPS);$('ld').style.display='flex';setTimeout(()=>{$('ld').style.display='none';fn()},1100)}
 const curKey=()=>LS.get('sk_cur',null);
