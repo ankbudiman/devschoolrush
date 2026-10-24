@@ -18,7 +18,7 @@ blk(92,142,100,546,4.2,WC,1);blk(580,142,588,546,4.2,WC,1);blk(100,538,580,546,4
 [[100,158],[182,468],[492,580]].forEach(s=>blk(s[0],142,s[1],150,4.2,WC,1));
 [0,310].forEach(o=>{blk(155+o,110,158+o,142,.9,'#fff',1);blk(182+o,110,185+o,142,.9,'#fff',1);blk(153+o,108,187+o,150,.25,'#b5533c',0,4.6,.3);
 [[153,118],[185,118],[153,138],[185,138]].forEach(p=>blk(p[0]+o,p[1],p[0]+o+2,p[1]+2,4.6,'#8a8f98',0))});
-blk(100,186,318,326,4,BE,1);blk(354,186,544,326,4,BE,1);blk(136,362,318,502,4,BE,1);blk(354,362,580,502,4,BE,1);
+blk(100,186,318,326,4,BE,1);blk(354,186,544,326,4,BE,1);blk(136,362,318,502,4,BE,1);blk(420,362,580,502,4,BE,1);blk(354,362,420,502,4.3,'#d8b98a',1); /* Round 9g: Perpustakaan block split, left part (x354-420, nearest the entrance) is the Pejabat */
 blk(354,40,580,110,4.4,'#e4786b',1);
 (()=>{const x0=X(100),x1=X(318),z0=Z(40),z1=Z(110),cx=(x0+x1)/2,cz=(z0+z1)/2,w=(x1-x0)/2,h=(z1-z0)/2;
 const g=new T.Mesh(new T.PlaneGeometry(x1-x0,z1-z0),mat('#78b866'));g.rotation.x=-Math.PI/2;g.position.set(cx,.01,cz);g.receiveShadow=true;sc.add(g);
@@ -46,7 +46,7 @@ for(let x=112;x<570;x+=32){if((x>148&&x<192)||(x>458&&x<502))continue;win(x,150,
 [[568,172],[112,520],[112,352],[568,352]].forEach(a=>plant(...a));
 [[200,186,0,-1],[420,326,0,1],[150,362,0,-1],[354,225,-1,0]].forEach(a=>bin(...a));
 function band(p,q,w,nx,nz){const h=nz!=0,m=new T.Mesh(new T.PlaneGeometry((q-p)*K,2),mat('#bfa270'));m.position.set(h?X((p+q)/2):X(w)+nx*.02,1,h?Z(w)+nz*.02:Z((p+q)/2));m.rotation.y=Math.atan2(nx,nz);sc.add(m)}
-[[100,318,186,0,-1],[354,544,186,0,-1],[100,318,326,0,1],[354,544,326,0,1],[136,318,362,0,-1],[354,580,362,0,-1],[136,318,502,0,1],[354,580,502,0,1],[186,326,318,1,0],[362,502,318,1,0],[186,326,354,-1,0],[362,502,354,-1,0],[326,538,100,1,0],[150,326,580,-1,0],[326,362,580,-1,0],[502,538,580,-1,0],[100,158,150,0,1],[182,468,150,0,1],[492,580,150,0,1],[100,580,538,0,-1],[150,186,100,1,0]].forEach(a=>band(...a));
+[[100,318,186,0,-1],[354,544,186,0,-1],[100,318,326,0,1],[354,544,326,0,1],[136,318,362,0,-1],[354,420,362,0,-1],[420,580,362,0,-1],[136,318,502,0,1],[354,420,502,0,1],[420,580,502,0,1],[186,326,318,1,0],[362,502,318,1,0],[186,326,354,-1,0],[362,502,354,-1,0],[326,538,100,1,0],[150,326,580,-1,0],[326,362,580,-1,0],[502,538,580,-1,0],[100,158,150,0,1],[182,468,150,0,1],[492,580,150,0,1],[100,580,538,0,-1],[150,186,100,1,0]].forEach(a=>band(...a));
 for(let x=128;x<570;x+=32){if((x>148&&x<192)||(x>458&&x<502))continue;pn(.9,1.2,R(CL),X(x),3.1,Z(150)+.03,0);if(x<286||x>392)pn(.9,1.2,R(CL),X(x),3.1,Z(538)-.03,Math.PI)}
 function tx(L,bg,fg,w,h,fs,x,y,z,r){const c=document.createElement('canvas');c.width=256;c.height=Math.round(256*h/w);const g=c.getContext('2d');g.fillStyle=bg;g.fillRect(0,0,256,c.height);g.fillStyle=fg;g.font='bold '+fs+'px Fredoka,sans-serif';g.textAlign='center';g.textBaseline='middle';L.forEach((s,i)=>g.fillText(s,128,c.height*(i+.5)/L.length));
 const m=new T.Mesh(new T.PlaneGeometry(w,h),new T.MeshBasicMaterial({map:new T.CanvasTexture(c)}));m.position.set(x,y,z);m.rotation.y=r;sc.add(m)}
@@ -86,15 +86,22 @@ say(R(['Bagus!','Pandai!','Terima kasih, kawan!']));tone(600,.2,.1,'sine',.15);t
 cur.s[c]++;save();
 if(cur.s[0]+cur.s[1]+cur.s[2]+cur.s[3]==12)award('sampah12','Pelajar Prihatin','Anda sudah membuang 12 sampah dengan betul.')}
 const sr=new T.Mesh(new T.CircleGeometry(1.1,24),new T.MeshBasicMaterial({color:'#ffd23f'}));sr.rotation.x=-Math.PI/2;sr.position.set(X(336),.05,Z(520));sc.add(sr);
-const DR=[['MAKMAL SAINS','#6f63c7',248,186,0,-1,'Makmal Sains'],['PERPUSTAKAAN','#6f63c7',452,362,0,-1,'Perpustakaan'],['MATH','#2f9d86',354,256,-1,0,'Math'],['ENGLISH','#2f9d86',318,432,1,0,'English'],['PADANG BALAPAN','#d98f2b',170,110,0,1,'Padang Balapan'],['KANTIN','#c9553f',480,110,0,1,'Kantin']];
+const DR=[['MAKMAL SAINS','#6f63c7',248,186,0,-1,'Makmal Sains'],['PERPUSTAKAAN','#6f63c7',452,362,0,-1,'Perpustakaan'],['MATH','#2f9d86',354,256,-1,0,'Math'],['ENGLISH','#2f9d86',318,432,1,0,'English'],['PADANG BALAPAN','#d98f2b',170,110,0,1,'Padang Balapan'],['KANTIN','#c9553f',480,110,0,1,'Kantin'],['PEJABAT','#9a3c4d',387,502,0,1,'Pejabat']]; /* index 6 = Pejabat: Round 9g, locked door only, never a class target */
 DR.forEach(d=>{const n=d[0],x=X(d[2]),z=Z(d[3]),nx=d[4],nz=d[5],ry=Math.atan2(nx,nz);
 if(!n.startsWith('PADANG')){const pl=new T.Mesh(new T.PlaneGeometry(1.7,2.3),mat('#5a3d2b'));pl.position.set(x+nx*.06,1.15,z+nz*.06);pl.rotation.y=ry;sc.add(pl)}
 const cn=document.createElement('canvas');cn.width=256;cn.height=64;const g=cn.getContext('2d');g.fillStyle=d[1];g.fillRect(0,0,256,64);g.fillStyle='#fff';g.font='bold '+(n.length>10?24:34)+'px Fredoka,sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText(n,128,34);
 const sg=new T.Mesh(new T.PlaneGeometry(3.6,.9),new T.MeshBasicMaterial({map:new T.CanvasTexture(cn)}));sg.position.set(x+nx*.06,n.startsWith('PADANG')?3.25:2.8,z+nz*.06);sg.rotation.y=ry;sc.add(sg);
 d.push(x+nx*1.2,z+nz*1.2)});
 function clock(x,z,r){const g=new T.Group(),mk=(rd,c,zz)=>{const m=new T.Mesh(new T.CircleGeometry(rd,16),new T.MeshBasicMaterial({color:c}));m.position.z=zz;g.add(m)},hd=(w,h,a,b)=>{const m=new T.Mesh(new T.PlaneGeometry(w,h),new T.MeshBasicMaterial({color:'#222222'}));m.position.set(a,b,b?.04:.05);g.add(m)};mk(.36,'#2b2f36',0);mk(.3,'#ffffff',.02);hd(.04,.2,0,.1);hd(.16,.04,.08,0);g.position.set(x,3.55,z);g.rotation.y=r;sc.add(g)}
-DR.slice(0,4).forEach(d=>clock(X(d[2])+d[4]*.12,Z(d[3])+d[5]*.12,Math.atan2(d[4],d[5])));
-const DD=[[280,326,0,1],[420,186,0,-1],[270,362,0,-1],[354,410,-1,0]].map(d=>{const x=X(d[0]),z=Z(d[1]),nx=d[2],nz=d[3],r=Math.atan2(nx,nz);pn(1.7,2.3,'#5a3d2b',x+nx*.06,1.15,z+nz*.06,r);pn(.12,.3,'#e8c53a',x+nx*.1+nz*.55,1.1,z+nz*.1-nx*.55,r);pn(.4,.22,'#c9553f',x+nx*.1,1.55,z+nz*.1,r);return[x+nx*1.2,z+nz*1.2]});
+DR.slice(0,4).concat([DR[6]]).forEach(d=>clock(X(d[2])+d[4]*.12,Z(d[3])+d[5]*.12,Math.atan2(d[4],d[5])));
+const DD=[[280,326,0,1],[420,186,0,-1],[270,362,0,-1],[530,502,0,1]].map(d=>{const x=X(d[0]),z=Z(d[1]),nx=d[2],nz=d[3],r=Math.atan2(nx,nz);pn(1.7,2.3,'#5a3d2b',x+nx*.06,1.15,z+nz*.06,r);pn(.12,.3,'#e8c53a',x+nx*.1+nz*.55,1.1,z+nz*.1-nx*.55,r);pn(.4,.22,'#c9553f',x+nx*.1,1.55,z+nz*.1,r);return[x+nx*1.2,z+nz*1.2]});
+/* Round 9g: Pejabat front. A teacher stands beside the door, a doormat marks the spot in front of it (CNS = the caning spot, used in Round 13) */
+const CANE_TEST=true; /* Round 9g test: E at the Pejabat door plays the cane scene. Set to false to switch it off. */
+const PJX=X(387),PJZ=Z(502),CNS=[PJX,PJZ+.9];let TCH=null,CANE=null;
+(()=>{const mt=new T.Mesh(new T.PlaneGeometry(3.4,1.3),mat('#a33b4b'));mt.rotation.x=-Math.PI/2;mt.position.set(PJX,.025,PJZ+1.25);mt.receiveShadow=true;sc.add(mt);
+const mi=new T.Mesh(new T.PlaneGeometry(3.0,.9),mat('#d9a441'));mi.rotation.x=-Math.PI/2;mi.position.set(PJX,.03,PJZ+1.25);sc.add(mi);
+const g=npc('guru','m');g.position.set(X(412),0,PJZ+.9);g.rotation.y=0;sc.add(g);solid(X(412),PJZ+.9,.35);TCH=g;
+CANE=new T.Mesh(new T.CylinderGeometry(.025,.025,.6,6),mat('#7a4a21'));CANE.position.set(0,-.72,.04); /* along the arm, so it swings down with the arm */CANE.visible=false;g.userData.arms[1].add(CANE)})();
 const hit=(x,z,r)=>cols.some(c=>x+r>c.x0&&x-r<c.x1&&z+r>c.z0&&z-r<c.z1);
 const GC=.5,GX=-32,GZ=-38,GW=128,GH=128,bk=new Uint8Array(GW*GH),N8=[[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]];
 for(let j=0;j<GH;j++)for(let i=0;i<GW;i++)bk[j*GW+i]=hit(GX+(i+.5)*GC,GZ+(j+.5)*GC,.3)?1:0;
