@@ -53,3 +53,13 @@ if(f){o.o={top:c,bot:c,long:1,shoe:'#2a2a30',ls:1};if(Math.random()<.7)o.tud=R([
 else{o.o={top:R(['#f4f6fa','#8ab6e8','#e8dcc0','#9ad0b0']),bot:R(['#222633','#3a3a40']),shoe:'#1a1a1e',tie:Math.random()<.7?R(CL):null,ls:1};o.hs=R(['short','fringe','bald']);o.stache=Math.random()<.3;o.glasses=Math.random()<.4}}
 const G=build(o);G.userData.g=g;return G}
 function anim(G,t,mv){const u=G.userData,w=Math.sin(t*8+u.ph);if(mv){u.legs[0].rotation.x=w*.6;u.legs[1].rotation.x=-w*.6;u.arms[0].rotation.x=-w*.5;u.arms[1].rotation.x=w*.5;u.B.position.y=Math.abs(w)*.03}else{u.legs.forEach(l=>l.rotation.x=0);u.arms.forEach(a=>a.rotation.x=0);u.B.position.y=0}}
+
+/* Round 10b3: the easter egg vase. Low-poly faceted white vase (8 sides, shaded flat, edges nudged so the facets are uneven) with 6 bamboo sticks leaning out of it.
+   Same look in every room (world, Kantin, Padang, classrooms). Built from code only. Size: about 1 m tall, 0.33 m radius, sticks up to 2 m. Callers add their own collision. */
+function mkVase(p,x,z){const g=new T.Group(),pts=[[0,0],[.2,0],[.27,.12],[.32,.3],[.28,.5],[.33,.68],[.28,.86],[.24,.98],[.2,1],[.17,.96]].map(a=>new T.Vector2(a[0],a[1])),lg=new T.LatheGeometry(pts,8),pa=lg.attributes.position;
+ for(let i=0;i<pa.count;i++){const px=pa.getX(i),py=pa.getY(i),pz=pa.getZ(i),j=1+.07*Math.sin(px*37.1+py*23.7+pz*51.3);pa.setX(i,px*j);pa.setZ(i,pz*j)}
+ const v=new T.Mesh(lg,mat('#ecebe6'));v.material.side=T.DoubleSide;v.castShadow=true;g.add(v);
+ const m0=new T.Mesh(new T.CylinderGeometry(.19,.19,.02,8),mat('#2e2a28'));m0.position.y=.93;g.add(m0);
+ [[-.1,.05,.1,-.18,1.9],[.08,-.06,-.22,.1,1.65],[.02,.1,.05,.28,1.8],[-.05,-.09,.3,.05,1.5],[.1,.08,-.12,-.3,1.7],[-.02,-.02,-.05,.02,2]].forEach(a=>{const s=new T.Group(),L=a[4],c=new T.CylinderGeometry(.034,.04,L,6);c.translate(0,L/2,0);s.add(new T.Mesh(c,mat('#e0b060')));
+  [.3,.58,.82].forEach(f=>{const r=new T.Mesh(new T.CylinderGeometry(.05,.05,.03,6),mat('#b98a3e'));r.position.y=L*f;s.add(r)});s.position.set(a[0],.95,a[1]);s.rotation.x=a[2];s.rotation.z=a[3];g.add(s)});
+ g.position.set(x,0,z);p.add(g);return g}

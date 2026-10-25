@@ -24,7 +24,7 @@ const GRD=[[98,'A+'],[85,'A'],[70,'B'],[55,'C'],[0,'D']],RM=[['mat','Matematik']
 const gradeOf=s=>(GRD.find(g=>s>=g[0])||GRD[GRD.length-1])[1];
 const stallScore=(wr,sec,lim)=>Math.max(15,Math.round(100-Math.min(60,wr*12)-(sec<=lim?0:Math.min(25,(sec-lim)/lim*40))));
 const starsOf=s=>s>=95?3:s>=70?2:1;
-const gcls=g=>'gd g'+({'A+':'AP','A':'A','B':'B','C':'C','D':'D'}[g]||'N');
+const gcls=g=>'gd g'+({'A+':'AP','A':'A','B+':'BP','B':'B','C':'C','D':'D','Gagal':'F'}[g]||'N');
 /* Round 7c (Round 8a: wait 1.0 s): camera (shared by the hallway and the Kantin). The view never turns by itself while you walk. After CAMC.wait seconds of being blocked,
    or of walking more than CAMC.away from straight ahead, it eases back behind the player. While the stick is held its directions stay tied to the
    view you started with (CAMS.iy), so the easing never flips your walking direction; releasing the stick or turning it by CAMC.latch re-reads the view. */

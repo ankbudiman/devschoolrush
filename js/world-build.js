@@ -18,7 +18,7 @@ blk(92,142,100,546,4.2,WC,1);blk(580,142,588,546,4.2,WC,1);blk(100,538,580,546,4
 [[100,158],[182,468],[492,580]].forEach(s=>blk(s[0],142,s[1],150,4.2,WC,1));
 [0,310].forEach(o=>{blk(155+o,110,158+o,142,.9,'#fff',1);blk(182+o,110,185+o,142,.9,'#fff',1);blk(153+o,108,187+o,150,.25,'#b5533c',0,4.6,.3);
 [[153,118],[185,118],[153,138],[185,138]].forEach(p=>blk(p[0]+o,p[1],p[0]+o+2,p[1]+2,4.6,'#8a8f98',0))});
-blk(100,186,318,326,4,BE,1);blk(354,186,544,326,4,BE,1);blk(136,362,318,502,4,BE,1);blk(420,362,580,502,4,BE,1);blk(354,362,420,502,4.3,'#d8b98a',1); /* Round 9g: Perpustakaan block split, left part (x354-420, nearest the entrance) is the Pejabat */
+blk(100,186,318,326,4,BE,1);blk(354,186,544,326,4,BE,1);blk(136,362,318,502,4,BE,1);blk(420,362,580,502,4,BE,1);blk(354,362,420,502,4,'#d8b98a',1); /* Round 9g: Perpustakaan block split, left part (x354-420, nearest the entrance) is the Pejabat */
 blk(354,40,580,110,4.4,'#e4786b',1);
 (()=>{const x0=X(100),x1=X(318),z0=Z(40),z1=Z(110),cx=(x0+x1)/2,cz=(z0+z1)/2,w=(x1-x0)/2,h=(z1-z0)/2;
 const g=new T.Mesh(new T.PlaneGeometry(x1-x0,z1-z0),mat('#78b866'));g.rotation.x=-Math.PI/2;g.position.set(cx,.01,cz);g.receiveShadow=true;sc.add(g);
@@ -94,7 +94,11 @@ const sg=new T.Mesh(new T.PlaneGeometry(3.6,.9),new T.MeshBasicMaterial({map:new
 d.push(x+nx*1.2,z+nz*1.2)});
 function clock(x,z,r){const g=new T.Group(),mk=(rd,c,zz)=>{const m=new T.Mesh(new T.CircleGeometry(rd,16),new T.MeshBasicMaterial({color:c}));m.position.z=zz;g.add(m)},hd=(w,h,a,b)=>{const m=new T.Mesh(new T.PlaneGeometry(w,h),new T.MeshBasicMaterial({color:'#222222'}));m.position.set(a,b,b?.04:.05);g.add(m)};mk(.36,'#2b2f36',0);mk(.3,'#ffffff',.02);hd(.04,.2,0,.1);hd(.16,.04,.08,0);g.position.set(x,3.55,z);g.rotation.y=r;sc.add(g)}
 DR.slice(0,4).concat([DR[6]]).forEach(d=>clock(X(d[2])+d[4]*.12,Z(d[3])+d[5]*.12,Math.atan2(d[4],d[5])));
-const DD=[[280,326,0,1],[420,186,0,-1],[270,362,0,-1],[530,502,0,1]].map(d=>{const x=X(d[0]),z=Z(d[1]),nx=d[2],nz=d[3],r=Math.atan2(nx,nz);pn(1.7,2.3,'#5a3d2b',x+nx*.06,1.15,z+nz*.06,r);pn(.12,.3,'#e8c53a',x+nx*.1+nz*.55,1.1,z+nz*.1-nx*.55,r);pn(.4,.22,'#c9553f',x+nx*.1,1.55,z+nz*.1,r);return[x+nx*1.2,z+nz*1.2]});
+/* Round 10b3: the four brown side doors are the BACK DOORS of the classes (BK = [room DR index, DD index]; BKN = outward direction; BP = the red pad that turns green after the ritual). Locked until all vases are found. */
+const BP=[],BK=[[0,0],[1,3],[2,1],[3,2]],BKN=[[0,1],[0,-1],[0,-1],[0,1]];
+const DD=[[280,326,0,1],[420,186,0,-1],[270,362,0,-1],[530,502,0,1]].map(d=>{const x=X(d[0]),z=Z(d[1]),nx=d[2],nz=d[3],r=Math.atan2(nx,nz);pn(1.7,2.3,'#5a3d2b',x+nx*.06,1.15,z+nz*.06,r);pn(.12,.3,'#e8c53a',x+nx*.1+nz*.55,1.1,z+nz*.1-nx*.55,r);{const pd=new T.Mesh(new T.PlaneGeometry(.4,.22),new T.MeshBasicMaterial({color:'#c9553f'}));pd.position.set(x+nx*.1,1.55,z+nz*.1);pd.rotation.y=r;sc.add(pd);BP.push(pd)}return[x+nx*1.2,z+nz*1.2]});
+/* Round 10b3: 4 of the 6 outside vases (the other two are in the Kantin and the Padang): by the boys toilet, by the girls toilet, and two quiet corners. Silent: no hint, E = key click (vaseHit in core.js). */
+const VS=[[120,180,'boys'],[556,512,'girls'],[349,286,'spine'],[548,320,'east']].map(a=>{const x=X(a[0]),z=Z(a[1]);mkVase(sc,x,z);cols.push({x0:x-.4,x1:x+.4,z0:z-.4,z1:z+.4});return{x,z,id:'w_'+a[2]}});
 /* Round 9g: Pejabat front. A teacher stands beside the door, a doormat marks the spot in front of it (CNS = the caning spot, used in Round 13) */
 const CANE_TEST=true; /* Round 9g test: E at the Pejabat door plays the cane scene. Set to false to switch it off. */
 const PJX=X(387),PJZ=Z(502),CNS=[PJX,PJZ+.9];let TCH=null,CANE=null;

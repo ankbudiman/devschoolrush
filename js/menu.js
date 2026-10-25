@@ -1,6 +1,6 @@
 const cv=$('cv'),ren=new T.WebGLRenderer({canvas:cv,antialias:true,alpha:true});ren.setPixelRatio(Math.min(devicePixelRatio,2));
 function fit(){ren.setSize(innerWidth,innerHeight,false)}addEventListener('resize',fit);fit();
-let inMenu=true,selG=null,tab=0,stageOn=false,bellDone=0;
+let inMenu=true,selLv='sederhana',selG=null,tab=0,stageOn=false,bellDone=0;
 const defL=()=>({m:{sk:SK[0],hs:'fringe',hc:HC[0],mo:0,es:1,mask:false},f:{sk:SK[0],hs:'bob',hc:HC[0],tud:'#f6f7fb',nt:false,rib:null,mo:0,es:1,mask:false}});
 let LK=defL();
 const ps=new T.Scene(),pc=new T.PerspectiveCamera(35,1,.1,50),pang={m:0,f:2},pv={m:null,f:null};
@@ -25,8 +25,8 @@ function rawak(){const g=selG,L=LK[g];L.sk=R(SK);L.hc=R(HC4);L.mo=R([0,1,2]);L.e
 function chk(){$('go').disabled=!(selG&&$('nm').value.trim())}
 function pickG(g){selG=g;tab=0;renderCP();chk();tone(660,0,.08,'sine',.12)}
 function showMenu(){inMenu=true;$('menu').style.display='flex';view('vm');const k=curKey();$('mC').hidden=!PF[k];if(PF[k])$('mC').textContent='Teruskan: '+PF[k].name+(/^s\d$/.test(k)?' · Slot '+k.slice(1):'')+' ('+MODN[getMode()]+')'}
-function startFlow(){LK=defL();selG=null;tab=0;$('nm').value='';$('go').disabled=true;ring.visible=false;buildPV();renderCP();view('vn')}
-function startGame(cont){if(cont){cur=PF[curKey()];if(!cur)return;cur.lp=Date.now();save()}else{const nm=$('nm').value.replace(/[<>]/g,'').trim().slice(0,12);if(!nm||!selG||!newSlot||PF[newSlot])return;const k=newSlot;PF[k]=Object.assign(NP(),{name:nm});cur=PF[k];cur.gen=selG;cur.L=Object.assign({},LK[selG]);cur.lp=Date.now();LS.set('sk_cur',k);save()}
+function startFlow(){selLv='sederhana';lvUI();LK=defL();selG=null;tab=0;$('nm').value='';$('go').disabled=true;ring.visible=false;buildPV();renderCP();view('vn')}
+function startGame(cont){if(cont){cur=PF[curKey()];if(!cur)return;cur.lp=Date.now();save()}else{const nm=$('nm').value.replace(/[<>]/g,'').trim().slice(0,12);if(!nm||!selG||!newSlot||PF[newSlot])return;const k=newSlot;PF[k]=Object.assign(NP(),{name:nm,level:selLv});cur=PF[k];cur.gen=selG;cur.L=Object.assign({},LK[selG]);cur.lp=Date.now();LS.set('sk_cur',k);save()}
 inMenu=false;stageOn=false;$('menu').style.display='none';loading(()=>nav('world'))}
 /* Round 9e: save slots (6). Mod Kelas / Mod Jalan-jalan opens this screen. Empty slot = create the character; used slot = continue in the chosen mode; Padam asks twice. */
 let newSlot=null;
@@ -63,3 +63,7 @@ function how(){qm.innerHTML='';const h=document.createElement('h2');h.textConten
 const b=document.createElement('button');b.textContent='OK';b.onclick=()=>qm.style.display='none';qm.appendChild(b);qm.style.display='flex'}
 q.onclick=()=>{if(ios){how();return}try{window.close()}catch(e){}setTimeout(()=>{if(!document.hidden)how()},500)};
 const sync=()=>{q.style.display=$('vm').hidden?'none':'flex'};new MutationObserver(sync).observe($('vm'),{attributes:true,attributeFilter:['hidden']});sync()})();
+
+/* Round 10c: Tahap belajar (Mudah / Sederhana / Sukar) chosen when creating a character; saved as level in the slot. Tetapan can change it later. */
+function lvUI(){document.querySelectorAll('#lvb [data-lv]').forEach(b=>b.classList.toggle('on',b.dataset.lv==selLv))}
+document.querySelectorAll('#lvb [data-lv]').forEach(b=>b.onclick=()=>{selLv=b.dataset.lv;lvUI();tone(660,0,.08,'sine',.12)});

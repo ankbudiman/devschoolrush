@@ -74,6 +74,9 @@ function enterRoom(i,caught){const lateNow=caught||st=='late';let g;
   card(i==5?'Kantin belum siap':'Bilik belum siap',[[i==5?'Waktu Rehat · Kantin':LAB[i]+' · '+DR[i][6]],[g,1],[i==5?'Mini game kantin akan datang. Sabar ya!':'Cikgu belum sampai lagi. Sabar ya!']],[['Keluar',()=>{closeCard();leave(i)}]])})}
 /* Round 9f: autosave the Mod Kelas day into the slot at a class boundary (n = classes finished, i = the door the player stands at) */
 function snap(i){if(MODE!='story')return;cur.save={v:1,order:order.slice(),n,score,ok,lt,gr:JSON.parse(JSON.stringify(gr||{})),room:i,t:Date.now()};save()}
+/* Round 10b3: back doors. placeBack(r) = stand outside the back door of room r, facing away from it. storyBack(i) = E at an OPEN back door (DD index i): Mod Jalan-jalan only. */
+function placeBack(r){const b=BK.find(a=>a[0]==r),q=b&&DD[b[1]],n=b&&BKN[b[1]];if(!q){place(r);return}P.x=q[0]+n[0]*.4;P.z=q[1]+n[1]*.4;P.y=0;P.vy=0;P.stun=0;P.slow=0;P.f=Math.atan2(n[0],n[1]);cp.x=P.x;cp.z=P.z;cy=P.f+Math.PI;hold=0}
+window.storyBack=function(i){const r=BK.find(b=>b[1]==i)[0];if(MODE=='story'){say('Pintu belakang tak boleh digunakan waktu kelas.');return}if(!RS[r]){say('Bilik ini belum siap lagi.');return}SS.set('sk_kelas',RS[r]);savePos(true);SS.set('sk_go',1);SS.set('sk_back',1);loading(()=>nav('kelas'))};
 function place(i){const d=DR[i];P.x=d[7];P.z=d[8];P.y=0;P.vy=0;P.stun=0;P.slow=0;P.f=Math.atan2(d[4],d[5]);cp.x=P.x;cp.z=P.z;cy=P.f+Math.PI;hold=0}
 function after(i,msg){place(i);snap(i);document.body.classList.remove('mn');halt=false;if(n>=CFG.DAY)endWalk();else{sched(false);toast(msg||'Masa berlalu... loceng akan berbunyi lagi.',2800)}}
 function leave(i){n++;loading(()=>after(i))}
@@ -98,7 +101,7 @@ window.savePos=()=>savePos(true);
 if(MODE!='story'){setInterval(()=>{if(!halt)savePos()},10000);addEventListener('pagehide',()=>savePos());document.addEventListener('visibilitychange',()=>{if(document.hidden)savePos()})}
 /* ---- hooks ---- */
 window.storyBoot=function(){const day=SS.get('sk_day'),ret=SS.get('sk_ret');SS.del('sk_ret');
- if(MODE!='story'){if(ret&&ret.roam)place(ret.room!=null?ret.room:5);else posRestore();halt=false;posOn=true;return} /* Mod Jalan-jalan: back from a room page, stand at its door */
+ if(MODE!='story'){if(ret&&ret.roam){if(ret.back)placeBack(ret.room);else place(ret.room!=null?ret.room:5)}else posRestore();halt=false;posOn=true;return} /* Mod Jalan-jalan: back from a room page, stand at its door */
  if(day&&ret&&!ret.roam&&Array.isArray(day.order)){ /* back from the Kantin: carry on the same day */
   SS.del('sk_day');order=day.order;n=day.n+1;score=day.score;ok=day.ok;lt=day.lt;gr=day.gr||{};const rr=ret.room!=null?ret.room:5;if(ret.grade)gr[rr]={g:ret.grade,s:ret.score};st='off';
   $('scr').hidden=false;$('ck').hidden=false;$('bl').hidden=false;$('stm').hidden=true;

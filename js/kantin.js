@@ -37,6 +37,7 @@ FG.back.push(sign(['KANTIN SEKOLAH'],'#fff3d6','#b84a38',5,.9,30,0,2.5,RZ0+.14,0
 (()=>{FG.front.push(pn(2*DW-.2,2.5,'#f5f5f5',0,1.25,RZ1+.1,Math.PI));[-1,1].forEach(s=>FG.front.push(pn(.1,2.5,'#7a5236',s*(DW-.05),1.25,RZ1-.02,Math.PI)))})();
 function plant(x,z){const p=new T.Mesh(new T.CylinderGeometry(.28,.2,.45,6),mat('#c0693f')),f=new T.Mesh(new T.IcosahedronGeometry(.42,0),mat('#3f9d54'));p.position.set(x,.225,z);f.position.set(x,.85,z);p.castShadow=f.castShadow=true;sc.add(p,f);cols.push({x0:x-.32,x1:x+.32,z0:z-.32,z1:z+.32})}
 plant(-RX+.9,RZ1-.9);plant(RX-.9,RZ1-.9);
+const KV={x:RX-2.1,z:RZ1-.9};mkVase(sc,KV.x,KV.z);cols.push({x0:KV.x-.4,x1:KV.x+.4,z0:KV.z-.4,z1:KV.z+.4}); /* Round 10b3: easter egg vase next to the right plant, silent (vaseHit in core.js) */
 /* ---- wall posters: plain colour panels (drawn shapes or an emoji + two lines), tiny textures ---- */
 function poster(i,x,y,z,ry,pw,ph){const d=KD.posters[i],c=document.createElement('canvas');c.width=256;c.height=320;const g=c.getContext('2d');
  g.fillStyle='#ffffff';g.fillRect(0,0,256,320);g.fillStyle=d.c;g.fillRect(10,10,236,300);
@@ -151,6 +152,7 @@ function summary(){const rs=RES,avg=rs.reduce((a,r)=>a+r.score,0)/5;let g=null;h
 function leave(){SS.set('sk_ret',STORY&&grade?{grade:grade.g,score:grade.s}:{roam:1});KG.close();loading(()=>nav('world'))}
 window.KN={go(i){KG.start(i,cur.level,r=>onRes(i,r))},shut,leave};
 function act(){if(halt)return;
+ if(Math.hypot(P.x-KV.x,P.z-KV.z)<1.5){vaseHit('kantin');return}
  if(carry>=0){const b=nearBin();if(b){throwIt(b);return}}else{const q=nearLit();if(q){pick(q);return}}
  const i=nearSt();if(i>=0){talk(i);return}
  if(nearDoor()){if(!STORY)leave();else if(doneN()==5)summary();else{const m=$('msg');m.textContent='Jumpa semua penjual dahulu! ('+doneN()+'/5 gerai siap)';m.style.display='block';clearTimeout(mt);mt=setTimeout(()=>m.style.display='none',2600);say('Belum boleh keluar!')}}}

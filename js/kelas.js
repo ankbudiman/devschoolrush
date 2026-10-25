@@ -8,6 +8,7 @@ const CAMD=.8;   /* camera distance, 1 = Kantin value, lower = closer */
 const OKGO=!!SS.get('sk_go');SS.del('sk_go');
 const STORY=LS.get('sk_mode','roam')=='story';
 const SUB=SS.get('sk_kelas')||'mat',K=KL[SUB]||KL.mat;
+const HASQ=typeof QD!='undefined'&&!!QD[SUB];let QDONE=!HASQ,QRES=null; /* Round 10c: only Matematik has a quiz so far; Mod Kelas needs it finished once before the door works */
 const ren=new T.WebGLRenderer({canvas:$('cv'),antialias:true}),cv=$('cv');ren.shadowMap.enabled=true;ren.setPixelRatio(Math.min(devicePixelRatio,2));
 const sc=new T.Scene();sc.background=new T.Color('#bfe3f5');const cam=new T.PerspectiveCamera(55,1,.5,150);
 sc.add(new T.HemisphereLight(0xffffff,0x9aa7b8,.95));
@@ -72,13 +73,13 @@ SEATS.filter(s=>!(Math.abs(s[0]-QC[0])<.01&&Math.abs(s[1]-(QC[1]+.05))<.01)).sor
  [['#f4f4f4',-6.4,3.6],['#e8923a',-.6,-3.9]].forEach(a=>{const m=new T.Mesh(new T.SphereGeometry(.22,10,8),mat(a[0]));m.position.set(a[1],.22,a[2]);m.castShadow=true;sc.add(m)})})();
 /* ---- Round 10b2: the vase in the back-right corner (easter egg, no hint) and the locked back door next to the bookshelf ---- */
 const VX=7.7,VZ=RZ0+.8,BDZ=-1.6;
-(()=>{const b=new T.Mesh(new T.CylinderGeometry(.24,.3,.55,10),mat('#3f7fd0')),n=new T.Mesh(new T.CylinderGeometry(.12,.2,.28,10),mat('#3f7fd0')),r=new T.Mesh(new T.CylinderGeometry(.17,.12,.06,10),mat('#ffffff')),s=new T.Mesh(new T.CylinderGeometry(.285,.285,.07,10),mat('#ffffff'));
- b.position.set(VX,.275,VZ);n.position.set(VX,.69,VZ);r.position.set(VX,.86,VZ);s.position.set(VX,.28,VZ);[b,n,r,s].forEach(m=>{m.castShadow=true;sc.add(m)});cols.push({x0:VX-.35,x1:VX+.35,z0:VZ-.35,z1:VZ+.35})})();
+mkVase(sc,VX,VZ);cols.push({x0:VX-.4,x1:VX+.4,z0:VZ-.4,z1:VZ+.4});
 let LK;
-(()=>{FG.right.push(pn(1.6,2.4,'#8a5a3a',RX-.05,1.2,BDZ,-Math.PI/2),bx(sc,.1,2.5,.12,'#5a3a22',RX-.07,1.25,BDZ-.86),bx(sc,.1,2.5,.12,'#5a3a22',RX-.07,1.25,BDZ+.86),bx(sc,.1,.14,1.84,'#5a3a22',RX-.07,2.45,BDZ),bx(sc,.06,.9,.5,'#6f4a2c',RX-.09,1.2,BDZ));
- LK=bx(sc,.14,.3,.22,'#444444',RX-.12,1.1,BDZ+.55);FG.right.push(LK)})();
+/* the whole door sits IN FRONT of the wall stripe (x < RX-.12) so nothing overlaps it: no flicker */
+(()=>{const D=RX-.12;FG.right.push(bx(sc,.04,2.4,1.6,'#8a5a3a',D-.02,1.2,BDZ),bx(sc,.1,2.5,.12,'#5a3a22',D-.05,1.25,BDZ-.86),bx(sc,.1,2.5,.12,'#5a3a22',D-.05,1.25,BDZ+.86),bx(sc,.1,.14,1.84,'#5a3a22',D-.05,2.45,BDZ),bx(sc,.04,.9,.5,'#6f4a2c',D-.06,1.2,BDZ));
+ LK=bx(sc,.1,.3,.22,'#444444',D-.1,1.1,BDZ+.55);FG.right.push(LK)})();
 function refreshBack(){LK.material.color.set(backOpen()?'#5ccf4a':'#444444')}
-function backTap(){if(backOpen())say('Pintu belakang sudah terbuka. Laluan di luar akan siap kemudian.',3200);else say('Berkunci.',1800)}
+function backTap(){if(!backOpen()){say('Berkunci.',1800);return}if(STORY){say('Pintu belakang tak boleh digunakan waktu kelas.',2600);return}SS.set('sk_ret',{room:K.room,roam:1,back:1});loading(()=>nav('world'))}
 FDS.push({m:FG.back,boxes:[[-RX-1,RX+1,0,WH,RZ0-1,RZ0]],op:1,tg:1},{m:FG.left,boxes:[[-RX-1,-RX,0,WH,RZ0-1,RZ1+1.2]],op:1,tg:1},{m:FG.right,boxes:[[RX,RX+1,0,WH,RZ0-1,RZ1+1.2]],op:1,tg:1},
  {m:FG.front,boxes:[[-RX-1,DX-DW,0,WH,RZ1,RZ1+1.2],[DX+DW,RX+1,0,WH,RZ1,RZ1+1.2],[DX-DW,DX+DW,2.5,WH,RZ1,RZ1+1.2]],op:1,tg:1});
 const EX={x:DX,z:RZ1-1.1},em=new T.Mesh(new T.ConeGeometry(.4,.8,4),new T.MeshBasicMaterial({color:'#5ccf4a'}));em.rotation.x=Math.PI;sc.add(em);
@@ -114,7 +115,7 @@ function stand(){if(!sitting)return;sitting=false;P.x=QC[0];P.z=QC[1]+.95;P.f=Ma
 function shut(){ov.style.display='none';stand();document.body.classList.remove('mn');halt=false}
 const info=d=>card(d.t,d.l,[['Tutup',shut]]);
 function findNote(){cur.sec=cur.sec||{};const first=!cur.sec[K.hid.id];if(first){cur.sec[K.hid.id]=Date.now();save()}card(K.hid.t,K.hid.l,[['Tutup',shut]]);if(first)toast('Nota tersembunyi dijumpai!',2600)}
-function sit(){sitting=true;P.x=QC[0];P.z=QC[1];P.f=Math.PI;P.y=0;P.vy=0;card('Mini Kuiz '+K.n,['Kuiz akan datang tidak lama lagi. Sabar ya!'],[['Bangun',shut]])}
+function sit(){sitting=true;P.x=QC[0];P.z=QC[1];P.f=Math.PI;P.y=0;P.vy=0;if(HASQ){halt=true;document.body.classList.add('mn');QZ.open({sub:SUB,lock:STORY?(cur.level||'sederhana'):null,onClose:shut,onDone:quizDone})}else card('Mini Kuiz '+K.n,['Kuiz akan datang tidak lama lagi. Sabar ya!'],[['Bangun',shut]])}
 /* ---- E triggers: [x, z, radius, hint, action]; the nearest one inside its radius wins ---- */
 const TR=[[0,RZ0+3.3,3,'Baca papan',()=>info(K.nb)],[-RX+.7,-3.2,2.1,'Lihat peta dunia',()=>info(K.nm)],
  [-RX+.7,1.6,1.4,'Baca poster',()=>say(K.posters[0].b)],[-RX+.7,4.4,1.4,'Baca poster',()=>say(K.posters[1].b)],[RX-.7,.2,1.4,'Baca poster',()=>say(K.posters[2].b)],[RX-.7,3.2,1.4,'Baca poster',()=>say(K.posters[3].b)],
@@ -122,7 +123,9 @@ const TR=[[0,RZ0+3.3,3,'Baca papan',()=>info(K.nb)],[-RX+.7,-3.2,2.1,'Lihat peta
  [VX,VZ,1.5,'',()=>{if(vaseHit(SUB+'_vase'))refreshBack()}],[RX-1.2,BDZ,1.4,'Pintu belakang',backTap]];
 const nearTr=()=>{let b=null,bd=1e9;TR.forEach(a=>{const d=Math.hypot(P.x-a[0],P.z-a[1]);if(d<a[2]&&d<bd){bd=d;b=a}});return b};
 /* ---- the way out: Mod Kelas = attended (no grade yet), Mod Jalan-jalan = free ---- */
-function leave(){SS.set('sk_ret',STORY?{room:K.room}:{room:K.room,roam:1});loading(()=>nav('world'))}
+function leave(){if(STORY&&!QDONE){say('Selesaikan kuiz dahulu. Duduk di kerusi kuning.',3200);return}SS.set('sk_ret',STORY?(QRES?{room:K.room,grade:QRES.g,score:QRES.pct}:{room:K.room}):{room:K.room,roam:1});loading(()=>nav('world'))}
+/* a finished quiz: the first finish opens the door in Mod Kelas; the grade (the quiz letter) becomes this class's grade in Pencapaian and the day card */
+function quizDone(r){QDONE=true;QRES=r;if(STORY){const x=recRoom('mat',r.pct);x.g=quizGrade(Math.round(x.best/10)).g;save()}}
 function act(){if(halt)return;if(nearDoor()){leave();return}const a=nearTr();if(a)a[4]()}
 /* ---- minimap ---- */
 const mc=$('mm'),mg=mc.getContext('2d'),mb=document.createElement('canvas');mb.width=mb.height=320;const MS=Math.min(300/(2*RX),300/(RZ1-RZ0+3)),mf=(x,z)=>[160+x*MS,160+(z-MZ)*MS];
@@ -137,7 +140,7 @@ function pause(){halt=true;$('menu').classList.add('pz');$('menu').style.display
 $('pS').onclick=()=>{$('menu').style.display='none';halt=false;document.body.classList.remove('mn')};$('pH').onclick=()=>{frm='vp';view('vh')};$('pT').onclick=()=>{frm='vp';applySet();view('vt')};$('pQ').onclick=()=>{SS.del('sk_day');SS.del('sk_ret');nav('index')};
 (function(){if(SR_IFR)return;let on=0;const E=['pointerdown','keydown','touchend'],arm=()=>{if(on)return;on=1;backKeep();E.forEach(e=>removeEventListener(e,arm,true))};E.forEach(e=>addEventListener(e,arm,true));
 addEventListener('popstate',()=>{if(!on||!SR_TRAP)return;backKeep();const ld=$('ld');if(ld&&ld.style.display!='none')return;
-if(cardOpen()){shut();return}
+if(QZ.isOpen()){QZ.back();return}if(cardOpen()){shut();return}
 const m=$('menu');if(m.style.display=='flex'){const vp=$('vp');if(vp&&!vp.hidden)$('pS').click();else view('vp')}else pause()})})();
 window.gfxHook=()=>{ren.shadowMap.enabled=!SET.lo;dl.castShadow=!SET.lo;ren.setPixelRatio(SET.lo?1:Math.min(devicePixelRatio,2));fit();sc.traverse(o=>{if(o.material)o.material.needsUpdate=true})};
 /* ---- see-through: a wall or cupboard that is between the camera and the player fades to 25% (same code as the Kantin) ---- */
@@ -170,6 +173,6 @@ function loop(ts){requestAnimationFrame(loop);const dt=Math.min((ts-last)/1000||
  drawMM();ren.render(sc,cam)}requestAnimationFrame(loop);
 /* ---- start ---- */
 function boot(){const k=LS.get('sk_cur',null);if(!OKGO||!k||!PF[k]){SS.del('sk_day');SS.del('sk_ret');nav('index');return}
- cur=PF[k];gen=cur.gen||'m';curL=cur.L||null;mkP();applySet();$('scr').style.display='none';refreshBack();$('mdl').textContent=K.n+' · '+(STORY?'Mod Kelas':'Mod Jalan-jalan');
- loading(()=>{document.body.classList.remove('mn');halt=false;toast(K.hello,2600)})}
+ cur=PF[k];gen=cur.gen||'m';curL=cur.L||null;mkP();applySet();$('scr').style.display='none';refreshBack();if(SS.get('sk_back')){SS.del('sk_back');P.x=RX-1.4;P.z=BDZ;P.f=-Math.PI/2;cy=P.f+Math.PI;cp.x=P.x;cp.z=P.z}$('mdl').textContent=K.n+' · '+(STORY?'Mod Kelas':'Mod Jalan-jalan');
+ loading(()=>{document.body.classList.remove('mn');halt=false;toast(K.hello+(STORY&&HASQ?' Duduk di kerusi kuning untuk kuiz.':''),3600)})}
 boot();

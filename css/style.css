@@ -134,7 +134,8 @@ body.mn #ck,body.mn #bl{display:none!important}
 
 /* --- Round 7: grades (Lencana + Kad Laporan), end card scrolls on small screens, Kantin room and its mini games --- */
 #room{overflow:auto;justify-content:flex-start}#room>:first-child{margin-top:auto}#room>:last-child{margin-bottom:auto}
-.gAP{color:#ffd23f}.gA{color:#5ccf4a}.gB{color:#6fb6ff}.gC{color:#ffa94d}.gD{color:#ff7b7b}.gN{color:#9aa3bd}
+.gAP{color:#ffd23f}.gA{color:#5ccf4a}.gB{color:#6fb6ff}.gC{color:#ffa94d}.gD{color:#ff7b7b}.gN{color:#9aa3bd}.gBP{color:#4fd2c2}.gF{color:#ff5d5d}
+#lvb{flex-direction:row;flex-wrap:wrap;justify-content:center;align-items:center;font-size:.85em;margin-top:.2em}#lvb span{font-weight:700;margin-right:.3em}#lvb button.on,#vt [data-tl].on{background:#ffd23f!important;color:#1c2f6b!important;outline:0}
 .grg{display:grid;grid-template-columns:repeat(auto-fit,minmax(10em,1fr));gap:.4em;margin-top:.4em}
 .gr1{display:flex;align-items:center;justify-content:space-between;gap:.6em;background:rgba(255,255,255,.14);border-radius:.8em;padding:.4em .7em}
 .gr1 span{display:block;font-weight:600}.gr1 small{display:block;opacity:.75;font-size:.75em;font-weight:400}.gr1 b{font-size:1.5em;line-height:1}

@@ -64,7 +64,8 @@ goal(-1);goal(1);
 const CHEER=[];
 function bench(x,z,ry,sit){bx(sc,2.2,.08,.5,'#a9744a',x,.46,z);bx(sc,2.2,.5,.07,'#a9744a',x,.8,z-Math.cos(ry)*.27);[-1,1].forEach(a=>bx(sc,.1,.42,.1,'#5a5f69',x+a*.95,.21,z));colBox(x,z,1.15,.4);
  (sit||[]).forEach(a=>{const m=npc('murid');m.position.set(x+a,.04,z);m.rotation.y=ry;m.userData.legs.forEach(l=>l.rotation.x=-Math.PI/2);sc.add(m);LOWH.push(m)})}
-[[-15,[-.5]],[-7,[.4]],[1,[-.4,.5]]].forEach(a=>bench(a[0],-16.4,0,a[1]));[[8,[0]],[18,[0]]].forEach(a=>bench(a[0],16.6,Math.PI,a[1]));
+[[-15,[-.5]],[-7,[.4]],[1,[-.4,.5]]].forEach(a=>bench(a[0],-16.4,0,a[1]));
+const PV={x:3.1,z:-16.4};mkVase(sc,PV.x,PV.z);colBox(PV.x,PV.z,.4,.4); /* Round 10b3: easter egg vase beside the bench nearest the Lari Berpagar station, silent (vaseHit in core.js) */[[8,[0]],[18,[0]]].forEach(a=>bench(a[0],16.6,Math.PI,a[1]));
 [[-18,-17.9],[-10,-18],[-2,-17.9],[5,-18],[24,16.9]].forEach((a,i)=>{const m=npc('murid');m.position.set(a[0],0,a[1]);m.rotation.y=a[1]<0?0:Math.PI;sc.add(m);CHEER.push({m,ph:i*1.3});if(i%2)LOWH.push(m)});
 {const cg=new T.ConeGeometry(.22,.5,6),cm=mat('#ff7a1a'),cone=(x,z)=>{const m=new T.Mesh(cg,cm);m.position.set(x,.25,z);sc.add(m)};
  [-12,-6,0,6,12].forEach(x=>{cone(x,-(RI-.5));cone(x,RI-.5)});[-1,1].forEach(s=>{cone(VX+s*1.9,VZ0-.6);cone(VX+s*1.9,VZ0+1.6)})}
@@ -166,7 +167,7 @@ function summary(){const rs=RES,avg=rs.reduce((a,r)=>a+r.score,0)/3;let g=null;h
  card('<h2>Semua stesen selesai!</h2><div class="grg">'+rows+'</div>'+(STORY?'<p>Gred Pendidikan Jasmani: <b class="'+gcls(g)+'" style="font-size:1.6em">'+g+'</b> · '+Math.round(avg)+'/100</p>':'<p class="kh">Gred hanya dikira dalam Mod Kelas.</p>')+'<div class="rw"><button onclick="PN.leave()">Keluar padang ▶</button><button class="kx" onclick="PN.shut()">Kekal di sini</button></div>')}
 function leave(){SS.set('sk_ret',STORY&&grade?{room:4,grade:grade.g,score:grade.s}:{room:4,roam:1});closeCard();loading(()=>nav('world'))}
 window.PN={go:stageIn,shut,leave,ok:done,again(i){closeCard();PG.begin(i,r=>onRes(i,r))}};
-function act(){if(halt)return;const i=nearSt();if(i>=0){talk(i);return}
+function act(){if(halt)return;if(Math.hypot(P.x-PV.x,P.z-PV.z)<1.5){vaseHit('padang');return}const i=nearSt();if(i>=0){talk(i);return}
  if(nearDoor()){if(!STORY)leave();else if(doneN()==3)summary();else{toast('Siapkan semua stesen dahulu! ('+doneN()+'/3)',2600);say('Belum boleh keluar!')}}}
 /* ---- balls: walk into a ball to push it; into a goal = Gol! ---- */
 function gol(){cur.gol=(cur.gol||0)+1;save();say('Gol!!! ⚽');toast('GOL! ⚽',1400);[0,1,2,3].forEach(i=>tone(520+i*130,i*.08,.14,'triangle',.1));if(cur.gol>=GOAL5)award('gol5','Penjaring','Jaring '+GOAL5+' gol di Padang Balapan.')}
