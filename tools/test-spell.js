@@ -35,6 +35,19 @@ ok(SPL.advance(s)&&s.i===1,'advance after answer');ok(!SPL.advance(s),'cannot ad
 /* timeout: complete word typed but time over = no mark, locked */
 q=mk();s={qs:[q],i:0,marks:0,done:false};SPL.type(q,'e');SPL.type(q,'u');ok(SPL.timeout(s)&&q.status==='time'&&s.marks===0,'timeout gives no mark even with a complete word');ok(SPL.submit(s).r==='locked'&&s.marks===0&&!SPL.type(q,'a'),'no input or submit after timeout');ok(SPL.advance(s)&&s.done,'next after timeout (last question ends the session)');
 q=mk();s={qs:[q],i:0,marks:0,done:false};SPL.timeout(s);ok(q.ans==='B_A_TIFUL','timed-out answer shown with _ for empty boxes');
+/* hint: one per round, reveals one correct letter, locks it, keeps the point available */
+q=mk();s={qs:[q,mk()],i:0,marks:0,done:false,hints:1};SPL.select(q,3);SPL.type(q,'x');SPL.select(q,3);ok(SPL.hint(s)===3&&q.cells[3].lock&&q.cells[3].ch==='U'&&s.hints===0&&q.hinted,'hint reveals the selected (wrong) letter and locks it');
+ok(SPL.hint(s)===-1&&s.hints===0,'only one hint per round');SPL.type(q,'e');ok(SPL.submit(s).r==='ok'&&s.marks===1,'a hinted word still scores the point');
+q=mk();s={qs:[q],i:0,marks:0,done:false,hints:1};SPL.type(q,'e');SPL.type(q,'u');ok(SPL.hint(s)===-1&&s.hints===1,'no hint wasted on a correct word');
+q=mk();s={qs:[q],i:0,marks:0,done:false,hints:1};SPL.timeout(s);ok(SPL.hint(s)===-1,'no hint after the word is over');
+ok(SPL.newSession('mudah').hints===1&&SPCFG.time.mudah===30&&SPCFG.time.sederhana===25&&SPCFG.time.sukar===25,'new session has 1 hint; timers 30/25/25');
+/* streak bonus: Easy every 3, Medium/Hard every 2, no cap; wrong, timeout or hint on the word resets it */
+const fill=(s,good)=>{const qq=SPL.cur(s);qq.cells.forEach((c,i)=>{if(!c.lock)c.ch=good?qq.word[i]:(qq.word[i]=='Z'?'Y':'Z')});return SPL.submit(s)};
+{const s=SPL.newSession('mudah');const b=[];for(let k=0;k<9;k++){b.push(fill(s,true).bonus);SPL.advance(s)}ok(b.join()==='false,false,true,false,false,true,false,false,true'&&s.hints===4&&s.marks===9,'Easy: +1 hint after every 3 correct in a row (3 bonuses over 9 words, no cap: 1+3=4 hints)')}
+{const s=SPL.newSession('sederhana');const b=[];for(let k=0;k<6;k++){b.push(fill(s,true).bonus);SPL.advance(s)}ok(b.join()==='false,true,false,true,false,true'&&s.hints===4,'Medium: +1 hint after every 2 correct in a row')}
+{const s=SPL.newSession('sukar');fill(s,true);SPL.advance(s);ok(s.streak===1,'Hard: streak counts');fill(s,false);ok(s.streak===0&&s.hints===1,'wrong answer resets the streak');SPL.advance(s);fill(s,true);SPL.advance(s);SPL.timeout(s);ok(s.streak===0,'time-out resets the streak');SPL.advance(s);
+ fill(s,true);SPL.advance(s);ok(s.streak===1,'streak restarts after a reset');const q2=SPL.cur(s);SPL.hint(s);ok(s.streak===0&&s.hints===0,'using a hint resets the streak');const r=fill(s,true);ok(r.r==='ok'&&!r.bonus&&s.streak===0,'a hinted word scores the point but does not build the streak');SPL.advance(s);
+ fill(s,true);SPL.advance(s);const r2=fill(s,true);ok(r2.bonus&&s.hints===1&&s.streak===0,'a clean streak of 2 after that earns the hint again')}
 /* arrows */
 q=mk();ok(SPL.move(q,1)&&q.sel===3&&!SPL.move(q,1)&&SPL.move(q,-1)&&q.sel===1&&!SPL.move(q,-1),'arrow keys hop between editable boxes only');
 /* a full session score = number of correct answers, and grades follow the Matematik scale */

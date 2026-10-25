@@ -21,14 +21,19 @@ key('1');ok(root.querySelector('.tb')===null,'locked level key does nothing');
 lvs[1].click();ok(root.textContent.includes('Question 1 / 10')&&root.textContent.includes('Score: 0'),'level starts question 1/10');
 let q=()=>root.all().filter(e=>e.has('bx')),first=q();ok(first.length>0&&first.every((b,i)=>true)&&timers.size==1,'boxes drawn, exactly one timer');
 /* type via keyboard into the selected box and watch the DOM */
-const boxes=q(),empties=boxes.filter(b=>b.has('em'));ok(empties.length>=2&&empties.length<=4,'medium hides 2-4 letters ('+empties.length+')');
+const boxes=q(),empties=boxes.filter(b=>b.has('em'));ok(empties.length>=2&&empties.length<=3,'medium hides 2-3 letters ('+empties.length+')');
 key('q');ok(boxes.filter(b=>b.has('fl')).length==1&&boxes.filter(b=>b.has('fl'))[0].textContent=='Q','typed letter appears in a box, upper case');
 key('Backspace');ok(boxes.filter(b=>b.has('fl')).length==0,'backspace clears it');
+const kk=l=>root.all().find(e=>e.has('kk')&&e.textContent==l);ok(root.all().filter(e=>e.has('kk')).length==27&&kk('DEL'),'on-screen keys: 26 letters + DEL');
+kk('Q').click();ok(boxes.filter(b=>b.has('fl')).length==1&&boxes.filter(b=>b.has('fl'))[0].textContent=='Q','tapping an on-screen key puts the letter in the selected box');
+const sel=boxes.find(b=>b.has('sl'));ok(sel&&sel.has('em'),'selection moved on to the next empty box');kk('DEL').click();ok(boxes.filter(b=>b.has('fl')).length==0,'DEL key clears it');
+ok(!root.all().some(e=>e.tagName=='INPUT'),'no text input = no phone keyboard');
+ok(root.textContent.includes('Streak 0/2'),'streak badge shows Streak 0/2 on Medium');const hb=btn('Hint (1)');ok(hb&&!hb.disabled,'hint button shows 1 left');hb.click();ok(btn('Hint (0)').disabled&&root.textContent.includes('Hint used')&&boxes.filter(b=>b.has('em')).length==empties.length-1,'hint reveals one letter and uses up the hint');key('Backspace');
 btn('Submit Answer').click();ok(root.textContent.includes('Please fill every empty box'),'submit with empty boxes asks to finish');
 btn('Clear').click();ok(timers.size==1,'clear does not touch the timer');
-sec(16);ok(root.textContent.includes("Time's up!")&&root.textContent.includes('The correct spelling is')&&btn('Next')&&timers.size==0,'timeout: message, correct spelling, Next button, timer stopped');
+sec(26);ok(root.textContent.includes("Time's up!")&&root.textContent.includes('The correct spelling is')&&btn('Next')&&timers.size==0,'timeout: message, correct spelling, Next button, timer stopped');
 key('a');ok(boxes.every(b=>!b.has('fl')),'no typing after timeout');
-btn('Next').click();ok(root.textContent.includes('Question 2 / 10')&&timers.size==1,'Next -> question 2 with a fresh single timer');
+ok(root.all().find(e=>e.has('kb')).has('off'),'keys switch off when the word is over');btn('Next').click();ok(root.textContent.includes('Question 2 / 10')&&timers.size==1,'Next -> question 2 with a fresh single timer');
 /* Exit dialog pauses the timer */
 btn('Exit').click();ok(root.textContent.includes('Leave the game?')&&timers.size==0,'exit dialog pauses timer');btn('Keep Playing').click();ok(timers.size==1&&!root.textContent.includes('Leave the game?'),'keep playing resumes it');
 btn('Exit').click();btn('Leave').click();ok(root.textContent.includes('Choose a level')||root.textContent.includes('Your level'),'leave goes back to the menu');ok(timers.size==0&&done==null,'timer stopped, nothing saved');
@@ -39,12 +44,17 @@ let correct=0;for(let n=0;n<10;n++){const bx=q();const w0=bx.map(b=>b.textConten
  if(n%3==0){ /* find word by matching locked letters in bank */ const pat=bx.map(b=>b.has('lk')?b.textContent:'.').join('');const rx=new RegExp('^'+pat+'$','i');const cand=ctx.T&&vm.runInContext('SPB.sederhana',ctx).filter(w=>rx.test(w));bx.forEach(b=>{});
   const idx=bx.map((b,i)=>b.has('lk')?-1:i).filter(i=>i>=0);idx.forEach(i=>{bx[i].click();key(cand[0][i])});btn('Submit Answer').click();const good=root.textContent.includes('+1 point');if(good)correct++;ok(good||cand.length>1,'correct word accepted (candidates '+cand.length+')')}
  else if(n%3==1){bx.filter(b=>b.has('em')).forEach((b,i)=>{b.click();key('z')});btn('Submit Answer').click();ok(root.textContent.includes('Not quite!'),'wrong spelling rejected')}
- else sec(20);
+ else sec(26);
  btn(n==9?'See Results':'Next').click()}
 ok(root.textContent.includes('English Spelling Challenge · Medium')&&root.textContent.includes('Correct: '+correct),'results screen: title, level, correct count ('+correct+')');
 ok(done&&done.sub=='eng'&&done.level=='sederhana'&&done.marks==correct,'onDone result carries sub, level and marks');ok(ctx.cur.quiz.eng.sederhana.best==correct,'best saved under cur.quiz.eng');
 ok(root.all().filter(e=>e.has('rr')).length==10,'review lists all 10 words');ok(btn('Play Again')&&btn('Back to Level Selection'),'result buttons');
 btn('Play Again').click();ok(root.textContent.includes('Question 1 / 10')&&root.textContent.includes('Score: 0')&&timers.size==1,'play again starts a clean session');
 SP.close();ok(timers.size==0&&closed==1&&!SP.isOpen(),'close stops the timer and calls onClose');
+SP.open({sub:'eng',lock:'sederhana'});root.all().filter(e=>e.has('lv'))[1].click();
+{const solve=()=>{const bx=q(),pat=bx.map(b=>b.has('lk')?b.textContent:'.').join(''),rx=new RegExp('^'+pat+'$','i'),cand=vm.runInContext('SPB.sederhana',ctx).filter(w=>rx.test(w));bx.forEach((b,i)=>{if(!b.has('lk')){b.click();key(cand[0][i])}});btn('Submit Answer').click()};
+ solve();ok(!root.textContent.includes('Hint earned')&&root.textContent.includes('Streak 1/2'),'first clean word: streak 1/2, no bonus yet');btn('Next').click();
+ solve();ok(root.textContent.includes('+1 Hint earned!'),'second clean word shows +1 Hint earned!');btn('Next').click();ok(root.textContent.includes('Hint (2)')&&root.textContent.includes('Streak 0/2'),'hint stack is 2 and the streak restarts')}
+SP.close();
 SP.open({sub:'eng',lock:null});ok(root.all().filter(e=>e.has('lv')&&!e.disabled).length==3,'Mod Jalan-jalan: all 3 levels open');SP.close();
 console.log(fail?fail+' FAILED':'all '+pass+' UI checks passed');process.exit(fail?1:0);
