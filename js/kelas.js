@@ -8,7 +8,8 @@ const CAMD=.8;   /* camera distance, 1 = Kantin value, lower = closer */
 const OKGO=!!SS.get('sk_go');SS.del('sk_go');
 const STORY=LS.get('sk_mode','roam')=='story';
 const SUB=SS.get('sk_kelas')||'mat',K=KL[SUB]||KL.mat;
-const HASQ=typeof QD!='undefined'&&!!QD[SUB];let QDONE=!HASQ,QRES=null; /* Round 10c: only Matematik has a quiz so far; Mod Kelas needs it finished once before the door works */
+const QENG=SUB=='eng'&&typeof SP!='undefined',QE=QENG?SP:QZ; /* Round 10d: English uses the spelling game (SP), Matematik the ABCD quiz (QZ); both have the same open/back/isOpen */
+const HASQ=QENG||(typeof QD!='undefined'&&!!QD[SUB]);let QDONE=!HASQ,QRES=null; /* Round 10c/10d: Matematik and English have a quiz; Mod Kelas needs it finished once before the door works */
 const ren=new T.WebGLRenderer({canvas:$('cv'),antialias:true}),cv=$('cv');ren.shadowMap.enabled=true;ren.setPixelRatio(Math.min(devicePixelRatio,2));
 const sc=new T.Scene();sc.background=new T.Color('#bfe3f5');const cam=new T.PerspectiveCamera(55,1,.5,150);
 sc.add(new T.HemisphereLight(0xffffff,0x9aa7b8,.95));
@@ -115,7 +116,7 @@ function stand(){if(!sitting)return;sitting=false;P.x=QC[0];P.z=QC[1]+.95;P.f=Ma
 function shut(){ov.style.display='none';stand();document.body.classList.remove('mn');halt=false}
 const info=d=>card(d.t,d.l,[['Tutup',shut]]);
 function findNote(){cur.sec=cur.sec||{};const first=!cur.sec[K.hid.id];if(first){cur.sec[K.hid.id]=Date.now();save()}card(K.hid.t,K.hid.l,[['Tutup',shut]]);if(first)toast('Nota tersembunyi dijumpai!',2600)}
-function sit(){sitting=true;P.x=QC[0];P.z=QC[1];P.f=Math.PI;P.y=0;P.vy=0;if(HASQ){halt=true;document.body.classList.add('mn');QZ.open({sub:SUB,lock:STORY?(cur.level||'sederhana'):null,onClose:shut,onDone:quizDone})}else card('Mini Kuiz '+K.n,['Kuiz akan datang tidak lama lagi. Sabar ya!'],[['Bangun',shut]])}
+function sit(){sitting=true;P.x=QC[0];P.z=QC[1];P.f=Math.PI;P.y=0;P.vy=0;if(HASQ){halt=true;document.body.classList.add('mn');QE.open({sub:SUB,lock:STORY?(cur.level||'sederhana'):null,onClose:shut,onDone:quizDone})}else card('Mini Kuiz '+K.n,['Kuiz akan datang tidak lama lagi. Sabar ya!'],[['Bangun',shut]])}
 /* ---- E triggers: [x, z, radius, hint, action]; the nearest one inside its radius wins ---- */
 const TR=[[0,RZ0+3.3,3,'Baca papan',()=>info(K.nb)],[-RX+.7,-3.2,2.1,'Lihat peta dunia',()=>info(K.nm)],
  [-RX+.7,1.6,1.4,'Baca poster',()=>say(K.posters[0].b)],[-RX+.7,4.4,1.4,'Baca poster',()=>say(K.posters[1].b)],[RX-.7,.2,1.4,'Baca poster',()=>say(K.posters[2].b)],[RX-.7,3.2,1.4,'Baca poster',()=>say(K.posters[3].b)],
@@ -125,7 +126,7 @@ const nearTr=()=>{let b=null,bd=1e9;TR.forEach(a=>{const d=Math.hypot(P.x-a[0],P
 /* ---- the way out: Mod Kelas = attended (no grade yet), Mod Jalan-jalan = free ---- */
 function leave(){if(STORY&&!QDONE){say('Selesaikan kuiz dahulu. Duduk di kerusi kuning.',3200);return}SS.set('sk_ret',STORY?(QRES?{room:K.room,grade:QRES.g,score:QRES.pct}:{room:K.room}):{room:K.room,roam:1});loading(()=>nav('world'))}
 /* a finished quiz: the first finish opens the door in Mod Kelas; the grade (the quiz letter) becomes this class's grade in Pencapaian and the day card */
-function quizDone(r){QDONE=true;QRES=r;if(STORY){const x=recRoom('mat',r.pct);x.g=quizGrade(Math.round(x.best/10)).g;save()}}
+function quizDone(r){QDONE=true;QRES=r;if(STORY){const x=recRoom(SUB,r.pct);x.g=quizGrade(Math.round(x.best/10)).g;save()}}
 function act(){if(halt)return;if(nearDoor()){leave();return}const a=nearTr();if(a)a[4]()}
 /* ---- minimap ---- */
 const mc=$('mm'),mg=mc.getContext('2d'),mb=document.createElement('canvas');mb.width=mb.height=320;const MS=Math.min(300/(2*RX),300/(RZ1-RZ0+3)),mf=(x,z)=>[160+x*MS,160+(z-MZ)*MS];
@@ -140,7 +141,7 @@ function pause(){halt=true;$('menu').classList.add('pz');$('menu').style.display
 $('pS').onclick=()=>{$('menu').style.display='none';halt=false;document.body.classList.remove('mn')};$('pH').onclick=()=>{frm='vp';view('vh')};$('pT').onclick=()=>{frm='vp';applySet();view('vt')};$('pQ').onclick=()=>{SS.del('sk_day');SS.del('sk_ret');nav('index')};
 (function(){if(SR_IFR)return;let on=0;const E=['pointerdown','keydown','touchend'],arm=()=>{if(on)return;on=1;backKeep();E.forEach(e=>removeEventListener(e,arm,true))};E.forEach(e=>addEventListener(e,arm,true));
 addEventListener('popstate',()=>{if(!on||!SR_TRAP)return;backKeep();const ld=$('ld');if(ld&&ld.style.display!='none')return;
-if(QZ.isOpen()){QZ.back();return}if(cardOpen()){shut();return}
+if(QE.isOpen()){QE.back();return}if(cardOpen()){shut();return}
 const m=$('menu');if(m.style.display=='flex'){const vp=$('vp');if(vp&&!vp.hidden)$('pS').click();else view('vp')}else pause()})})();
 window.gfxHook=()=>{ren.shadowMap.enabled=!SET.lo;dl.castShadow=!SET.lo;ren.setPixelRatio(SET.lo?1:Math.min(devicePixelRatio,2));fit();sc.traverse(o=>{if(o.material)o.material.needsUpdate=true})};
 /* ---- see-through: a wall or cupboard that is between the camera and the player fades to 25% (same code as the Kantin) ---- */
