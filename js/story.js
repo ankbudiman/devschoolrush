@@ -12,7 +12,7 @@ const CFG={DAY:6,
   FIRST:[6,10],BREAK:[6,12],       /* real seconds of free time before a bell */
   NEAR:.3,NEARMIN:8,ONTIME:100,BONUS:2,LATE:30,CAUGHT:20,PSPD:4,PDELAY:2,CATCH:.85};
 const LAB=['Sains','Bahasa Melayu','Matematik','English','Pendidikan Jasmani','Waktu Rehat']; /* index = DR index; 5 = Kantin */
-const RP={2:'kelas',3:'kelas',4:'padang',5:'kantin'},RS={2:'mat',3:'eng'}; /* Round 10: Matematik and English share kelas.html; RS = which subject the page builds (sessionStorage sk_kelas) */ /* DR index -> real room page (the others still use the placeholder card) */
+const RP={1:'kelas',2:'kelas',3:'kelas',4:'padang',5:'kantin'},RS={1:'bm',2:'mat',3:'eng'}; /* Round 10: Matematik and English share kelas.html (Round 10e: also the Perpustakaan, room 1 = bm); RS = which subject the page builds (sessionStorage sk_kelas) */ /* DR index -> real room page (the others still use the placeholder card) */
 let st='off',order=[],n=0,cls=-1,tleft=0,ttot=0,score=0,ok=0,lt=0,navOn=false,ph=null,bd=null,bt=0,clk=0,ringT=0,ew=0,bd2=0,gr={}; /* gr = today's grades by class index, filled when a real room is finished (Round 7: Kantin) */
 const shuf=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
 const fmt=s=>{s=Math.max(0,Math.ceil(s));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')};

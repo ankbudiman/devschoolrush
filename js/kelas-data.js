@@ -1,5 +1,5 @@
 /* Classroom data (Round 10, roam only). All texts and colours live here, apart from the code in js/kelas.js.
-   Keys: mat = Matematik (DR index 2), eng = English (DR index 3). Later rounds add quiz, notes and hidden item data here. */
+   Keys: mat = Matematik (DR index 2), eng = English (DR index 3), bm = Perpustakaan / Bahasa Melayu (DR index 1, lib:1 = built by js/kelas-lib.js, Round 10e). Later rounds add quiz, notes and hidden item data here. */
 const KL={
  mat:{n:'Matematik',room:2,wall:'#f7cdda',strip:'#e5a4b9',
   board:['MATEMATIK','6 × 7 = 42'],
@@ -16,5 +16,13 @@ const KL={
   nm:{t:'World Map',l:['There are 7 continents and 5 oceans.','Malaysia is in Southeast Asia.','Kuala Lumpur is the capital of Malaysia.','Our neighbours are Thailand, Singapore, Indonesia and Brunei.']},
   hid:{id:'eng_n1',t:'Hidden Note 1',l:['This note is still empty. The story is coming soon!']},
   teach:['Good morning, class!','Open your English book!','Speak up, don\'t be shy!','Spell it out loud!'],
-  hello:'Selamat datang ke kelas English!'}
+  hello:'Selamat datang ke kelas English!'},
+ bm:{n:'Bahasa Melayu',room:1,lib:1,wall:'#f1e8d4',strip:'#dccdaa',
+  board:['PERPUSTAKAAN','Senyap, sila'],
+  posters:[{t:['PERIBAHASA','Hemat pangkal kaya','Bersatu teguh','Alah bisa tegal biasa'],c:'#c98a3a',b:'Bersatu teguh, bercerai roboh. Hemat pangkal kaya: berjimat itu asas untuk menjadi kaya.'},{t:['KATA NAMA','Orang: guru','Tempat: sekolah','Benda: buku'],c:'#3a9ea0',b:'Kata nama ialah nama orang, tempat atau benda. Contoh: guru, sekolah, buku.'},{t:['KATA KERJA','membaca','menulis','berlari'],c:'#8f7ee0',b:'Kata kerja ialah perkataan yang menunjukkan perbuatan. Contoh: membaca, menulis, berlari.'},{t:['EJAAN','sekolah','perpustakaan','terima kasih'],c:'#e2884a',b:'Eja dengan teliti: sekolah, perpustakaan, terima kasih. Baca perlahan-lahan!'}],
+  nb:{t:'Nota Bahasa Melayu',l:['Kata nama ialah nama orang, haiwan, tempat atau benda.','Kata kerja ialah perkataan yang menunjukkan perbuatan.','Ayat bermula dengan huruf besar dan berakhir dengan tanda noktah (.).','Ucap terima kasih, tolong dan maaf dengan sopan.']},
+  nm:{t:'Glob Dunia',l:['Dunia ada 7 benua dan 5 lautan.','Malaysia terletak di Asia Tenggara.','Malaysia ada 13 negeri dan 3 Wilayah Persekutuan.','Kuala Lumpur ialah ibu negara Malaysia.','Negara jiran: Thailand, Singapura, Indonesia dan Brunei.']},
+  hid:{id:'bm_n1',t:'Nota Tersembunyi 1',l:['Nota ini masih kosong. Ceritanya akan datang!']},
+  teach:['Senyap sikit ya, ini perpustakaan!','Pulangkan buku tepat pada masanya.','Membaca itu jambatan ilmu.','Pilih buku yang kamu suka!'],
+  hello:'Selamat datang ke Perpustakaan!'}
 };
