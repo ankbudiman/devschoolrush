@@ -43,7 +43,7 @@ for(let x=112;x<570;x+=32){if((x>148&&x<192)||(x>458&&x<502))continue;win(x,150,
 [372,404,436,468,500].forEach(y=>win(100,y,1,0,2.4,1.5,1.2));[200,232,264,296,344].forEach(y=>win(580,y,-1,0,2.4,1.5,1.2));[380,416,452,508,544].forEach(x=>win(x,110,0,1,2.6,1.7,1.1));
 [[354,205,-1,0],[318,385,1,0],[160,186,0,-1],[400,362,0,-1],[500,326,0,1]].forEach(a=>nb(...a));
 [[318,470,1,0],[354,300,-1,0],[300,186,0,-1],[520,186,0,-1],[480,502,0,1],[200,502,0,1]].forEach(a=>filt(...a));
-[[568,172],[112,520],[112,352],[568,352]].forEach(a=>plant(...a));
+[[575.5,154.5],[104.5,330.5],[575.5,357.5]].forEach(a=>plant(...a)); /* Round 10g: corners, (112,520) removed */
 [[200,186,0,-1],[420,326,0,1],[150,362,0,-1],[354,225,-1,0]].forEach(a=>bin(...a));
 function band(p,q,w,nx,nz){const h=nz!=0,m=new T.Mesh(new T.PlaneGeometry((q-p)*K,2),mat('#bfa270'));m.position.set(h?X((p+q)/2):X(w)+nx*.02,1,h?Z(w)+nz*.02:Z((p+q)/2));m.rotation.y=Math.atan2(nx,nz);sc.add(m)}
 [[100,318,186,0,-1],[354,544,186,0,-1],[100,318,326,0,1],[354,544,326,0,1],[136,318,362,0,-1],[354,420,362,0,-1],[420,580,362,0,-1],[136,318,502,0,1],[354,420,502,0,1],[420,580,502,0,1],[186,326,318,1,0],[362,502,318,1,0],[186,326,354,-1,0],[362,502,354,-1,0],[326,538,100,1,0],[150,326,580,-1,0],[326,362,580,-1,0],[502,538,580,-1,0],[100,158,150,0,1],[182,468,150,0,1],[492,580,150,0,1],[100,580,538,0,-1],[150,186,100,1,0]].forEach(a=>band(...a));
@@ -61,6 +61,7 @@ cols.push({x0:x-(nx?.5:len/2),x1:x+(nx?.5:len/2),z0:z-(nx?len/2:.5),z1:z+(nx?len
 bench(100,440,1,0,2.2,2);bench(580,250,-1,0,2.2,1);bench(215,362,0,-1,2.2,2);
 function rb(px,py,nx,nz,c){const[x,z]=WP(px,py,nx,nz,.4),b=new T.Mesh(new T.CylinderGeometry(.27,.22,.7,6),mat(c));b.position.set(x,.35,z);b.castShadow=true;sc.add(b);box3(x,z,.6,.6,.08,'#222222',.7);solid(x,z,.28);BN.push({x:x+nx*.7,z:z+nz*.7,bx:x,bz:z,k:{'#3b7fd0':0,'#e8923a':1,'#7a5236':2}[c]})}
 [['#3b7fd0',466],['#e8923a',474],['#7a5236',482]].forEach(a=>rb(354,a[1],-1,0,a[0]));
+[['#3b7fd0',222],['#e8923a',230],['#7a5236',238]].forEach(a=>rb(318,a[1],1,0,a[0])); /* Round 10g: second set on the left wall of the central corridor */
 const OB=[],BO=[];
 function ob(t,px,py){const x=X(px),z=Z(py),g=new T.Group();
 if(t=='banana'){bx(g,.46,.07,.15,'#ffd23f',0,.04,0);const b=bx(g,.16,.07,.14,'#ffd23f',.26,.04,.07);b.rotation.y=.6;bx(g,.08,.08,.1,'#7a5236',-.25,.04,0);g.rotation.y=rnd(0,6)}
@@ -78,6 +79,7 @@ return g}
 const NM=['Kertas','Botol plastik','Botol kaca','Bungkus gula-gula'],HM=[0,1,2,3].map(t=>{const g=mkItem(t);g.visible=false;g.scale.setScalar(1.15);g.position.set(0,-.42,.12);return g});
 const SM=[[340,400],[230,168],[230,344],[450,520],[118,450],[330,200]].map((a,i)=>{const x=X(a[0]),z=Z(a[1]),k=[0,1,2,3].map(t=>{const g=mkItem(t),l=t==1||t==2;g.scale.setScalar(1.5);g.position.set(x,l?.11:0,z);g.rotation.set(0,rnd(0,6),l?Math.PI/2:0);g.visible=t==i%4;sc.add(g);return g});return{x,z,ty:i%4,cd:0,k}});
 [['KERTAS','#3b7fd0',466],['PLASTIK','#e8923a',474],['KACA','#7a5236',482]].forEach(a=>tx([a[0]],a[1],'#ffffff',.8,.3,22,X(354)-.1,1.15,Z(a[2]),-Math.PI/2));
+[['KERTAS','#3b7fd0',222],['PLASTIK','#e8923a',230],['KACA','#7a5236',238]].forEach(a=>tx([a[0]],a[1],'#ffffff',.8,.3,22,X(318)+.1,1.15,Z(a[2]),Math.PI/2)); /* Round 10g */
 function pick(s){carry=s.ty;s.k.forEach(g=>g.visible=false);s.cd=40;HM.forEach((g,i)=>g.visible=i==carry);say('Dapat '+NM[carry].toLowerCase()+'!');tone(500,0,.08,'sine',.12)}
 function throwIt(b){const H=['Kertas masuk tong biru.','Botol plastik masuk tong oren.','Botol kaca masuk tong coklat.','Bungkus gula-gula masuk tong biasa.'];
 if(b.k!=carry){say('Salah tong! '+H[carry]);tone(200,0,.3,'sawtooth',.08);return}
@@ -89,7 +91,8 @@ const sr=new T.Mesh(new T.CircleGeometry(1.1,24),new T.MeshBasicMaterial({color:
 /* Round 10e: Perpustakaan (index 1) now sits in the big top-left block, Makmal Sains (index 0) in the smaller bottom-right block; indexes and saves unchanged */
 const DR=[['MAKMAL SAINS','#6f63c7',452,362,0,-1,'Makmal Sains'],['PERPUSTAKAAN','#6f63c7',248,186,0,-1,'Perpustakaan'],['MATH','#2f9d86',354,256,-1,0,'Math'],['ENGLISH','#2f9d86',318,432,1,0,'English'],['PADANG BALAPAN','#d98f2b',170,110,0,1,'Padang Balapan'],['KANTIN','#c9553f',480,110,0,1,'Kantin'],['PEJABAT','#9a3c4d',387,502,0,1,'Pejabat']]; /* index 6 = Pejabat: Round 9g, locked door only, never a class target */
 DR.forEach(d=>{const n=d[0],x=X(d[2]),z=Z(d[3]),nx=d[4],nz=d[5],ry=Math.atan2(nx,nz);
-if(!n.startsWith('PADANG')){const tx=nz,tz=-nx,pe=(w,h,c,o,y,e)=>pn(w,h,c,x+nx*e+tx*o,y,z+nz*e+tz*o,ry);pe(1.5,2.3,'#d9b184',0,1.15,.06);[-1,1].forEach(s=>pe(.1,2.3,'#7a5236',s*.8,1.15,.08));pe(.14,.14,'#444444',-.55,1.1,.1)} /* Round 10d2: the classroom ENTRANCE door look (tan panel, dark brown side posts, dark handle) */
+const GDC={PERPUSTAKAAN:'#3d3578',PEJABAT:'#5a1f2e',KANTIN:'#7a2e24'}; /* Round 10g: these three doors are glass double doors (gdoor in chars.js), the rest stay wooden */
+if(GDC[n])gdoor(sc,x,z,ry,2.2,2.3,GDC[n],.05);else if(!n.startsWith('PADANG')){const tx=nz,tz=-nx,pe=(w,h,c,o,y,e)=>pn(w,h,c,x+nx*e+tx*o,y,z+nz*e+tz*o,ry);pe(1.5,2.3,'#d9b184',0,1.15,.06);[-1,1].forEach(s=>pe(.1,2.3,'#7a5236',s*.8,1.15,.08));pe(.14,.14,'#444444',-.55,1.1,.1)} /* Round 10d2: the classroom ENTRANCE door look (tan panel, dark brown side posts, dark handle) */
 const cn=document.createElement('canvas');cn.width=256;cn.height=64;const g=cn.getContext('2d');g.fillStyle=d[1];g.fillRect(0,0,256,64);g.fillStyle='#fff';g.font='bold '+(n.length>10?24:34)+'px Fredoka,sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText(n,128,34);
 const sg=new T.Mesh(new T.PlaneGeometry(3.6,.9),new T.MeshBasicMaterial({map:new T.CanvasTexture(cn)}));sg.position.set(x+nx*.06,n.startsWith('PADANG')?3.25:2.8,z+nz*.06);sg.rotation.y=ry;sc.add(sg);
 d.push(x+nx*1.2,z+nz*1.2)});
@@ -99,7 +102,7 @@ DR.slice(0,4).concat([DR[6]]).forEach(d=>clock(X(d[2])+d[4]*.12,Z(d[3])+d[5]*.12
 const BP=[],BK=[[0,3],[1,0],[2,1],[3,2]],BKN=[[0,1],[0,-1],[0,-1],[0,1]];
 const DD=[[280,326,0,1],[420,186,0,-1],[270,362,0,-1],[530,502,0,1]].map(d=>{const x=X(d[0]),z=Z(d[1]),nx=d[2],nz=d[3],r=Math.atan2(nx,nz);{const tx=nz,tz=-nx,pe=(w,h,c,o,y,e)=>pn(w,h,c,x+nx*e+tx*o,y,z+nz*e+tz*o,r);pe(1.6,2.4,'#8a5a3a',0,1.2,.06);[-1,1].forEach(s=>pe(.12,2.5,'#5a3a22',s*.86,1.25,.08));pe(1.84,.14,'#5a3a22',0,2.45,.08);pe(.5,.9,'#6f4a2c',0,1.2,.09);const pd=new T.Mesh(new T.PlaneGeometry(.22,.3),new T.MeshBasicMaterial({color:'#444444'}));pd.position.set(x+nx*.12+tx*.55,1.1,z+nz*.12+tz*.55);pd.rotation.y=r;sc.add(pd);BP.push(pd)}return[x+nx*1.2,z+nz*1.2]});
 /* Round 10b3: 4 of the 6 outside vases (the other two are in the Kantin and the Padang): by the boys toilet, by the girls toilet, and two quiet corners. Silent: no hint, E = key click (vaseHit in core.js). */
-const VS=[[120,180,'boys'],[556,512,'girls'],[349,286,'spine'],[548,320,'east']].map(a=>{const x=X(a[0]),z=Z(a[1]);mkVase(sc,x,z);cols.push({x0:x-.4,x1:x+.4,z0:z-.4,z1:z+.4});return{x,z,id:'w_'+a[2]}});
+const VS=[[120,180,'boys'],[575.5,534.5,'girls'],[349,286,'spine'],[567,357.5,'east']].map(a=>{const x=X(a[0]),z=Z(a[1]);mkVase(sc,x,z);cols.push({x0:x-.4,x1:x+.4,z0:z-.4,z1:z+.4});return{x,z,id:'w_'+a[2]}});
 /* Round 9g: Pejabat front. A teacher stands beside the door, a doormat marks the spot in front of it (CNS = the caning spot, used in Round 13) */
 const CANE_TEST=true; /* Round 9g test: E at the Pejabat door plays the cane scene. Set to false to switch it off. */
 const PJX=X(387),PJZ=Z(502),CNS=[PJX,PJZ+.9];let TCH=null,CANE=null;

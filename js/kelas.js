@@ -18,7 +18,7 @@ const dl=new T.DirectionalLight(0xffffff,.55);dl.castShadow=true;dl.shadow.mapSi
 const RX=LIB?9.75:8.5,RZ0=-7,RZ1=7,WH=3.4,DW=1.2,DX=LIB?-3.5:5.2,MZ=(RZ0+RZ1)/2,cols=[],WALL=K.wall,STR=K.strip;
 const hit=(x,z,r)=>cols.some(c=>x+r>c.x0&&x-r<c.x1&&z+r>c.z0&&z-r<c.z1);
 const gm=new T.Mesh(new T.PlaneGeometry(300,300),mat('#8fc27a'));gm.rotation.x=-Math.PI/2;gm.position.y=-.02;gm.receiveShadow=true;sc.add(gm);
-(()=>{const w=2*RX,d=RZ1-RZ0,c=document.createElement('canvas');c.width=c.height=2;const g=c.getContext('2d');g.fillStyle=LIB?'#d9c8a4':'#b8bdc5';g.fillRect(0,0,2,2);g.fillStyle=LIB?'#cdbb96':'#a5acb6';g.fillRect(0,0,1,1);g.fillRect(1,1,1,1);
+(()=>{const w=2*RX,d=RZ1-RZ0,c=document.createElement('canvas');c.width=c.height=2;const g=c.getContext('2d');g.fillStyle=LIB?'#e6e8ec':'#b8bdc5';g.fillRect(0,0,2,2);g.fillStyle=LIB?'#d3d7de':'#a5acb6';g.fillRect(0,0,1,1);g.fillRect(1,1,1,1);
  const t=new T.CanvasTexture(c);t.magFilter=T.NearestFilter;t.wrapS=t.wrapT=T.RepeatWrapping;t.repeat.set(w/3,d/3);
  const m=new T.Mesh(new T.PlaneGeometry(w,d),new T.MeshPhongMaterial({map:t,shininess:0,specular:0}));m.rotation.x=-Math.PI/2;m.position.set(0,.01,MZ);m.receiveShadow=true;sc.add(m)})();
 const FG={back:[],left:[],right:[],front:[]},FDS=[]; /* wall pieces (and what hangs on them) that fade when they block the view of the player */
@@ -30,8 +30,9 @@ FG.back.push(bx(sc,2*RX,.9,.12,STR,0,.45,RZ0+.06));
 (()=>{const a=-RX-1,b=DX-DW,c=DX+DW,d=RX+1;[[a,b],[c,d]].forEach(p=>{const w=p[1]-p[0];FG.front.push(bx(sc,w,WH,1,WALL,p[0]+w/2,WH/2,RZ1+.5));cols.push({x0:p[0],x1:p[1],z0:RZ1,z1:RZ1+1.2});
  const q0=Math.max(p[0],-RX),q1=Math.min(p[1],RX);FG.front.push(bx(sc,q1-q0,.9,.12,STR,(q0+q1)/2,.45,RZ1-.06))});
  FG.front.push(bx(sc,2*DW,WH-2.5,1,WALL,DX,2.5+(WH-2.5)/2,RZ1+.5));cols.push({x0:b,x1:c,z0:RZ1,z1:RZ1+1.2}); /* the doorway is solid too: the exit works with E at the door, nobody walks outside */
- FG.front.push(pn(2*DW-.2,2.5,'#d9b184',DX,1.25,RZ1+.1,Math.PI));[-1,1].forEach(s=>FG.front.push(pn(.1,2.5,'#7a5236',DX+s*(DW-.05),1.25,RZ1-.02,Math.PI)));
- FG.front.push(bx(sc,.12,.12,.12,'#444444',DX-.7,1.1,RZ1-.1))})();
+ if(LIB)FG.front.push(...gdoor(sc,DX,RZ1,Math.PI,2*DW-.2,2.5,'#3d3578',-.1)); /* Round 10g: glass double door in the Perpustakaan */
+ else{FG.front.push(pn(2*DW-.2,2.5,'#d9b184',DX,1.25,RZ1+.1,Math.PI));[-1,1].forEach(s=>FG.front.push(pn(.1,2.5,'#7a5236',DX+s*(DW-.05),1.25,RZ1-.02,Math.PI)));
+ FG.front.push(bx(sc,.12,.12,.12,'#444444',DX-.7,1.1,RZ1-.1))}})();
 function pn(w,h,c,x,y,z,ry){const m=new T.Mesh(new T.PlaneGeometry(w,h),new T.MeshBasicMaterial({color:c}));m.position.set(x,y,z);m.rotation.y=ry;sc.add(m);return m}
 function sign(L,bg,fg,w,h,fs,x,y,z,r){const c=document.createElement('canvas');c.width=512;c.height=Math.round(512*h/w);const g=c.getContext('2d');g.fillStyle=bg;g.fillRect(0,0,512,c.height);g.fillStyle=fg;g.font='bold '+fs*2+'px Fredoka,sans-serif';g.textAlign='center';g.textBaseline='middle';L.forEach((s,i)=>g.fillText(s,256,c.height*(i+.5)/L.length));
  const m=new T.Mesh(new T.PlaneGeometry(w,h),new T.MeshBasicMaterial({map:new T.CanvasTexture(c)}));m.position.set(x,y,z);m.rotation.y=r;sc.add(m);return m}

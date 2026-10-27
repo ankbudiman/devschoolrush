@@ -34,10 +34,10 @@ function sign(L,bg,fg,w,h,fs,x,y,z,r){const c=document.createElement('canvas');c
  const m=new T.Mesh(new T.PlaneGeometry(w,h),new T.MeshBasicMaterial({map:new T.CanvasTexture(c)}));m.position.set(x,y,z);m.rotation.y=r;sc.add(m);return m}
 FG.front.push(sign(['PINTU KELUAR'],'#1c2f6b','#ffffff',2.6,.6,30,0,3.05,RZ1-.03,Math.PI));
 FG.back.push(sign(['KANTIN SEKOLAH'],'#fff3d6','#b84a38',5,.9,30,0,2.5,RZ0+.14,0));
-(()=>{FG.front.push(pn(2*DW-.2,2.5,'#f5f5f5',0,1.25,RZ1+.1,Math.PI));[-1,1].forEach(s=>FG.front.push(pn(.1,2.5,'#7a5236',s*(DW-.05),1.25,RZ1-.02,Math.PI)))})();
+(()=>{FG.front.push(...gdoor(sc,0,RZ1,Math.PI,2*DW-.2,2.5,'#7a5236',-.1))})(); /* Round 10g: glass double door */
 function plant(x,z){const p=new T.Mesh(new T.CylinderGeometry(.28,.2,.45,6),mat('#c0693f')),f=new T.Mesh(new T.IcosahedronGeometry(.42,0),mat('#3f9d54'));p.position.set(x,.225,z);f.position.set(x,.85,z);p.castShadow=f.castShadow=true;sc.add(p,f);cols.push({x0:x-.32,x1:x+.32,z0:z-.32,z1:z+.32})}
 plant(-RX+.9,RZ1-.9);plant(RX-.9,RZ1-.9);
-const KV={x:RX-2.1,z:RZ1-.9};mkVase(sc,KV.x,KV.z);cols.push({x0:KV.x-.4,x1:KV.x+.4,z0:KV.z-.4,z1:KV.z+.4}); /* Round 10b3: easter egg vase next to the right plant, silent (vaseHit in core.js) */
+const KV={x:RX-.9,z:RZ1-2.1};mkVase(sc,KV.x,KV.z);cols.push({x0:KV.x-.4,x1:KV.x+.4,z0:KV.z-.4,z1:KV.z+.4}); /* Round 10b3: easter egg vase next to the right plant, silent (vaseHit in core.js) */
 /* ---- wall posters: plain colour panels (drawn shapes or an emoji + two lines), tiny textures ---- */
 function poster(i,x,y,z,ry,pw,ph){const d=KD.posters[i],c=document.createElement('canvas');c.width=256;c.height=320;const g=c.getContext('2d');
  g.fillStyle='#ffffff';g.fillRect(0,0,256,320);g.fillStyle=d.c;g.fillRect(10,10,236,300);
@@ -162,7 +162,8 @@ const mc=$('mm'),mg=mc.getContext('2d'),mb=document.createElement('canvas');mb.w
  g.fillStyle='#a9aeb6';const d0=mf(-DW,RZ1),d1=mf(DW,RZ1);g.fillRect(d0[0],d0[1]-4,d1[0]-d0[0],10);
  ST.forEach((s,i)=>{const th=POS[i][2],w=th==0?5.8:3.2,h=th==0?3.2:5.8,p=mf(s.x+(th>0?.45:th<0?-.45:0),s.z+(th==0?-.45:0));g.fillStyle=KD.stalls[i].c;g.fillRect(p[0]-w*MS/2,p[1]-h*MS/2,w*MS,h*MS);g.fillStyle='#fff';g.font='bold 20px Fredoka,sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText(i+1,p[0],p[1])});
  TBL.forEach(t=>{const p=mf(t[0],t[1]);g.fillStyle='#c8a26a';g.fillRect(p[0]-1.85*MS,p[1]-.75*MS,3.7*MS,1.5*MS)});
- BN.forEach((n,i)=>{const p=mf(n.bx,n.bz);g.fillStyle=['#3b7fd0','#e8923a','#7a5236','#4d6a58'][i];g.fillRect(p[0]-4,p[1]-4,8,8)})})();
+ const rcy=(g,a,b,r,c)=>{g.fillStyle=c;g.beginPath();g.arc(a,b,r,0,7);g.fill();g.strokeStyle=g.fillStyle='#fff';g.lineWidth=r*.2;for(let k=0;k<3;k++){const s0=k*2.0944-1.2,e0=s0+1.45;g.beginPath();g.arc(a,b,r*.55,s0,e0);g.stroke();const hx=a+Math.cos(e0)*r*.55,hy=b+Math.sin(e0)*r*.55,tx=-Math.sin(e0),ty=Math.cos(e0),nx=Math.cos(e0),ny=Math.sin(e0);g.beginPath();g.moveTo(hx+tx*r*.32,hy+ty*r*.32);g.lineTo(hx+nx*r*.28,hy+ny*r*.28);g.lineTo(hx-nx*r*.28,hy-ny*r*.28);g.fill()}}; /* Round 10g: coloured round badge + white recycle symbol for the 3 recycling bins */
+ BN.forEach((n,i)=>{const p=mf(n.bx,n.bz),c=['#3b7fd0','#e8923a','#7a5236','#4d6a58'][i];if(i<3)rcy(g,p[0],p[1],9,c);else{g.fillStyle=c;g.fillRect(p[0]-4,p[1]-4,8,8)}})})();
 function drawMM(){mg.drawImage(mb,0,0);ST.forEach((s,i)=>{if(!RES[i])return;const p=mf(s.x+(POS[i][2]>0?.45:POS[i][2]<0?-.45:0),s.z+(POS[i][2]==0?-.45:0));mg.fillStyle='#2e9d4a';mg.beginPath();mg.arc(p[0],p[1],11,0,7);mg.fill();mg.fillStyle='#fff';mg.font='bold 16px sans-serif';mg.textAlign='center';mg.textBaseline='middle';mg.fillText('✓',p[0],p[1]+1)});
  const e=mf(EX.x,RZ1-.2);mg.fillStyle=doneN()==5?'#5ccf4a':'#ffd23f';mg.beginPath();mg.arc(e[0],e[1],8,0,7);mg.fill();
  const a=mf(P.x,P.z),s=Math.sin(P.f),c=Math.cos(P.f);mg.fillStyle='#2f6fd0';mg.strokeStyle='#fff';mg.lineWidth=3;mg.beginPath();mg.moveTo(a[0]+s*14,a[1]+c*14);mg.lineTo(a[0]-s*8+c*8,a[1]-c*8-s*8);mg.lineTo(a[0]-s*8-c*8,a[1]-c*8+s*8);mg.closePath();mg.fill();mg.stroke()}

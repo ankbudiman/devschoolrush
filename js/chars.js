@@ -63,3 +63,15 @@ function mkVase(p,x,z){const g=new T.Group(),pts=[[0,0],[.2,0],[.27,.12],[.32,.3
  [[-.1,.05,.1,-.18,1.9],[.08,-.06,-.22,.1,1.65],[.02,.1,.05,.28,1.8],[-.05,-.09,.3,.05,1.5],[.1,.08,-.12,-.3,1.7],[-.02,-.02,-.05,.02,2]].forEach(a=>{const s=new T.Group(),L=a[4],c=new T.CylinderGeometry(.034,.04,L,6);c.translate(0,L/2,0);s.add(new T.Mesh(c,mat('#e0b060')));
   [.3,.58,.82].forEach(f=>{const r=new T.Mesh(new T.CylinderGeometry(.05,.05,.03,6),mat('#b98a3e'));r.position.y=L*f;s.add(r)});s.position.set(a[0],.95,a[1]);s.rotation.x=a[2];s.rotation.z=a[3];g.add(s)});
  g.position.set(x,0,z);p.add(g);return g}
+
+/* Round 10g: glass double door (black-framed glass look). Flat MeshBasicMaterial planes only, all opaque: the wall fade in the world, Kantin and classrooms sets opacity directly.
+   p = parent, (x,z) = centre of the door foot, ry = facing (normal = sin ry, cos ry), w x h = size, frame = frame colour, g0 = offset of the glass along the normal (layers sit in front of it).
+   Glass #9fcde2, frame bars, centre stile, 2 leaves of 2 columns x 3 rows, copper handles. Returns the meshes (callers push them into their fade lists). */
+function gdoor(p,x,z,ry,w,h,frame,g0){const nx=Math.sin(ry),nz=Math.cos(ry),tx=nz,tz=-nx,out=[],b=.07,kb=.16,st=.1;
+ const pe=(pw,ph,c,o,y,e)=>{const m=new T.Mesh(new T.PlaneGeometry(pw,ph),new T.MeshBasicMaterial({color:c}));m.position.set(x+nx*(g0+e)+tx*o,y,z+nz*(g0+e)+tz*o);m.rotation.y=ry;p.add(m);out.push(m);return m};
+ pe(w,h,'#9fcde2',0,h/2,0);
+ pe(b,h,frame,-(w/2-b/2),h/2,.02);pe(b,h,frame,w/2-b/2,h/2,.02);pe(w,b,frame,0,h-b/2,.022);pe(w,kb,frame,0,kb/2,.022);pe(st,h,frame,0,h/2,.024); /* frame layers 2 mm apart so crossing bars never share a depth */
+ const ih=h-kb-b,lw=w/2-b-st/2;
+ [-1,1].forEach(s=>{const oc=s*(st/2+lw/2);pe(.045,ih,frame,oc,kb+ih/2,.026);[1,2].forEach(k=>pe(lw,.045,frame,oc,kb+ih*k/3,.028))});
+ [-1,1].forEach(s=>pe(.05,.45,'#c98a5a',s*.2,1.05,.04));
+ return out}
