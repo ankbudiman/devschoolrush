@@ -83,7 +83,7 @@ const SM=[[340,400],[230,168],[230,344],[450,520],[118,450],[330,200]].map((a,i)
 function pick(s){carry=s.ty;s.k.forEach(g=>g.visible=false);s.cd=40;HM.forEach((g,i)=>g.visible=i==carry);say('Dapat '+NM[carry].toLowerCase()+'!');tone(500,0,.08,'sine',.12)}
 function throwIt(b){const H=['Kertas masuk tong biru.','Botol plastik masuk tong oren.','Botol kaca masuk tong coklat.','Bungkus gula-gula masuk tong biasa.'];
 if(b.k!=carry){say('Salah tong! '+H[carry]);tone(200,0,.3,'sawtooth',.08);return}
-const c=carry;carry=-1;HM.forEach(g=>g.visible=false);const g=mkItem(c);g.scale.setScalar(1.2);sc.add(g);fly={g,t:0,x0:P.x,z0:P.z,x1:b.bx,z1:b.bz};
+SRA.bin();const c=carry;carry=-1;HM.forEach(g=>g.visible=false);const g=mkItem(c);g.scale.setScalar(1.2);sc.add(g);fly={g,t:0,x0:P.x,z0:P.z,x1:b.bx,z1:b.bz};
 say(R(['Bagus!','Pandai!','Terima kasih, kawan!']));tone(600,.2,.1,'sine',.15);tone(800,.3,.12,'sine',.15);
 cur.s[c]++;save();
 if(cur.s[0]+cur.s[1]+cur.s[2]+cur.s[3]==12)award('sampah12','Pelajar Prihatin','Anda sudah membuang 12 sampah dengan betul.')}
@@ -91,7 +91,7 @@ const sr=new T.Mesh(new T.CircleGeometry(1.1,24),new T.MeshBasicMaterial({color:
 /* Round 10e: Perpustakaan (index 1) now sits in the big top-left block, Makmal Sains (index 0) in the smaller bottom-right block; indexes and saves unchanged */
 const DR=[['MAKMAL SAINS','#6f63c7',452,362,0,-1,'Makmal Sains'],['PERPUSTAKAAN','#6f63c7',248,186,0,-1,'Perpustakaan'],['MATH','#2f9d86',354,256,-1,0,'Math'],['ENGLISH','#2f9d86',318,432,1,0,'English'],['PADANG BALAPAN','#d98f2b',170,110,0,1,'Padang Balapan'],['KANTIN','#c9553f',480,110,0,1,'Kantin'],['PEJABAT','#9a3c4d',387,502,0,1,'Pejabat']]; /* index 6 = Pejabat: Round 9g, locked door only, never a class target */
 DR.forEach(d=>{const n=d[0],x=X(d[2]),z=Z(d[3]),nx=d[4],nz=d[5],ry=Math.atan2(nx,nz);
-const GDC={PERPUSTAKAAN:'#3d3578',PEJABAT:'#5a1f2e',KANTIN:'#7a2e24'}; /* Round 10g: these three doors are glass double doors (gdoor in chars.js), the rest stay wooden */
+const GDC={PERPUSTAKAAN:'#3d3578',PEJABAT:'#5a1f2e',KANTIN:'#7a2e24','MAKMAL SAINS':'#3b5368'}; /* Round 10g: these doors are glass double doors (gdoor in chars.js), the rest stay wooden; Round 10i3: Makmal Sains added, steel-blue frame (same colour as the inside door in js/kelas.js) */
 if(GDC[n])gdoor(sc,x,z,ry,2.2,2.3,GDC[n],.05);else if(!n.startsWith('PADANG')){const tx=nz,tz=-nx,pe=(w,h,c,o,y,e)=>pn(w,h,c,x+nx*e+tx*o,y,z+nz*e+tz*o,ry);pe(1.5,2.3,'#d9b184',0,1.15,.06);[-1,1].forEach(s=>pe(.1,2.3,'#7a5236',s*.8,1.15,.08));pe(.14,.14,'#444444',-.55,1.1,.1)} /* Round 10d2: the classroom ENTRANCE door look (tan panel, dark brown side posts, dark handle) */
 const cn=document.createElement('canvas');cn.width=256;cn.height=64;const g=cn.getContext('2d');g.fillStyle=d[1];g.fillRect(0,0,256,64);g.fillStyle='#fff';g.font='bold '+(n.length>10?24:34)+'px Fredoka,sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText(n,128,34);
 const sg=new T.Mesh(new T.PlaneGeometry(3.6,.9),new T.MeshBasicMaterial({map:new T.CanvasTexture(cn)}));sg.position.set(x+nx*.06,n.startsWith('PADANG')?3.25:2.8,z+nz*.06);sg.rotation.y=ry;sc.add(sg);

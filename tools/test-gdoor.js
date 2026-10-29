@@ -32,4 +32,20 @@ const FR='#3d3578';
 });
 /* wider door (Kantin/kelas formula) still scales */
 {const o=gdoor({add(){}},0,0,Math.PI,3.2,2.5,'#7a5236',-.1);t('wide door: glass 3.2 x 2.5',o[0].geometry.w==3.2&&o[0].geometry.h==2.5)}
+
+/* Round 10i3: the Makmal Sains gets the glass double door too, inside (js/kelas.js) and outside (js/world-build.js), same frame colour; wooden doors stay for Math and English */
+{const kj=fs.readFileSync('js/kelas.js','utf8'),wb=fs.readFileSync('js/world-build.js','utf8');
+ const ik=kj.match(/if\(LIB\|\|LAB\)FG\.front\.push\(\.\.\.gdoor\(sc,DX,RZ1,Math\.PI,2\*DW-\.2,2\.5,LAB\?'(#[0-9a-f]{6})':'(#[0-9a-f]{6})',-\.1\)\)/);
+ t('kelas.js: glass door for LIB and LAB',!!ik);
+ t('kelas.js: the Perpustakaan frame is still #3d3578',!!ik&&ik[2]=='#3d3578');
+ t('kelas.js: the wooden door branch is still there for Matematik and English',/ else\{FG\.front\.push\(pn\(2\*DW-\.2,2\.5,'#d9b184'/.test(kj));
+ const gd=wb.match(/const GDC=\{([^}]*)\}/),map={};gd&&gd[1].replace(/'?([A-Z ]+)'?:'(#[0-9a-f]{6})'/g,(_,n,c)=>{map[n]=c});
+ t('world-build.js: GDC lists the 4 glass doors',Object.keys(map).sort().join()=='KANTIN,MAKMAL SAINS,PEJABAT,PERPUSTAKAAN');
+ t('world-build.js: MATH, ENGLISH and PADANG are not glass doors',!map.MATH&&!map.ENGLISH&&!map['PADANG BALAPAN']);
+ t('inside and outside Makmal Sains doors use the same frame colour',!!ik&&map['MAKMAL SAINS']==ik[1]);
+ t('the other three outside frame colours are unchanged',map.PERPUSTAKAAN=='#3d3578'&&map.PEJABAT=='#5a1f2e'&&map.KANTIN=='#7a2e24');
+ const lum=h=>{const c=[1,3,5].map(i=>parseInt(h.slice(i,i+2),16)/255).map(v=>v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4));return .2126*c[0]+.7152*c[1]+.0722*c[2]};
+ const ct=(a,b)=>{const x=lum(a),y=lum(b);return(Math.max(x,y)+.05)/(Math.min(x,y)+.05)};
+ t('lab frame stands out from the glass (#9fcde2) and the lab wall (#d6dadf): contrast >= 3',!!ik&&ct(ik[1],'#9fcde2')>=3&&ct(ik[1],'#d6dadf')>=3);
+ t('the lab door still has the wooden-door DR entry (index 0) in the world',/\['MAKMAL SAINS','#6f63c7',452,362,0,-1,'Makmal Sains'\]/.test(wb))}
 console.log('gdoor: '+ok+' checks passed'+(bad?', '+bad+' FAILED':''));process.exit(bad?1:0);

@@ -12,7 +12,7 @@ const CFG={DAY:6,
   FIRST:[6,10],BREAK:[6,12],       /* real seconds of free time before a bell */
   NEAR:.3,NEARMIN:8,ONTIME:100,BONUS:2,LATE:30,CAUGHT:20,PSPD:4,PDELAY:2,CATCH:.85};
 const LAB=['Sains','Bahasa Melayu','Matematik','English','Pendidikan Jasmani','Waktu Rehat']; /* index = DR index; 5 = Kantin */
-const RP={1:'kelas',2:'kelas',3:'kelas',4:'padang',5:'kantin'},RS={1:'bm',2:'mat',3:'eng'}; /* Round 10: Matematik and English share kelas.html (Round 10e: also the Perpustakaan, room 1 = bm); RS = which subject the page builds (sessionStorage sk_kelas) */ /* DR index -> real room page (the others still use the placeholder card) */
+const RP={0:'kelas',1:'kelas',2:'kelas',3:'kelas',4:'padang',5:'kantin'},RS={0:'sains',1:'bm',2:'mat',3:'eng'}; /* Round 10h: 0 = Makmal Sains */ /* Round 10: Matematik and English share kelas.html (Round 10e: also the Perpustakaan, room 1 = bm); RS = which subject the page builds (sessionStorage sk_kelas) */ /* DR index -> real room page (the others still use the placeholder card) */
 let st='off',order=[],n=0,cls=-1,tleft=0,ttot=0,score=0,ok=0,lt=0,navOn=false,ph=null,bd=null,bt=0,clk=0,ringT=0,ew=0,bd2=0,gr={}; /* gr = today's grades by class index, filled when a real room is finished (Round 7: Kantin) */
 const shuf=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
 const fmt=s=>{s=Math.max(0,Math.ceil(s));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')};
@@ -42,7 +42,7 @@ function sched(first){st='idle';setNav(false);hidePref();clk=bellAt(n)-rnd.apply
 function ring(){cls=order[n];clk=bellAt(n);ttot=tleft=CFG.SEC;st='class';ringT=2.6;
  bellSound(2.4);try{navigator.vibrate&&navigator.vibrate([250,120,250])}catch(e){}
  toast(cls==5?'Ringg!!! Waktu Rehat! Jom ke Kantin.':'Ringg!!! Kelas '+LAB[cls]+' di '+DR[cls][6]+'. Cepat!',3800);pills()}
-function late(){st='late';setNav(true);score=Math.max(0,score-CFG.LATE);bellSound(.9);toast('Lewat! Pengawas datang!',3000);say('Alamak, lewat!');spawnPref();pills()}
+function late(){st='late';setNav(true);score=Math.max(0,score-CFG.LATE);bellSound(.9);SRA.whistle();toast('Lewat! Pengawas datang!',3000);say('Alamak, lewat!');spawnPref();pills()}
 /* ---- prefect chase ---- */
 function spawnPref(){if(!ph){const m=npc('pengawas');sc.add(m);ph={m,x:0,z:0,f:0,mv:0,d:0}}
  const ks=Object.keys(ND).filter(k=>k!='TL'&&k!='BR'&&Math.hypot(X(ND[k][0])-P.x,Z(ND[k][1])-P.z)>=12);const k=R(ks.length?ks:['TS','BS']);
@@ -59,7 +59,7 @@ function chase(dt,t){if(!ph||!ph.m.visible)return;if(ph.d>0){ph.d-=dt;ph.mv=0;ph
   if(best!=c){tx=GX+(bi+.5)*GC;tz=GZ+(bj+.5)*GC}}
  const dx=tx-ph.x,dz=tz-ph.z,l=Math.hypot(dx,dz);if(l>.01){ph.x+=dx/l*CFG.PSPD*dt;ph.z+=dz/l*CFG.PSPD*dt;ph.f=la(ph.f,Math.atan2(dx,dz),Math.min(1,dt*10));ph.mv=1}
  ph.m.position.set(ph.x,0,ph.z);ph.m.rotation.y=ph.f;anim(ph.m,t,ph.mv);
- if(Math.hypot(ph.x-P.x,ph.z-P.z)<CFG.CATCH){say('Kena tangkap! Jom ke kelas!');toast('Pengawas hantar kamu ke kelas.',2800);score=Math.max(0,score-CFG.CAUGHT);enterRoom(cls,true)}}
+ if(Math.hypot(ph.x-P.x,ph.z-P.z)<CFG.CATCH){SRA.whistle();say('Kena tangkap! Jom ke kelas!');toast('Pengawas hantar kamu ke kelas.',2800);score=Math.max(0,score-CFG.CAUGHT);enterRoom(cls,true)}}
 /* ---- rooms (placeholder for now) ---- */
 function card(h,lines,btns){const r=room();r.innerHTML='';const a=document.createElement('h2');a.textContent=h;r.appendChild(a);
  lines.forEach(l=>{const p=document.createElement('p');p.textContent=l[0];if(l[1])p.className='rs2';r.appendChild(p)});

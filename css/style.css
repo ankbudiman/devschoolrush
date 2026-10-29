@@ -198,3 +198,9 @@ body.sg #msg{top:3.4em}
 .slc b{font-size:1.05em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}.slc small{font-size:.78em;opacity:.9;line-height:1.2}.slc .sn{font-size:.72em;opacity:.8}
 #menu .slc button.sd{font-size:.72em;padding:.25em .8em;margin-top:.2em;background:rgba(255,255,255,.2);color:#fff;border-radius:.8em}
 @media(orientation:landscape) and (max-height:560px){#vs{gap:.35em;padding:.2em 0}#sl{width:min(94vw,44em);gap:.4em}.slc{min-height:4.1em;padding:.3em .3em}#slh b{font-size:1.1em}}
+
+/* Round 10h3: Tahap belajar buttons (setup + Tetapan) looked identical selected or not (all menu buttons are yellow). Unselected = dimmed, selected = white outline. */
+#lvb button:not(.on),#vt [data-tl]:not(.on){opacity:.5}
+#lvb button.on,#vt [data-tl].on{opacity:1;outline:3px solid #fff!important}
+/* Round 10h3b: Tahap belajar row 120% bigger (0.85em -> 1.02em, buttons scale with it) and moved down from the name hint */
+#lvb{font-size:1.02em;margin-top:.9em}

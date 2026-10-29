@@ -20,7 +20,7 @@ let od=null;cv.onpointerdown=e=>{od=e;cv.setPointerCapture(e.pointerId)};cv.onpo
 function near(){let b=null,bd=2;DR.forEach(d=>{const k=Math.hypot(P.x-d[7],P.z-d[8]);if(k<bd){bd=k;b=d}});return b}
 let drink=0,dcd=0,carry=-1,fly=null;
 function wcu(){}
-function sip(){if(drink>0)return;if(dcd>0){say('Tak dahaga lagi!');return}drink=1.6;dcd=5;[0,1,2].forEach(i=>tone(420-i*60,i*.22,.18,'sine',.2));say(R(['Ahh, segarnya!','Segar betul!','Alhamdulillah!']));cur.drinks++;save();
+function sip(){if(drink>0)return;if(dcd>0){say('Tak dahaga lagi!');return}drink=1.6;dcd=5;SRA.sip();say(R(['Ahh, segarnya!','Segar betul!','Alhamdulillah!']));cur.drinks++;save();
 if(cur.drinks==8)award('air8','Tabiat Sihat','Anda sudah minum air 8 kali.')}
 wcu();let bt=0,bm;const bv=new T.Vector3();function say(t){const b=$('bub');b.textContent=t;b.style.display='block';bt=4;clearTimeout(bm);bm=setTimeout(()=>b.style.display='none',2200)}
 function refreshBack(){BP.forEach(m=>m.material.color.set(backOpen()?'#5ccf4a':'#444444'))} /* Round 10b3: the dark lock box on each back door turns green after the vase ritual */

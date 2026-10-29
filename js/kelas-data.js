@@ -1,5 +1,5 @@
 /* Classroom data (Round 10, roam only). All texts and colours live here, apart from the code in js/kelas.js.
-   Keys: mat = Matematik (DR index 2), eng = English (DR index 3), bm = Perpustakaan / Bahasa Melayu (DR index 1, lib:1 = built by js/kelas-lib.js, Round 10e). Later rounds add quiz, notes and hidden item data here. */
+   Keys: mat = Matematik (DR index 2), eng = English (DR index 3), bm = Perpustakaan / Bahasa Melayu (DR index 1, lib:1 = built by js/kelas-lib.js, Round 10e). sains = Makmal Sains (DR index 0, lab:1, built by js/kelas-lab.js, Round 10h; stn = the 3 station texts, the games come later). Later rounds add quiz, notes and hidden item data here. */
 const KL={
  mat:{n:'Matematik',room:2,wall:'#f7cdda',strip:'#e5a4b9',
   board:['MATEMATIK','6 × 7 = 42'],
@@ -24,5 +24,14 @@ const KL={
   nm:{t:'Glob Dunia',l:['Dunia ada 7 benua dan 5 lautan.','Malaysia terletak di Asia Tenggara.','Malaysia ada 13 negeri dan 3 Wilayah Persekutuan.','Kuala Lumpur ialah ibu negara Malaysia.','Negara jiran: Thailand, Singapura, Indonesia dan Brunei.']},
   hid:{id:'bm_n1',t:'Nota Tersembunyi 1',l:['Nota ini masih kosong. Ceritanya akan datang!']},
   teach:['Senyap sikit ya, ini perpustakaan!','Pulangkan buku tepat pada masanya.','Membaca itu jambatan ilmu.','Pilih buku yang kamu suka!'],
-  hello:'Selamat datang ke Perpustakaan!'}
+  hello:'Selamat datang ke Perpustakaan!'},
+ sains:{n:'Makmal Sains',room:0,lab:1,wall:'#d6dadf',strip:'#8892a0',fl:['#d9a77f','#cd9a72'],dk:['#e9edf0','#7a8591','#c9d0d8'],
+  board:['MAKMAL SAINS','Papan Putih'],
+  stn:[{n:'Papan Putih',lv:'Mudah',t:'Kitaran Kehidupan',d:'Susun peringkat hidup katak, tumbuhan berbunga dan ayam.'},{n:'Meja Makmal',lv:'Sederhana',t:'Rantai Makanan',d:'Pilih organisma dan susun rantai makanan di hutan, gurun dan lautan.'},{n:'Stesen Eksperimen',lv:'Sukar',t:'Penyiasatan Saintifik',d:'Lengkapkan, betulkan dan bina set eksperimen.'}],
+  posters:[{t:['JADUAL BERKALA','H  He','Li  Be  B  C  N  O','Na  Mg  Al  Si  Cl'],c:'#3d6fb5',b:'Jadual berkala menyusun unsur. H ialah hidrogen, O ialah oksigen dan C ialah karbon.'},{t:['BADAN KITA','Jantung','Paru-paru','Otak'],c:'#c2566b',b:'Jantung mengepam darah. Paru-paru membantu kita bernafas. Otak mengawal badan.'}],
+  nb:{t:'Nota Sains',l:['Benda hidup bernafas, makan, membesar, bergerak balas dan membiak.','Tumbuhan memerlukan cahaya, air dan udara untuk hidup.','Mentol menyala apabila litar lengkap dan suis ditutup.','Ais mencair apabila menerima haba.']},
+  nm:{t:'Model Sistem Suria',l:['Matahari ialah bintang di pusat Sistem Suria.','Ada 8 planet yang mengelilingi Matahari.','Bumi ialah planet ketiga daripada Matahari.','Bulan mengelilingi Bumi.']},
+  hid:{id:'sains_n1',t:'Nota Tersembunyi 1',l:['Nota ini masih kosong. Ceritanya akan datang!']},
+  teach:['Pakai kasut tertutup di makmal!','Jangan sentuh bahan tanpa kebenaran.','Sains itu menyeronokkan!','Perhatikan, kemudian buat kesimpulan.'],
+  hello:'Selamat datang ke Makmal Sains!'}
 };
