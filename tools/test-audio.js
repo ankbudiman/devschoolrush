@@ -87,10 +87,10 @@ function walk(m,speed,secs,extra){m.SRA._t.reset();m.sb.SET.mus=0;const P=m.sb.P
 /* 6. wiring in the files */
 {const L=s=>R(s);const pages=['index','world','kantin','padang','kelas','luar'];
  ok(pages.every(p=>{const t=L(p+'.html'),m=t.match(/const L=(\[.*?\]);/);if(!m)return false;const a=JSON.parse(m[1]);return a.indexOf('js/audio.js')==a.indexOf('js/ui.js')+1&&a.indexOf('js/core.js')<a.indexOf('js/audio.js')}),'all 6 pages (Round 12 adds luar) load js/audio.js right after js/ui.js (after core.js, before the scene scripts)');
- const sw=L('sw.js');ok(/CACHE='sr-r14b'/.test(sw)&&sw.includes("'js/audio.js'"),'sw.js: cache sr-r14 and audio.js pre-cached');
+ const sw=L('sw.js');ok(/CACHE='sr-r14c'/.test(sw)&&sw.includes("'js/audio.js'"),'sw.js: cache sr-r14 and audio.js pre-cached');
  ok(L('js/world.js').includes('SRA.sip()')&&!/tone\(420-i\*60/.test(L('js/world.js')),'world.js sip() uses SRA.sip()');
  ok(L('js/world-build.js').includes('SRA.bin();const c=carry')&&L('js/kantin.js').includes('SRA.bin();const c=carry'),'hallway and kantin bins call SRA.bin() on a correct throw');
- const st=L('js/story.js');ok((st.match(/SRA\.whistle\(\)/g)||[]).length==2,'story.js: whistle when late and when caught');
+ const st=L('js/story.js');ok((st.match(/SRA\.whistle\(\)/g)||[]).length==3,'story.js: whistle when late, when caught and when the patrol prefects join (Round 14c)');
  const all=fs.readdirSync(path.join(__dirname,'..','js')).filter(x=>x.endsWith('.js'));
  ok(all.filter(x=>/\b(const|let|var|function|class)\s+SRA\b/.test(L('js/'+x))).join()=='audio.js','SRA is declared only in audio.js');
  let dp=0,first=-1,seen=0;for(let i=0;i<src.length;i++){const c=src[i];if(c=='{'){dp++;seen=1}else if(c=='}'){dp--;if(seen&&dp==0&&first<0)first=i}}

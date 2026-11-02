@@ -5,7 +5,7 @@ const P={x:X(336),z:Z(500),y:0,vy:0,f:Math.PI,stun:0,slow:0,boost:0,sx:0,sz:0},c
 function mkP(){if(pm)sc.remove(pm);pm=player(gen,'uni',curL);sc.add(pm);pm.userData.arms[1].add(...HM)}mkP();
 const YC=new T.MeshBasicMaterial({color:'#ffd23f'}),ar=new T.Group(),ac=new T.Mesh(new T.ConeGeometry(.28,.7,4),YC),ab=new T.Mesh(new T.BoxGeometry(.18,.12,.5),YC),tm=new T.Mesh(new T.ConeGeometry(.4,.8,4),YC);
 ac.rotation.x=Math.PI/2;ac.position.z=.35;ab.position.z=-.15;ar.add(ac,ab);ar.visible=false;sc.add(ar);tm.rotation.x=Math.PI;tm.visible=false;sc.add(tm);
-const ns=[];['murid','murid','murid','murid','murid','murid','murid','murid','murid','pengawas','pengawas','guru','guru','guru'].forEach(r=>{const m=npc(r),k=R(Object.keys(ND).filter(z=>z!='TL'&&z!='BR')),n={m,x:X(ND[k][0])+rnd(-.8,.8),z:Z(ND[k][1])+rnd(-.8,.8),from:k,to:k,tx:0,tz:0,w:rnd(.5,2),sp:rnd(1.4,2.3),f:0,mv:0};n.tx=n.x;n.tz=n.z;sc.add(m);ns.push(n)});
+const ns=[];['murid','murid','murid','murid','murid','murid','murid','murid','murid','pengawas','pengawas','guru','guru','guru'].forEach(r=>{const m=npc(r),k=R(Object.keys(ND).filter(z=>z!='TL'&&z!='BR')),n={m,role:r,x:X(ND[k][0])+rnd(-.8,.8),z:Z(ND[k][1])+rnd(-.8,.8),from:k,to:k,tx:0,tz:0,w:rnd(.5,2),sp:rnd(1.4,2.3),f:0,mv:0};n.tx=n.x;n.tz=n.z;sc.add(m);ns.push(n)});
 const keys={},jv={x:0,z:0};let jmp=0;
 addEventListener('keydown',e=>{if(halt)return;keys[e.code]=1;if(e.code=='Space')e.preventDefault();if(e.code=='KeyE')act()});addEventListener('keyup',e=>keys[e.code]=0);
 if(matchMedia('(pointer:coarse)').matches)document.body.classList.add('touch');
@@ -100,7 +100,7 @@ BO.forEach(b=>{b.m.rotation.y+=dt*2;b.m.position.y=.9+Math.sin(t*3+b.x)*.12;if(b
 SM.forEach(s=>{if(s.cd>0){s.cd-=dt;if(s.cd<=0){s.ty=(s.ty+1)%4;s.k.forEach((g,i)=>g.visible=i==s.ty)}return}if(P.slow<=0&&P.y<.5&&Math.hypot(P.x-s.x,P.z-s.z)<.45){P.slow=1.2;say('Ish, sampah!')}});
 if(fly){fly.t+=dt/.5;const u=Math.min(fly.t,1);fly.g.position.set(fly.x0+(fly.x1-fly.x0)*u,1.3-.6*u+Math.sin(Math.PI*u)*.9,fly.z0+(fly.z1-fly.z0)*u);if(fly.t>=1){sc.remove(fly.g);fly=null}}
 $('stt').textContent=P.boost>0?'Laju!':P.slow>0?'Perlahan':'';
-ns.forEach(n=>{if(n.hid>0){n.hid-=dt;if(n.hid<=0)n.m.visible=true;return}if(n.w>0){n.w-=dt;n.mv=0}else{const dx=n.tx-n.x,dz=n.tz-n.z,d=Math.hypot(dx,dz);
+ns.forEach(n=>{if(n.ch)return;if(n.hid>0){n.hid-=dt;if(n.hid<=0)n.m.visible=true;return}if(n.w>0){n.w-=dt;n.mv=0}else{const dx=n.tx-n.x,dz=n.tz-n.z,d=Math.hypot(dx,dz);
 if(d<.3){const gg=n.m.userData.g;if((n.to=='TL'&&gg=='m')||(n.to=='BR'&&gg=='f')){n.hid=rnd(4,8);n.m.visible=false}const o=ED[n.to].filter(k=>k!=n.from&&!(k=='TL'&&gg!='m')&&!(k=='BR'&&gg!='f')),k=R(o.length?o:ED[n.to]);n.from=n.to;n.to=k;const q=(k=='TL'||k=='BR')?0:.8;n.tx=X(ND[k][0])+rnd(-q,q);n.tz=Z(ND[k][1])+rnd(-q,q);if(Math.random()<.3)n.w=rnd(1,3)}
 else{n.x+=dx/d*n.sp*dt;n.z+=dz/d*n.sp*dt;n.f=la(n.f,Math.atan2(dx,dz),Math.min(1,dt*8));n.mv=1}}
 n.m.position.set(n.x,0,n.z);n.m.rotation.y=n.f;anim(n.m,t,n.mv)});

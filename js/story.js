@@ -11,10 +11,11 @@ const CFG={DAY:6,
   RATE:.25,SEC:30,                 /* 1 real second = 1/4 clock-minute; 30 real seconds to reach class */
   FIRST:[6,10],BREAK:[6,12],       /* real seconds of free time before a bell */
   NEAR:.3,NEARMIN:8,ONTIME:100,BONUS:2,LATE:30,CAUGHT:20,PSPD:4,PDELAY:2,CATCH:.85,
-  PGAP:.25,PGAPMAX:1.2,PGAPK:.045};  /* Round 14b: beep gap while the prefect runs (same numbers as the outside guard: closer = faster) */
+  PGAP:.25,PGAPMAX:1.2,PGAPK:.045,
+  PSPD2:5.5,PRAMP:60,JOIN:40,JDELAY:1.5,JDELAY2:3.5,JNEAR:6};  /* Round 14c: main prefect speeds up from PSPD to PSPD2 over PRAMP real seconds; after JOIN real seconds late (= 10 game minutes at RATE .25) the patrol prefects join the chase (JDELAY s before they run, JDELAY2 if closer than JNEAR) */  /* Round 14b: beep gap while the prefect runs (same numbers as the outside guard: closer = faster) */
 const LAB=['Sains','Bahasa Melayu','Matematik','English','Pendidikan Jasmani','Waktu Rehat']; /* index = DR index; 5 = Kantin */
 const RP={0:'kelas',1:'kelas',2:'kelas',3:'kelas',4:'padang',5:'kantin'},RS={0:'sains',1:'bm',2:'mat',3:'eng'}; /* Round 10h: 0 = Makmal Sains */ /* Round 10: Matematik and English share kelas.html (Round 10e: also the Perpustakaan, room 1 = bm); RS = which subject the page builds (sessionStorage sk_kelas) */ /* DR index -> real room page (the others still use the placeholder card) */
-let st='off',order=[],n=0,cls=-1,tleft=0,ttot=0,score=0,ok=0,lt=0,navOn=false,ph=null,bd=null,bt=0,clk=0,ringT=0,ew=0,bd2=0,gr={}; /* gr = today's grades by class index, filled when a real room is finished (Round 7: Kantin) */
+let st='off',order=[],n=0,cls=-1,tleft=0,ttot=0,score=0,ok=0,lt=0,navOn=false,ph=null,ex=[],lateT=0,mainT=0,joined=false,bd=null,bt=0,clk=0,ringT=0,ew=0,bd2=0,gr={}; /* gr = today's grades by class index, filled when a real room is finished (Round 7: Kantin) */
 const shuf=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
 const fmt=s=>{s=Math.max(0,Math.ceil(s));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')};
 const bellAt=i=>CFG.BELL[i];
@@ -47,29 +48,37 @@ function late(){st='late';setNav(true);score=Math.max(0,score-CFG.LATE);bellSoun
 /* ---- prefect chase ---- */
 function spawnPref(){if(!ph){const m=npc('pengawas');sc.add(m);ph={m,x:0,z:0,f:0,mv:0,d:0}}
  const ks=Object.keys(ND).filter(k=>k!='TL'&&k!='BR'&&Math.hypot(X(ND[k][0])-P.x,Z(ND[k][1])-P.z)>=12);const k=R(ks.length?ks:['TS','BS']);
- ph.x=X(ND[k][0]);ph.z=Z(ND[k][1]);ph.d=CFG.PDELAY;ph.m.visible=true;bt=0}
-function hidePref(){if(ph)ph.m.visible=false;pfOff()}
+ ph.x=X(ND[k][0]);ph.z=Z(ND[k][1]);ph.d=CFG.PDELAY;ph.m.visible=true;bt=0;releaseEx();lateT=0;mainT=0;joined=false}
+function hidePref(){if(ph)ph.m.visible=false;releaseEx();pfOff()}
+/* ---- Round 14c: after JOIN real seconds of being late the patrol prefects (ns entries with role 'pengawas' in world.js) chase too. n.ch=1 stops world.js moving them; releaseEx() sends them back to patrol. Built as a list so the later locker system can add chasers the same way ---- */
+function joinEx(){joined=true;ns.forEach(o=>{if(o.role!='pengawas'||o.ch)return;o.ch=1;o.hid=0;o.m.visible=true;o.mv=0;o.d=Math.hypot(o.x-P.x,o.z-P.z)<CFG.JNEAR?CFG.JDELAY2:CFG.JDELAY;ex.push(o)});if(ex.length){SRA.whistle();toast('Pengawas lain datang!',2800)}}
+function releaseEx(){ex.forEach(o=>{o.ch=0;o.tx=o.x;o.tz=o.z;o.w=.3+Math.random()*.7;o.mv=0});ex=[]}
+function pSpd(t){return CFG.PSPD+(CFG.PSPD2-CFG.PSPD)*Math.min(1,Math.max(0,t)/CFG.PRAMP)}
 /* ---- Round 14b: prefect markers, like the outside guard: red ring under the feet, "!" bubble, red triangle on the minimap (storyMM, called by drawMM in world.js), faster beep when close ---- */
-let pfRing=null,pfBub=null,pfV=null,pfBt=0;
-function pfOn(t){if(!pfRing){pfRing=new T.Mesh(new T.RingGeometry(.55,.8,28),new T.MeshBasicMaterial({color:'#e02424',side:T.DoubleSide,transparent:true,opacity:.85}));pfRing.rotation.x=-Math.PI/2;sc.add(pfRing);
-  pfBub=document.createElement('div');pfBub.id='pfb';pfBub.textContent='!';pfBub.style.cssText='position:fixed;z-index:8;pointer-events:none;display:none;transform:translate(-50%,-100%);font:900 2.2em Fredoka,sans-serif;color:#fff;background:#e02424;border:3px solid #fff;border-radius:50%;width:1.3em;height:1.3em;line-height:1.25em;text-align:center;box-shadow:0 2px 6px #0006';document.body.appendChild(pfBub);pfV=new T.Vector3()}
- pfRing.visible=true;pfRing.position.set(ph.x,.06,ph.z);pfRing.scale.setScalar(1+.12*Math.sin(t*8));
- pfV.set(ph.x,2.4,ph.z).project(cam);if(pfV.z<1){pfBub.style.display='block';pfBub.style.left=(pfV.x*.5+.5)*cv.clientWidth+'px';pfBub.style.top=(-pfV.y*.5+.5)*cv.clientHeight+'px'}else pfBub.style.display='none'}
-function pfOff(){if(pfRing)pfRing.visible=false;if(pfBub)pfBub.style.display='none'}
-window.storyMM=function(mg,f){if(MODE!='story'||st!='late'||!ph||!ph.m.visible)return;const q=f(ph.x,ph.z),k=1+.15*Math.sin(Date.now()/90);mg.fillStyle='#e02424';mg.strokeStyle='#fff';mg.lineWidth=2.5;mg.beginPath();mg.moveTo(q[0],q[1]-13*k);mg.lineTo(q[0]-11*k,q[1]+9*k);mg.lineTo(q[0]+11*k,q[1]+9*k);mg.closePath();mg.fill();mg.stroke()};
+let pfM=[],pfV=null,pfBt=0;
+function pfOn(t,c,i){let o=pfM[i];if(!o){const r=new T.Mesh(new T.RingGeometry(.55,.8,28),new T.MeshBasicMaterial({color:'#e02424',side:T.DoubleSide,transparent:true,opacity:.85}));r.rotation.x=-Math.PI/2;sc.add(r);
+  const b=document.createElement('div');b.id='pfb'+(i||'');b.textContent='!';b.style.cssText='position:fixed;z-index:8;pointer-events:none;display:none;transform:translate(-50%,-100%);font:900 2.2em Fredoka,sans-serif;color:#fff;background:#e02424;border:3px solid #fff;border-radius:50%;width:1.3em;height:1.3em;line-height:1.25em;text-align:center;box-shadow:0 2px 6px #0006';document.body.appendChild(b);pfM[i]=o={r,b};if(!pfV)pfV=new T.Vector3()}
+ o.r.visible=true;o.r.position.set(c.x,.06,c.z);o.r.scale.setScalar(1+.12*Math.sin(t*8+i));
+ pfV.set(c.x,2.4,c.z).project(cam);if(pfV.z<1){o.b.style.display='block';o.b.style.left=(pfV.x*.5+.5)*cv.clientWidth+'px';o.b.style.top=(-pfV.y*.5+.5)*cv.clientHeight+'px'}else o.b.style.display='none'}
+function pfOff(){pfM.forEach(o=>{o.r.visible=false;o.b.style.display='none'})}
+window.storyMM=function(mg,f){if(MODE!='story'||st!='late'||!ph||!ph.m.visible)return;const k=1+.15*Math.sin(Date.now()/90);mg.fillStyle='#e02424';mg.strokeStyle='#fff';mg.lineWidth=2.5;[ph].concat(ex).forEach(c=>{const q=f(c.x,c.z);mg.beginPath();mg.moveTo(q[0],q[1]-13*k);mg.lineTo(q[0]-11*k,q[1]+9*k);mg.lineTo(q[0]+11*k,q[1]+9*k);mg.closePath();mg.fill();mg.stroke()})};
 function bfs(){if(!bd)bd=new Int16Array(GW*GH);bd.fill(-1);let[ci,cj]=cell(P.x,P.z);ci=Math.max(0,Math.min(GW-1,ci));cj=Math.max(0,Math.min(GH-1,cj));let s=ci+cj*GW;
  if(bk[s]){let f=false;for(const[a,b]of N8){const i=ci+a,j=cj+b;if(i>=0&&j>=0&&i<GW&&j<GH&&!bk[i+j*GW]){s=i+j*GW;f=true;break}}if(!f)return}
  bd[s]=0;const q=[s];for(let h=0;h<q.length;h++){const c=q[h],i=c%GW,j=c/GW|0;for(let k=0;k<4;k++){const a=i+N8[k][0],b=j+N8[k][1];if(a<0||b<0||a>=GW||b>=GH)continue;const m=b*GW+a;if(bd[m]<0&&!bk[m]){bd[m]=bd[c]+1;q.push(m)}}}}
-function chase(dt,t){if(!ph||!ph.m.visible)return;if(ph.d>0){ph.d-=dt;ph.mv=0;ph.m.position.set(ph.x,0,ph.z);anim(ph.m,t,0);pfOn(t);pfBt=0;return}
- bt-=dt;if(bt<=0){bt=.3;bfs()}
- let tx=P.x,tz=P.z;const[pi,pj]=cell(ph.x,ph.z),c=pi+pj*GW;
- if(pi>=0&&pj>=0&&pi<GW&&pj<GH&&bd&&bd[c]>0){let best=c,bi=pi,bj=pj;for(const[a,b]of N8){const i=pi+a,j=pj+b;if(i<0||j<0||i>=GW||j>=GH)continue;const m=i+j*GW;if(bd[m]<0||bd[m]>=bd[best])continue;
-  if(a&&b&&(bk[(pi+a)+pj*GW]||bk[pi+(pj+b)*GW]))continue;best=m;bi=i;bj=j}
-  if(best!=c){tx=GX+(bi+.5)*GC;tz=GZ+(bj+.5)*GC}}
- const dx=tx-ph.x,dz=tz-ph.z,l=Math.hypot(dx,dz);if(l>.01){ph.x+=dx/l*CFG.PSPD*dt;ph.z+=dz/l*CFG.PSPD*dt;ph.f=la(ph.f,Math.atan2(dx,dz),Math.min(1,dt*10));ph.mv=1}
- ph.m.position.set(ph.x,0,ph.z);ph.m.rotation.y=ph.f;anim(ph.m,t,ph.mv);pfOn(t);
- pfBt-=dt;if(pfBt<=0){pfBt=Math.max(CFG.PGAP,Math.min(CFG.PGAPMAX,CFG.PGAP+Math.hypot(ph.x-P.x,ph.z-P.z)*CFG.PGAPK));tone(740,0,.07,'square',.07)}
- if(Math.hypot(ph.x-P.x,ph.z-P.z)<CFG.CATCH){SRA.whistle();say('Kena tangkap! Jom ke kelas!');toast('Pengawas hantar kamu ke kelas.',2800);score=Math.max(0,score-CFG.CAUGHT);enterRoom(cls,true)}}
+function chase(dt,t){if(!ph||!ph.m.visible)return;lateT+=dt;if(!joined&&lateT>=CFG.JOIN)joinEx();
+ const L=[ph].concat(ex);let run=false;L.forEach(c=>{if(c.d>0)c.d-=dt;else run=true});
+ if(run){bt-=dt;if(bt<=0){bt=.3;bfs()}mainT+=ph.d<=0?dt:0}
+ let dm=1e9;
+ L.forEach((c,i)=>{c.mv=0;const going=c.d<=0;
+  if(going){let tx=P.x,tz=P.z;const[pi,pj]=cell(c.x,c.z),cc=pi+pj*GW;
+   if(pi>=0&&pj>=0&&pi<GW&&pj<GH&&bd&&bd[cc]>0){let best=cc,bi=pi,bj=pj;for(const[a,b]of N8){const i2=pi+a,j2=pj+b;if(i2<0||j2<0||i2>=GW||j2>=GH)continue;const m=i2+j2*GW;if(bd[m]<0||bd[m]>=bd[best])continue;
+    if(a&&b&&(bk[(pi+a)+pj*GW]||bk[pi+(pj+b)*GW]))continue;best=m;bi=i2;bj=j2}
+    if(best!=cc){tx=GX+(bi+.5)*GC;tz=GZ+(bj+.5)*GC}}
+   const dx=tx-c.x,dz=tz-c.z,l=Math.hypot(dx,dz),sp=i==0?pSpd(mainT):CFG.PSPD;if(l>.01){c.x+=dx/l*sp*dt;c.z+=dz/l*sp*dt;c.f=la(c.f,Math.atan2(dx,dz),Math.min(1,dt*10));c.mv=1}
+   dm=Math.min(dm,Math.hypot(c.x-P.x,c.z-P.z))}
+  c.m.position.set(c.x,0,c.z);c.m.rotation.y=c.f;anim(c.m,t,c.mv);pfOn(t,c,i)});
+ if(run){pfBt-=dt;if(pfBt<=0){pfBt=Math.max(CFG.PGAP,Math.min(CFG.PGAPMAX,CFG.PGAP+dm*CFG.PGAPK));tone(740,0,.07,'square',.07)}}else pfBt=0;
+ if(dm<CFG.CATCH){SRA.whistle();say('Kena tangkap! Jom ke kelas!');toast('Pengawas hantar kamu ke kelas.',2800);score=Math.max(0,score-CFG.CAUGHT);enterRoom(cls,true)}}
 /* ---- rooms (placeholder for now) ---- */
 function card(h,lines,btns){const r=room();r.innerHTML='';const a=document.createElement('h2');a.textContent=h;r.appendChild(a);
  lines.forEach(l=>{const p=document.createElement('p');p.textContent=l[0];if(l[1])p.className='rs2';r.appendChild(p)});
