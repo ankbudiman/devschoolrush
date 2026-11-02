@@ -22,17 +22,17 @@ function mk(pathname,sk){
 }
 const T0=Date.now();
 /* 1. tracks */
-{const{SRA}=mk();const TR=SRA._t.TR,names=['menu','hall','mat','eng','bm','sains','kantin','padang'];
- ok(names.every(n=>TR[n])&&Object.keys(TR).length==8,'8 tracks: menu, hall, mat, eng, bm, sains, kantin, padang');
+{const{SRA}=mk();const TR=SRA._t.TR,names=['menu','hall','mat','eng','bm','sains','kantin','padang','luar'];
+ ok(names.every(n=>TR[n])&&Object.keys(TR).length==9,'9 tracks: menu, hall, mat, eng, bm, sains, kantin, padang, luar (Round 12)');
  ok(names.every(n=>{const t=TR[n];return t.bs.length==8&&(t.ki===''||t.ki.length==8)&&SRA._t.SCL[t.sc]&&t.root>100&&t.bpm>=60&&t.bpm<=140&&t.ch.length==4&&t.dens>0&&t.dens<1}),'every track has valid bpm, root, scale, 4 chords, 8-step patterns');
- ok(new Set(names.map(n=>TR[n].seed)).size==8,'every track has its own seed (rooms sound different)');
+ ok(new Set(names.map(n=>TR[n].seed)).size==9,'every track has its own seed (rooms sound different)');
  ok(names.every(n=>{const a=[];const s=new Set();for(let b=0;b<8;b++){a.push(SRA._t.mkBar(TR[n],b))}return JSON.stringify(a.slice(0,4))==JSON.stringify(a.slice(4,8))}),'melody repeats exactly every 4 bars (clean loop)');
  ok(names.every(n=>{const t=TR[n],S=SRA._t.SCL[t.sc],len=S.length;for(let b=0;b<4;b++)for(const i of SRA._t.mkBar(t,b)){if(i<-1||i>=len*2)return false;if(i>=0&&!S.includes(SRA._t.semi(t,i)%12))return false}return true}),'every melody note is inside the track scale and range');
  ok(names.every(n=>{let c=0;for(let b=0;b<4;b++)c+=SRA._t.mkBar(TR[n],b).filter(x=>x>=0).length;return c>=4}),'melodies are not empty');}
 /* 2. scene choice */
 {const s=(p,k,idx)=>{const m=mk(p,k);if(idx)m.cls.add('idx');return m.SRA._t.sceneName()};
  ok(s('/index.html')=='menu'&&s('/')=='menu'&&s('/x/',null,true)=='menu','index and root = menu music');
- ok(s('/world.html')=='hall'&&s('/kantin.html')=='kantin'&&s('/padang.html')=='padang','world = hall, kantin, padang');
+ ok(s('/world.html')=='hall'&&s('/kantin.html')=='kantin'&&s('/padang.html')=='padang'&&s('/luar.html')=='luar','world = hall, kantin, padang, luar');
  ok(s('/kelas.html','mat')=='mat'&&s('/kelas.html','eng')=='eng'&&s('/kelas.html','bm')=='bm'&&s('/kelas.html','sains')=='sains','kelas page picks mat / eng / bm / sains from sk_kelas');
  ok(s('/kelas.html',null)=='mat'&&s('/kelas.html','zzz')=='mat','kelas page with no or unknown subject falls back to mat');}
 /* 3. scheduler rules */
@@ -85,9 +85,9 @@ function walk(m,speed,secs,extra){m.SRA._t.reset();m.sb.SET.mus=0;const P=m.sb.P
  const w=mk('/world.html');b=w.C.osc;w.SRA.whistle();ok(w.C.osc-b>=4,'prefect whistle = two blasts');
  const p=mk('/world.html');b=p.C.osc;p.SRA.pop();p.SRA.pop();ok(p.C.osc-b==1,'speech-bubble pop is debounced');}
 /* 6. wiring in the files */
-{const L=s=>R(s);const pages=['index','world','kantin','padang','kelas'];
- ok(pages.every(p=>{const t=L(p+'.html'),m=t.match(/const L=(\[.*?\]);/);if(!m)return false;const a=JSON.parse(m[1]);return a.indexOf('js/audio.js')==a.indexOf('js/ui.js')+1&&a.indexOf('js/core.js')<a.indexOf('js/audio.js')}),'all 5 pages load js/audio.js right after js/ui.js (after core.js, before the scene scripts)');
- const sw=L('sw.js');ok(/CACHE='sr-r11b'/.test(sw)&&sw.includes("'js/audio.js'"),'sw.js: cache sr-r11b and audio.js pre-cached');
+{const L=s=>R(s);const pages=['index','world','kantin','padang','kelas','luar'];
+ ok(pages.every(p=>{const t=L(p+'.html'),m=t.match(/const L=(\[.*?\]);/);if(!m)return false;const a=JSON.parse(m[1]);return a.indexOf('js/audio.js')==a.indexOf('js/ui.js')+1&&a.indexOf('js/core.js')<a.indexOf('js/audio.js')}),'all 6 pages (Round 12 adds luar) load js/audio.js right after js/ui.js (after core.js, before the scene scripts)');
+ const sw=L('sw.js');ok(/CACHE='sr-r14b'/.test(sw)&&sw.includes("'js/audio.js'"),'sw.js: cache sr-r14 and audio.js pre-cached');
  ok(L('js/world.js').includes('SRA.sip()')&&!/tone\(420-i\*60/.test(L('js/world.js')),'world.js sip() uses SRA.sip()');
  ok(L('js/world-build.js').includes('SRA.bin();const c=carry')&&L('js/kantin.js').includes('SRA.bin();const c=carry'),'hallway and kantin bins call SRA.bin() on a correct throw');
  const st=L('js/story.js');ok((st.match(/SRA\.whistle\(\)/g)||[]).length==2,'story.js: whistle when late and when caught');
@@ -97,5 +97,6 @@ function walk(m,speed,secs,extra){m.SRA._t.reset();m.sb.SET.mus=0;const P=m.sb.P
  ok(/^const SRA=\(function\(\)\{/m.test(src)&&first>src.length-12&&src.trim().endsWith('})();'),'audio.js is one IIFE assigned to SRA (the only top-level name), so it cannot clash with the scene scripts');
  ok(!/localStorage|sessionStorage|new Audio|\.mp3|\.ogg|\.wav|fetch\(/.test(src),'no audio files, no storage, no network in audio.js');
  ok(/Round 11/.test(L('README.md')),'README has a Round 11 entry');
- ok(L('js/core.js')==fs.readFileSync(path.join(__dirname,'..','_backup_round11/js/core.js'),'utf8')&&L('js/ui.js')==fs.readFileSync(path.join(__dirname,'..','_backup_round11/js/ui.js'),'utf8'),'core.js and ui.js are unchanged (saves, settings UI untouched)');}
+ const sha=f=>require('crypto').createHash('sha256').update(fs.readFileSync(path.join(__dirname,'..',f))).digest('hex'); /* Round 12d: hashes of the Round 11 originals (the _backup_round11 folder is no longer kept) */
+ ok(sha('js/core.js')=='d25c34b19f3d807de2c788764e4d0eb5d6e6766c86e8a3a0d00ecafbeca497de'&&sha('js/ui.js')=='483e48f5d5cede4f5ccbd06f53944c95f455f41dec33bf6c1bf3aa6516b70c7f','core.js and ui.js are unchanged (saves, settings UI untouched)');}
 console.log(f?('\n'+f+' FAILED'):'\nALL PASS');process.exit(f?1:0);

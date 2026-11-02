@@ -13,6 +13,8 @@ const m=new T.Mesh(new T.PlaneGeometry(x1-x0,z1-z0),new T.MeshPhongMaterial({map
 m.rotation.x=-Math.PI/2;m.position.set((x0+x1)/2,.01,(z0+z1)/2);m.receiveShadow=true;sc.add(m)}
 const gm=new T.Mesh(new T.PlaneGeometry(300,300),mat('#8fc27a'));gm.rotation.x=-Math.PI/2;gm.position.y=-.02;gm.receiveShadow=true;sc.add(gm);
 flr(100,150,580,538);flr(158,110,182,150);flr(468,110,492,150);
+/* Round 14 backdrop: a low hedge ring (4 long boxes), a darker floor beyond it (4 flat planes) and soft fog, so whatever shows through a faded wall is not the bright open field. Hedge sits clear of the walls and the north walkway box (x +-27.8, z -34..22.6). */
+(function(){const hx0=-36,hx1=36,hz0=-39,hz1=30,t=1.2,h=1.1,c='#3f7a3a';const hb=(w,d,x,z)=>{const m=new T.Mesh(new T.BoxGeometry(w,h,d),mat(c));m.position.set(x,h/2,z);m.receiveShadow=true;sc.add(m)};hb(hx1-hx0+t*2,t,0,hz0-t/2);hb(hx1-hx0+t*2,t,0,hz1+t/2);hb(t,hz1-hz0,hx0-t/2,0);hb(t,hz1-hz0,hx1+t/2,0);const fp=(w,d,x,z)=>{const m=new T.Mesh(new T.PlaneGeometry(w,d),mat('#5d9453'));m.rotation.x=-Math.PI/2;m.position.set(x,-.01,z);m.receiveShadow=true;sc.add(m)};fp(300,120,0,hz0-t-60);fp(300,120,0,hz1+t+60);fp(120,hz1-hz0+2*t,hx0-t-60,0);fp(120,hz1-hz0+2*t,hx1+t+60,0);sc.fog=new T.Fog('#bfe3f5',60,130)})(); /* darker floor beyond the hedge (4 flat planes) + the same soft fog as the outdoor map */
 const WC='#f3ead8',BE='#e2cfa6';
 blk(92,142,100,546,4.2,WC,1);blk(580,142,588,546,4.2,WC,1);blk(100,538,580,546,4.2,WC,1);
 [[100,158],[182,468],[492,580]].forEach(s=>blk(s[0],142,s[1],150,4.2,WC,1));

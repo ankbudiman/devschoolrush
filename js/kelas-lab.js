@@ -61,10 +61,19 @@ function buildLab(c){const{sc,cols,FG,fset,sign,RX,RZ0,RZ1,DX,DW,WH,K}=c,BDX=LAB
   bx(sc,.2,.16,.34,'#3a3a3a',x,.99,z+.45);bx(sc,.06,.06,.2,'#d23a2e',x,1.09,z+.45);ball(.1,'#fff2a8',x,1.07,z+1.0);bx(sc,.03,.03,.5,'#c07a2e',x,.95,z+.72);
   colBox(x-.6,x+.6,z-L/2,z+L/2)})();
  FG.right.push(sign(['STESEN','EKSPERIMEN'],'#2a49a8','#ffffff',2.2,.9,24,RX-.08,2.75,.9,-Math.PI/2));
- /* ---- glass cabinet on the right wall (the hidden note is here) ---- */
+ /* ---- science cabinet on the right wall (the hidden note is here). Round 13c: normal open cabinet, no glass, with science equipment on the shelves ---- */
  (()=>{const g=new T.Group(),x=RX-.45,z=-3.7,W='#b9bfc7';nb(g,.7,2.4,.08,W,0,1.2,-.96);nb(g,.7,2.4,.08,W,0,1.2,.96);nb(g,.08,2.4,2,W,.31,1.2,0);
   [.05,.8,1.5,2.2].forEach((y,i)=>{nb(g,.7,.07,2,W,0,y+.03,0);});
-  const gl=bx(g,.04,2.3,1.92,'#cfe8f2',-.33,1.2,0);gl.material.transparent=true;gl.material.opacity=.25;gl.castShadow=false;
+  const it=(geo,col,px,py,pz)=>{const m=new T.Mesh(geo,mat(col));m.position.set(px,py,pz);m.castShadow=false;g.add(m);return m},CY=(a,b,h)=>new T.CylinderGeometry(a,b,h,8),BX=(w,h,d)=>new T.BoxGeometry(w,h,d),G='#cfe8f2';
+  const s1=.115,s2=.865,s3=1.565; /* tops of the three usable shelves (about .6 free above each) */
+  [[-.65,'#b9772e'],[-.3,'#3f8f5a'],[.05,'#b9772e']].forEach(a=>{it(CY(.1,.1,.3),a[1],0,s1+.15,a[0]);it(CY(.04,.04,.1),a[1],0,s1+.35,a[0]);it(CY(.045,.045,.04),'#2b2b2b',0,s1+.42,a[0])}); /* reagent bottles */
+  it(BX(.4,.22,.3),'#e8c75a',0,s1+.11,.5);it(BX(.4,.22,.3),'#4aa3ff',0,s1+.33,.5); /* specimen boxes */
+  it(BX(.3,.04,.22),'#2b2b2b',0,s2+.02,-.62);it(BX(.07,.36,.07),'#e9edf0',.1,s2+.2,-.62);it(CY(.04,.04,.24),'#e9edf0',-.02,s2+.28,-.62);it(CY(.025,.025,.08),'#2b2b2b',-.02,s2+.44,-.62);it(BX(.2,.02,.16),'#8f98a3',-.02,s2+.14,-.62); /* microscope */
+  [[-.15,.2,'#3aa0e0'],[.15,.2,'#e0603a']].forEach(a=>{it(CY(.09,.09,.2),G,0,s2+.1,a[0]);it(CY(.082,.082,.02),a[2],0,s2+.205,a[0])}); /* beakers with coloured liquid */
+  it(CY(.05,.05,.38),G,0,s2+.19,.5);it(CY(.045,.045,.02),'#3aa0e0',0,s2+.385,.5); /* measuring cylinder */
+  [-.65,-.3].forEach(zz=>{it(CY(.04,.12,.22),'#e6f3c8',0,s3+.11,zz);it(CY(.045,.045,.03),'#c0693f',0,s3+.235,zz)}); /* conical flasks */
+  it(BX(.16,.04,.5),'#c9a14a',0,s3+.02,.2);['#e24b4b','#4aa3ff','#f4c542','#5ccf4a','#b266ff'].forEach((c,k)=>it(CY(.025,.025,.2),c,0,s3+.14,-.02+k*.09)); /* test tube rack */
+  [0,1,2].forEach(i=>it(CY(.11,.11,.025),'#e8f4f8',0,s3+.0125+i*.03,.75)); /* petri dishes */
   g.position.set(x,0,z);sc.add(g);colBox(x-.4,x+.4,z-1.05,z+1.05);fset(g,[x-.4,x+.4,0,2.6,z-1.05,z+1.05])})();
  /* ---- solar system model (front left), two yellow chemical barrels (back left), red bin ---- */
  (()=>{const x=LABW.MD[0],z=LABW.MD[1];cyl(.3,.4,.9,'#8a6a46',x,.45,z);ball(.42,'#e8c75a',x,1.35,z);const r=new T.Mesh(new T.CylinderGeometry(.75,.75,.04,20),mat('#c9a14a'));r.position.set(x,1.35,z);r.rotation.x=.35;sc.add(r);ball(.12,'#4aa3ff',x+.7,1.0,z+.35);colBox(x-.5,x+.5,z-.5,z+.5)})();

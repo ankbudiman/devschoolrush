@@ -166,6 +166,8 @@ function fades(dt){const Q={x:P.x,y:P.y+1.1,z:P.z};FDS.forEach(f=>{f.tg=f.boxes.
  const k=SET.lo?1:Math.min(1,dt*10);f.op=Math.abs(f.tg-f.op)<.01?f.tg:f.op+(f.tg-f.op)*k;const tr=f.op<.995;
  f.m.forEach(m=>{const mt=m.material;mt.opacity=f.op;if(mt.transparent!==tr){mt.transparent=tr;mt.needsUpdate=true}})});if(GLS.length)GLS.forEach(m=>m.visible=(LIB?FRW:FLW).op>.9)}
 /* ---- main loop ---- */
+/* Round 13b: the camera stays inside the room. Near a wall it slides along the wall (clamped x and z) instead of swinging through the wall to the outside. */
+function camIn(px,pz,sx,sz,D,rx,z0,z1,m){return[Math.max(-rx+m,Math.min(rx-m,px+sx*D)),Math.max(z0+m,Math.min(z1-m,pz+sz*D))]}
 const CM=[6*CAMD,1.2,.85,.6,.9];let last=0;
 function loop(ts){requestAnimationFrame(loop);const dt=Math.min((ts-last)/1000||0,.05),t=ts/1000;last=ts;
  if(halt){keys.KeyW=keys.KeyA=keys.KeyS=keys.KeyD=keys.ArrowUp=keys.ArrowDown=keys.ArrowLeft=keys.ArrowRight=keys.Space=0;jv.x=jv.z=0;jmp=0}
@@ -177,7 +179,7 @@ function loop(ts){requestAnimationFrame(loop);const dt=Math.min((ts-last)/1000||
  if((keys.Space||jmp)&&P.y<=0)P.vy=6.8;P.vy-=22*dt;P.y+=P.vy*dt;if(P.y<=0){P.y=0;P.vy=0}
  pm.position.set(P.x,sitting?.04:P.y,P.z);pm.rotation.y=P.f;if(sitting)pm.userData.legs.forEach(l=>l.rotation.x=-Math.PI/2);else anim(pm,t,mv&&P.y==0);
  const D=CM[0]*(cam.aspect<1?1.15:1);cp.x+=(P.x-cp.x)*Math.min(1,dt*10);cp.z+=(P.z-cp.z)*Math.min(1,dt*10);const sx=Math.sin(cy),sz=Math.cos(cy);
- CAMP.x=cp.x+sx*D;CAMP.y=CM[1]+D*CM[2];CAMP.z=cp.z+sz*D;cam.position.set(CAMP.x,CAMP.y,CAMP.z);cam.lookAt(cp.x-sx*CM[3],CM[4],cp.z-sz*CM[3]);dl.position.set(cp.x+6,14,cp.z+8);dl.target.position.set(cp.x,0,cp.z);
+ const cc=camIn(cp.x,cp.z,sx,sz,D,RX,RZ0,RZ1,.3);CAMP.x=cc[0];CAMP.y=CM[1]+D*CM[2];CAMP.z=cc[1];cam.position.set(CAMP.x,CAMP.y,CAMP.z);cam.lookAt(cp.x-sx*CM[3],CM[4],cp.z-sz*CM[3]);dl.position.set(cp.x+6,14,cp.z+8);dl.target.position.set(cp.x,0,cp.z);
  fades(dt);
  em.position.set(EX.x,3.2+Math.abs(Math.sin(t*3))*.3,EX.z);qm.visible=!sitting&&!LAB;qm.position.set(QC[0],1.9+Math.abs(Math.sin(t*3))*.25,QC[1]);STM.forEach((m,i)=>m.position.set(LB.ST[i][0],2.1+Math.abs(Math.sin(t*3+i))*.25,LB.ST[i][1]));
  const bb=$('bub');if(bb.style.display=='block'){bv.set(P.x,P.y+2.3,P.z).project(cam);bb.style.left=(bv.x*.5+.5)*cv.clientWidth+'px';bb.style.top=(-bv.y*.5+.5)*cv.clientHeight+'px'}

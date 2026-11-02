@@ -14,7 +14,8 @@ const TR={
  bm:{bpm:66,root:196,sc:'pen',ch:[[0,0],[5,0],[0,0],[7,0]],dens:.28,lead:'bell',bs:'x.......',ar:.07,sh:0,ki:'',sw:0,seed:53},
  sains:{bpm:110,root:261.63,sc:'lyd',ch:[[0,0],[2,0],[0,0],[9,1]],dens:.6,lead:'blip',bs:'x..x..x.',ar:0,sh:.02,ki:'',sw:.12,seed:67},
  kantin:{bpm:118,root:293.66,sc:'pen',ch:[[0,0],[5,0],[7,0],[0,0]],dens:.62,lead:'mar',bs:'x.x.x.xx',ar:0,sh:.04,ki:'x...x...',sw:.22,seed:71},
- padang:{bpm:128,root:329.63,sc:'pen',ch:[[0,0],[7,0],[9,1],[5,0]],dens:.7,lead:'pluck',bs:'x.x.x.x.',ar:0,sh:.05,ki:'x...x...',sw:0,seed:89,amb:'cheer'}
+ padang:{bpm:128,root:329.63,sc:'pen',ch:[[0,0],[7,0],[9,1],[5,0]],dens:.7,lead:'pluck',bs:'x.x.x.x.',ar:0,sh:.05,ki:'x...x...',sw:0,seed:89,amb:'cheer'},
+ luar:{bpm:100,root:277.18,sc:'pen',ch:[[0,0],[5,0],[7,0],[9,1]],dens:.5,lead:'pluck',bs:'x.x.x.x.',ar:.03,sh:.02,ki:'',sw:.1,seed:97,amb:'road'} /* Round 12: Luar Sekolah, with a soft car whoosh now and then */
 };
 let bus=null,noise=null,trk=null,tn='',bp=[],wi=0,stp=0,nx=0,dk=0,ambT=0,lastTone=0,lastPop=0,lp=null,acc=0,air=0,gnd=true,alt=0;
 const mul=a=>()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
@@ -24,7 +25,7 @@ const sfxV=()=>(SET.snd||0)*(SET.vol||0);
 const paused=()=>{const m=document.getElementById('menu');return !!(m&&m.classList.contains('pz')&&m.style.display!='none')};
 function sceneName(){const p=(location.pathname.split('/').pop()||'').replace('.html','');
  if(document.body.classList.contains('idx')||p==''||p=='index')return'menu';
- if(p=='world')return'hall';if(p=='kantin')return'kantin';if(p=='padang')return'padang';
+ if(p=='world')return'hall';if(p=='kantin')return'kantin';if(p=='padang')return'padang';if(p=='luar')return'luar';
  if(p=='kelas'){let s='mat';try{s=SS.get('sk_kelas')||'mat'}catch(e){}return TR[s]?s:'mat'}
  return''}
 function nz(a){if(!noise||noise.sampleRate!=a.sampleRate){const n=a.sampleRate;noise=a.createBuffer(1,n,n);const d=noise.getChannelData(0);for(let i=0;i<n;i++)d[i]=Math.random()*2-1}return noise}
@@ -68,7 +69,9 @@ function mvPoll(now){let p=null,h=true,md='walk';try{p=P;h=halt;if(typeof mode!=
  acc+=dt;const iv=Math.max(.17,Math.min(.5,1.9/sp));if(acc>=iv){acc=0;foot()}}
 function amb(ms){if(!trk||!trk.amb||ms<ambT||paused()||document.hidden)return;const a=A(),v=sfxV();if(!a||v<=0)return;const t=a.currentTime+.01;
  if(trk.amb=='cheer'){ambT=ms+9000+Math.random()*7000;const s=a.createBufferSource(),fl=a.createBiquadFilter(),g=a.createGain();s.buffer=nz(a);fl.type='bandpass';fl.frequency.value=1400;fl.Q.value=.7;
-  g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(.35*v,t+.25);g.gain.setValueAtTime(.35*v,t+.7);g.gain.exponentialRampToValueAtTime(.0001,t+1.5);s.connect(fl);fl.connect(g);g.connect(a.destination);s.start(t,Math.random()*.4);s.stop(t+1.6)}}
+  g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(.35*v,t+.25);g.gain.setValueAtTime(.35*v,t+.7);g.gain.exponentialRampToValueAtTime(.0001,t+1.5);s.connect(fl);fl.connect(g);g.connect(a.destination);s.start(t,Math.random()*.4);s.stop(t+1.6)}
+ if(trk.amb=='road'){ambT=ms+6000+Math.random()*5000;const s=a.createBufferSource(),fl=a.createBiquadFilter(),g=a.createGain();s.buffer=nz(a);fl.type='lowpass';fl.frequency.value=700;fl.Q.value=.5;
+  g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(.16*v,t+.9);g.gain.exponentialRampToValueAtTime(.0001,t+2.2);s.connect(fl);fl.connect(g);g.connect(a.destination);s.start(t,Math.random()*.4);s.stop(t+2.3)}}
 function step(ms){const a=A();if(!a||a.state!='running')return;
  mvPoll(ms/1000);amb(ms);
  const L=lvl(ms);if(!bus){bus=a.createGain();bus.gain.value=0;bus.connect(a.destination)}

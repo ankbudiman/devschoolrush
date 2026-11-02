@@ -97,8 +97,8 @@ fillScreen(0,false);btn('Semak Jawapan').click();
 ok(rootEl().textContent.includes('Betul semua')&&rootEl().textContent.includes('Markah: 10/30')&&!btn('Semak Jawapan')&&btn('Kitaran Seterusnya'),'cycle 1 correct: full marks 10/10, header 10/30, next button, check button gone');
 ok(slots().every(s=>s.has('ok'))&&rootEl().all().filter(e=>e.textContent=='✔').length==5,'right slots show a tick (not colour only)');
 ok(rootEl().textContent.includes('Katak melalui perubahan bentuk'),'explanation shown');
-ok(pool().children.filter(c=>c.has('xsi')).length==5&&pool().children.filter(c=>c.has('xar')).map(c=>c.textContent).join('')=='→→→→↺'&&pool().has('xdn')&&rootEl().textContent.includes('URUTAN BETUL'),'after the check the box shows the 5 pictures in order with arrows and a return arrow');
-ok(pool().children.filter(c=>c.has('xsi')).every((c,k)=>c.children[0].textContent==String(k+1)&&c.children[1].attrs.role=='img'&&c.children[1].attrs['aria-label']==(k+1)+'. '+SAND[0].c[k][1]),'strip pictures are numbered 1-5 and carry the stage name as their alt text');
+ok(pool().style.display=='none'&&rootEl().textContent.includes('URUTAN BETUL')&&rootEl().textContent.includes('IKUT ARAH JAM'),'after the check the card box is hidden and the ring is titled URUTAN BETUL');
+ok(scards().every((c,k)=>c&&c.dataset.id==SAND[0].c[k][0]),'after the check the ring shows the 5 correct pictures in order (slot 1 to 5, clockwise)');
 ok(slots().every(s=>s.children.some(c=>c.has('cd')&&c.children[0].has('xim')&&c.children[0].attrs['aria-hidden']=='true'&&c.children[1].has('xtx'))),'each card: picture box (hidden from screen readers) above the label');
 {const cd=slots()[0].children.find(c=>c.has('cd'));ok(cd.disabled&&!cd.onpointerdown&&slots().every(s=>s.has('ok')),'a checked card is disabled and has no drag handler');}
 btn('Kitaran Seterusnya').click();ok(rootEl().textContent.includes('Kitaran 2/3'),'cycle 2/3');
@@ -151,4 +151,9 @@ ok(/function sit\(\)\{sitting=true;[^]*?QE\.open\(\{sub:SUB,lock:STORY\?\(cur\.l
 ok(html.indexOf('js/kelas-sains-data.js')>html.indexOf('js/kelas-lab.js')&&html.indexOf('js/kelas-sains.js')>html.indexOf('js/kelas-sains-data.js')&&html.indexOf('js/kelas-sains.js')<html.indexOf('"js/kelas.js"'),'kelas.html: data then screen, both before kelas.js');
 ok(/CACHE='sr-r\d+[a-z]*\d*'/.test(sw)&&sw.includes("'js/kelas-sains-data.js'")&&sw.includes("'js/kelas-sains-art.js'")&&sw.includes("'js/kelas-sains.js'"),'sw.js: a sr-r10i... cache and the three Sains files pre-cached (Round 10i3: not pinned to one cache name)');
 ok(/Round 10i\b/.test(R('README.md'))&&/Round 10i2/.test(R('README.md'))&&/_backup_round10i2/.test(R('README.md')),'README has the Round 10i and Round 10i2 entries');
+/* ---- Round 13: ring layout ---- */
+{const src=R('js/kelas-sains.js');
+ ok(/class=\\?"xrg|'xrg'/.test(src)&&src.includes('ringArrows')&&src.includes('marker-end'),'Kitaran draws clockwise arrows between the 5 slots (xrg svg)');
+ ok(/const RR=36/.test(src)&&/Math\.cos\(a\)/.test(src)&&/-90\+k\*360/.test(src),'slots sit on a circle, slot 1 at the top');
+ ok(!/ketik/i.test(src),'Kitaran text never says ketik');}
 console.log(fail?fail+' FAILED, '+pass+' passed':'all '+pass+' checks passed');process.exit(fail?1:0);

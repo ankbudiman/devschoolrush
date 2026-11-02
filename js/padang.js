@@ -147,7 +147,8 @@ function talk(i){const d=PD.g[i];if(RES[i]&&STORY){say('Stesen ini sudah selesai
  card('<h3>'+d.n+'</h3><p>'+d.t+'</p><p class="kh">'+d.kh+'</p><div class="rw"><button onclick="PN.go('+i+')">Mula ▶</button><button class="kx" onclick="PN.shut()">Nanti dulu</button></div>',shut)}
 /* camera: walkCam() follows the player, sideCam() follows the runner on the stage; a glide blends between them */
 const ASP=()=>cam.aspect<1?1.25:1;
-function walkCam(){const D=CAMW.d*(cam.aspect<1?1.15:1),sx=Math.sin(cy),sz=Math.cos(cy);return{p:[cp.x+sx*D,CAMW.h+D*CAMW.k,cp.z+sz*D],l:[cp.x-sx*CAMW.la,CAMW.ly,cp.z-sz*CAMW.la]}}
+const PCR=[camRect([BX0,BX1,BZ0,BZ1],.3)]; /* Round 14: walking camera stays inside the fence */
+function walkCam(){const D=CAMW.d*(cam.aspect<1?1.15:1),sx=Math.sin(cy),sz=Math.cos(cy),cc=camClamp(cp.x,cp.z,sx,sz,D,PCR);return{p:[cc[0],CAMW.h+D*CAMW.k,cc[1]],l:[cp.x-sx*CAMW.la,CAMW.ly,cp.z-sz*CAMW.la]}}
 function sideCam(){const x=ssx+CAMSIDE.ahead;return{p:[x,CAMSIDE.h,PG.z+CAMSIDE.dz*ASP()],l:[x,CAMSIDE.lookH,PG.z]}}
 function setCam(c){cam.position.set(c.p[0],c.p[1],c.p[2]);cam.lookAt(c.l[0],c.l[1],c.l[2]);lastLook=c.l}
 function startGlide(m){mode=m;gt=0;swapped=0;gFrom={p:cam.position.toArray(),l:lastLook.slice()}}

@@ -15,6 +15,7 @@ const dl=new T.DirectionalLight(0xffffff,.55);dl.castShadow=true;dl.shadow.mapSi
 /* ---- room (all positions come from these numbers; stalls keep their size, the room around them scales with ROOM) ---- */
 const RX=19.5*ROOM,RZ1=11*ROOM,RZ0=RZ1-26*ROOM,WH=3.4,WALL='#d9604a',DW=1.7,cols=[],MZ=(RZ0+RZ1)/2;
 const hit=(x,z,r)=>cols.some(c=>x+r>c.x0&&x-r<c.x1&&z+r>c.z0&&z-r<c.z1);
+const KCR=[camRect([-RX,RX,RZ0,RZ1],.3)];
 const SX=RX-1.8,ZB=RZ0+1.8,ZF=RZ0+4.25,ZN=RZ0+10.25,TX=RX*.34,TZ=[RZ0+8.35,RZ1-7.15];
 const LX=(TX+2+RX-2.58)/2,L0=RZ0+5.45,LM=(TZ[0]+TZ[1])/2,LF=RZ1-2.75,WPX=RX-3.7;
 const gm=new T.Mesh(new T.PlaneGeometry(300,300),mat('#8fc27a'));gm.rotation.x=-Math.PI/2;gm.position.y=-.02;gm.receiveShadow=true;sc.add(gm);
@@ -197,7 +198,7 @@ function loop(ts){requestAnimationFrame(loop);const dt=Math.min((ts-last)/1000||
  if(fly){fly.t+=dt/.5;const u=Math.min(fly.t,1);fly.g.position.set(fly.x0+(fly.x1-fly.x0)*u,1.3-.6*u+Math.sin(Math.PI*u)*.9,fly.z0+(fly.z1-fly.z0)*u);if(fly.t>=1){sc.remove(fly.g);fly=null}}
  walkers(dt,t);
  const D=CM[0]*(cam.aspect<1?1.15:1);cp.x+=(P.x-cp.x)*Math.min(1,dt*10);cp.z+=(P.z-cp.z)*Math.min(1,dt*10);const sx=Math.sin(cy),sz=Math.cos(cy);
- CAMP.x=cp.x+sx*D;CAMP.y=CM[1]+D*CM[2];CAMP.z=cp.z+sz*D;cam.position.set(CAMP.x,CAMP.y,CAMP.z);cam.lookAt(cp.x-sx*CM[3],CM[4],cp.z-sz*CM[3]);dl.position.set(cp.x+6,14,cp.z+8);dl.target.position.set(cp.x,0,cp.z);
+ const cc=camClamp(cp.x,cp.z,sx,sz,D,KCR);CAMP.x=cc[0];CAMP.y=CM[1]+D*CM[2];CAMP.z=cc[1]; /* Round 14: camera stays inside the Kantin */cam.position.set(CAMP.x,CAMP.y,CAMP.z);cam.lookAt(cp.x-sx*CM[3],CM[4],cp.z-sz*CM[3]);dl.position.set(cp.x+6,14,cp.z+8);dl.target.position.set(cp.x,0,cp.z);
  fades(dt);
  MK.forEach((m,i)=>{if(m.visible)m.position.set(ST[i].x,4.6+Math.abs(Math.sin(t*3))*.3,ST[i].z)});if(em.visible)em.position.set(EX.x,3.7+Math.abs(Math.sin(t*3))*.3,EX.z);
  bt-=dt;const cw=cv.clientWidth,ch=cv.clientHeight,bb=$('bub');if(bb.style.display=='block'){bv.set(P.x,P.y+2.3,P.z).project(cam);bb.style.left=(bv.x*.5+.5)*cw+'px';bb.style.top=(-bv.y*.5+.5)*ch+'px'}

@@ -46,4 +46,12 @@ t('reach back door',reach(LB.BDX,RZ0+1.2,1.4));t('reach notice board',reach(LB.N
 t('reach poster 0',reach(LB.P0[0],LB.P0[1],1.4));t('reach poster 1',reach(LB.P1[0],LB.P1[1],1.3));t('reach vase corner',reach(vase[0],vase[1],1.5));t('reach the door spot (EX)',reach(DX,RZ1-1.1,2.3));
 let rc=0;LB.mm(()=>rc++);t('minimap draws',rc>10);t('teacher spot behind the bench, on the platform',LB.TCH[1]<RZ0+2&&Math.abs(LB.TCH[0]-2.5)<.01);
 t('back door lock mesh returned',!!LB.LK&&FG.back.includes(LB.LK));
+/* ---- Round 13c: the cabinet on the right wall is a normal open cabinet with science equipment (no glass pane) ---- */
+{const ent=FDS.find(f=>Math.abs(f.b[0]-(RX-.45-.4))<1e-6&&Math.abs(f.b[4]-(-3.7-1.05))<1e-6),g=ent&&ent.g;t('science cabinet is built on the right wall and fades with the wall',!!g);
+ if(g){t('science cabinet: no glass or see-through part (it used to turn into a solid slab when faded)',g.children.every(m=>!m.material||(!m.material.transparent&&(m.material.opacity==null||m.material.opacity>=1))));
+  t('science cabinet: frame, 4 shelves and the equipment (at least 35 parts)',g.children.length>=35);
+  t('every part sits inside the cabinet (x -.36 to .36, z -1 to 1, y 0 to 2.45)',g.children.every(m=>m.position.x>=-.36&&m.position.x<=.36&&Math.abs(m.position.z)<=1&&m.position.y>=0&&m.position.y<=2.45));
+  const sh=[.115,.865,1.565],eq=g.children.slice(7); /* the first 7 parts are the 3 frame panels and the 4 shelf boards */
+  t('equipment stands on the three usable shelves and is not lost in the roof gap (y 0.1 to 2.2)',eq.length>=25&&eq.every(m=>m.position.y>.1&&m.position.y<2.2));
+  t('each of the three shelves has equipment on it',sh.every((y,i)=>g.children.some(m=>m.position.y>y&&m.position.y<y+.5&&m.position.x<.3&&Math.abs(m.position.z)<=.9))); }}
 console.log(ok+' ok, '+bad+' failed');process.exit(bad?1:0);

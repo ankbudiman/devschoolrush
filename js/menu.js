@@ -26,8 +26,9 @@ function chk(){$('go').disabled=!(selG&&$('nm').value.trim())}
 function pickG(g){selG=g;tab=0;renderCP();chk();tone(660,0,.08,'sine',.12)}
 function showMenu(){inMenu=true;$('menu').style.display='flex';view('vm');const k=curKey();$('mC').hidden=!PF[k];if(PF[k])$('mC').textContent='Teruskan: '+PF[k].name+(/^s\d$/.test(k)?' · Slot '+k.slice(1):'')+' ('+MODN[getMode()]+')'}
 function startFlow(){selLv='sederhana';lvUI();LK=defL();selG=null;tab=0;$('nm').value='';$('go').disabled=true;ring.visible=false;buildPV();renderCP();view('vn')}
+function okCont(p){if(!p)return false;if(getMode()=='story')return dayOk(p.save);const q=p.pos;return !!q&&Number.isFinite(q.x)&&Number.isFinite(q.z)&&Math.abs(q.x)<=200&&Math.abs(q.z)<=200} /* Round 14: same checks as dayOk / posRestore (the collision test stays in posRestore) */
 function startGame(cont){if(cont){cur=PF[curKey()];if(!cur)return;cur.lp=Date.now();save()}else{const nm=$('nm').value.replace(/[<>]/g,'').trim().slice(0,12);if(!nm||!selG||!newSlot||PF[newSlot])return;const k=newSlot;PF[k]=Object.assign(NP(),{name:nm,level:selLv});cur=PF[k];cur.gen=selG;cur.L=Object.assign({},LK[selG]);cur.lp=Date.now();LS.set('sk_cur',k);save()}
-inMenu=false;stageOn=false;$('menu').style.display='none';loading(()=>nav('world'))}
+if(cont&&okCont(cur))SS.set('sk_in',1);else SS.del('sk_in');inMenu=false;stageOn=false;$('menu').style.display='none';loading(()=>nav('world'))} /* Round 12: SS.del('sk_in') = the next world.html visit goes outside first (bus). Round 14: Teruskan with a valid saved day (Mod Kelas) or position (Mod Jalan-jalan) goes straight into the school */
 /* Round 9e: save slots (6). Mod Kelas / Mod Jalan-jalan opens this screen. Empty slot = create the character; used slot = continue in the chosen mode; Padam asks twice. */
 let newSlot=null;
 function slotCard(i){const k='s'+i,p=PF[k],c=document.createElement('div');c.className='slc'+(p?'':' em');c.setAttribute('role','button');c.tabIndex=0;

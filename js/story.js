@@ -10,7 +10,8 @@ const CFG={DAY:6,
   BALIK:780,ENDWALK:6,             /* balik bell 1:00 pm; real seconds of free walking after class 6 before it rings */
   RATE:.25,SEC:30,                 /* 1 real second = 1/4 clock-minute; 30 real seconds to reach class */
   FIRST:[6,10],BREAK:[6,12],       /* real seconds of free time before a bell */
-  NEAR:.3,NEARMIN:8,ONTIME:100,BONUS:2,LATE:30,CAUGHT:20,PSPD:4,PDELAY:2,CATCH:.85};
+  NEAR:.3,NEARMIN:8,ONTIME:100,BONUS:2,LATE:30,CAUGHT:20,PSPD:4,PDELAY:2,CATCH:.85,
+  PGAP:.25,PGAPMAX:1.2,PGAPK:.045};  /* Round 14b: beep gap while the prefect runs (same numbers as the outside guard: closer = faster) */
 const LAB=['Sains','Bahasa Melayu','Matematik','English','Pendidikan Jasmani','Waktu Rehat']; /* index = DR index; 5 = Kantin */
 const RP={0:'kelas',1:'kelas',2:'kelas',3:'kelas',4:'padang',5:'kantin'},RS={0:'sains',1:'bm',2:'mat',3:'eng'}; /* Round 10h: 0 = Makmal Sains */ /* Round 10: Matematik and English share kelas.html (Round 10e: also the Perpustakaan, room 1 = bm); RS = which subject the page builds (sessionStorage sk_kelas) */ /* DR index -> real room page (the others still use the placeholder card) */
 let st='off',order=[],n=0,cls=-1,tleft=0,ttot=0,score=0,ok=0,lt=0,navOn=false,ph=null,bd=null,bt=0,clk=0,ringT=0,ew=0,bd2=0,gr={}; /* gr = today's grades by class index, filled when a real room is finished (Round 7: Kantin) */
@@ -47,18 +48,27 @@ function late(){st='late';setNav(true);score=Math.max(0,score-CFG.LATE);bellSoun
 function spawnPref(){if(!ph){const m=npc('pengawas');sc.add(m);ph={m,x:0,z:0,f:0,mv:0,d:0}}
  const ks=Object.keys(ND).filter(k=>k!='TL'&&k!='BR'&&Math.hypot(X(ND[k][0])-P.x,Z(ND[k][1])-P.z)>=12);const k=R(ks.length?ks:['TS','BS']);
  ph.x=X(ND[k][0]);ph.z=Z(ND[k][1]);ph.d=CFG.PDELAY;ph.m.visible=true;bt=0}
-function hidePref(){if(ph)ph.m.visible=false}
+function hidePref(){if(ph)ph.m.visible=false;pfOff()}
+/* ---- Round 14b: prefect markers, like the outside guard: red ring under the feet, "!" bubble, red triangle on the minimap (storyMM, called by drawMM in world.js), faster beep when close ---- */
+let pfRing=null,pfBub=null,pfV=null,pfBt=0;
+function pfOn(t){if(!pfRing){pfRing=new T.Mesh(new T.RingGeometry(.55,.8,28),new T.MeshBasicMaterial({color:'#e02424',side:T.DoubleSide,transparent:true,opacity:.85}));pfRing.rotation.x=-Math.PI/2;sc.add(pfRing);
+  pfBub=document.createElement('div');pfBub.id='pfb';pfBub.textContent='!';pfBub.style.cssText='position:fixed;z-index:8;pointer-events:none;display:none;transform:translate(-50%,-100%);font:900 2.2em Fredoka,sans-serif;color:#fff;background:#e02424;border:3px solid #fff;border-radius:50%;width:1.3em;height:1.3em;line-height:1.25em;text-align:center;box-shadow:0 2px 6px #0006';document.body.appendChild(pfBub);pfV=new T.Vector3()}
+ pfRing.visible=true;pfRing.position.set(ph.x,.06,ph.z);pfRing.scale.setScalar(1+.12*Math.sin(t*8));
+ pfV.set(ph.x,2.4,ph.z).project(cam);if(pfV.z<1){pfBub.style.display='block';pfBub.style.left=(pfV.x*.5+.5)*cv.clientWidth+'px';pfBub.style.top=(-pfV.y*.5+.5)*cv.clientHeight+'px'}else pfBub.style.display='none'}
+function pfOff(){if(pfRing)pfRing.visible=false;if(pfBub)pfBub.style.display='none'}
+window.storyMM=function(mg,f){if(MODE!='story'||st!='late'||!ph||!ph.m.visible)return;const q=f(ph.x,ph.z),k=1+.15*Math.sin(Date.now()/90);mg.fillStyle='#e02424';mg.strokeStyle='#fff';mg.lineWidth=2.5;mg.beginPath();mg.moveTo(q[0],q[1]-13*k);mg.lineTo(q[0]-11*k,q[1]+9*k);mg.lineTo(q[0]+11*k,q[1]+9*k);mg.closePath();mg.fill();mg.stroke()};
 function bfs(){if(!bd)bd=new Int16Array(GW*GH);bd.fill(-1);let[ci,cj]=cell(P.x,P.z);ci=Math.max(0,Math.min(GW-1,ci));cj=Math.max(0,Math.min(GH-1,cj));let s=ci+cj*GW;
  if(bk[s]){let f=false;for(const[a,b]of N8){const i=ci+a,j=cj+b;if(i>=0&&j>=0&&i<GW&&j<GH&&!bk[i+j*GW]){s=i+j*GW;f=true;break}}if(!f)return}
  bd[s]=0;const q=[s];for(let h=0;h<q.length;h++){const c=q[h],i=c%GW,j=c/GW|0;for(let k=0;k<4;k++){const a=i+N8[k][0],b=j+N8[k][1];if(a<0||b<0||a>=GW||b>=GH)continue;const m=b*GW+a;if(bd[m]<0&&!bk[m]){bd[m]=bd[c]+1;q.push(m)}}}}
-function chase(dt,t){if(!ph||!ph.m.visible)return;if(ph.d>0){ph.d-=dt;ph.mv=0;ph.m.position.set(ph.x,0,ph.z);anim(ph.m,t,0);return}
+function chase(dt,t){if(!ph||!ph.m.visible)return;if(ph.d>0){ph.d-=dt;ph.mv=0;ph.m.position.set(ph.x,0,ph.z);anim(ph.m,t,0);pfOn(t);pfBt=0;return}
  bt-=dt;if(bt<=0){bt=.3;bfs()}
  let tx=P.x,tz=P.z;const[pi,pj]=cell(ph.x,ph.z),c=pi+pj*GW;
  if(pi>=0&&pj>=0&&pi<GW&&pj<GH&&bd&&bd[c]>0){let best=c,bi=pi,bj=pj;for(const[a,b]of N8){const i=pi+a,j=pj+b;if(i<0||j<0||i>=GW||j>=GH)continue;const m=i+j*GW;if(bd[m]<0||bd[m]>=bd[best])continue;
   if(a&&b&&(bk[(pi+a)+pj*GW]||bk[pi+(pj+b)*GW]))continue;best=m;bi=i;bj=j}
   if(best!=c){tx=GX+(bi+.5)*GC;tz=GZ+(bj+.5)*GC}}
  const dx=tx-ph.x,dz=tz-ph.z,l=Math.hypot(dx,dz);if(l>.01){ph.x+=dx/l*CFG.PSPD*dt;ph.z+=dz/l*CFG.PSPD*dt;ph.f=la(ph.f,Math.atan2(dx,dz),Math.min(1,dt*10));ph.mv=1}
- ph.m.position.set(ph.x,0,ph.z);ph.m.rotation.y=ph.f;anim(ph.m,t,ph.mv);
+ ph.m.position.set(ph.x,0,ph.z);ph.m.rotation.y=ph.f;anim(ph.m,t,ph.mv);pfOn(t);
+ pfBt-=dt;if(pfBt<=0){pfBt=Math.max(CFG.PGAP,Math.min(CFG.PGAPMAX,CFG.PGAP+Math.hypot(ph.x-P.x,ph.z-P.z)*CFG.PGAPK));tone(740,0,.07,'square',.07)}
  if(Math.hypot(ph.x-P.x,ph.z-P.z)<CFG.CATCH){SRA.whistle();say('Kena tangkap! Jom ke kelas!');toast('Pengawas hantar kamu ke kelas.',2800);score=Math.max(0,score-CFG.CAUGHT);enterRoom(cls,true)}}
 /* ---- rooms (placeholder for now) ---- */
 function card(h,lines,btns){const r=room();r.innerHTML='';const a=document.createElement('h2');a.textContent=h;r.appendChild(a);
@@ -83,8 +93,10 @@ function leave(i){n++;loading(()=>after(i))}
 /* after class 6: a few seconds of free walking, then the balik bell (long, no timer, no prefect), then the end card */
 function endWalk(){st='endwalk';ew=CFG.ENDWALK;clk=CFG.BALIK-ew*CFG.RATE;setNav(false);hidePref();ringT=0;pills();toast('Kelas dah habis. Jalan-jalan sekejap...',3000)}
 function ringBalik(){st='balik';bd2=4.6;clk=CFG.BALIK;ringT=4.6;bellSound(5);try{navigator.vibrate&&navigator.vibrate([400,150,400,150,400])}catch(e){}toast('Ringg!!! Loceng balik! Tak perlu berlari, jalan perlahan ya.',4200);pills()}
+/* Round 12: after the balik bell the day goes outside (luar.html): walk to the bus stop and board; storyBoot then shows the end card (ret.home) */
+function goHome(){st='done';SS.set('sk_day',{order,n,score,ok,lt,gr});SS.set('sk_out','home');$('stm').hidden=true;$('bl').className='';ringT=0;loading(()=>nav('luar'))}
 function endDay(){st='done';clk=CFG.BALIK;$('stm').hidden=true;$('bl').className='';ringT=0;drawClock();if(score>(cur.sb||0))cur.sb=score;cur.save=null;save(); /* Round 9f: day finished, so no saved day to continue */
- card('Sekolah tamat!',[['Jam 1:00 tengah hari. Loceng balik dah berbunyi!'],['Skor: '+score,1],['Tepat masa: '+ok+' · Lewat: '+lt],['Skor terbaik: '+(cur.sb||0)]],[['Main lagi',()=>location.reload()],['Sambung jalan-jalan',freeRoam],['Halaman utama',()=>nav('index')]]);
+ card('Sekolah tamat!',[['Jam 1:00 tengah hari. Loceng balik dah berbunyi!'],['Skor: '+score,1],['Tepat masa: '+ok+' · Lewat: '+lt],['Skor terbaik: '+(cur.sb||0)]],[['Main lagi',()=>{SS.del('sk_in');location.reload()}],['Sambung jalan-jalan',freeRoam],['Halaman utama',()=>nav('index')]]);
  room().insertBefore(report(),room().querySelector('.rk'))}
 /* Round 7: Kad Laporan on the end card. Classes with no real room yet show a dash */
 function report(){const f=document.createElement('div'),w=document.createElement('div'),o=document.createElement('p');let sum=0,c=0;w.className='rc';
@@ -99,9 +111,27 @@ function posRestore(){const q=cur.pos;if(!q||!Number.isFinite(q.x)||!Number.isFi
  P.x=q.x;P.z=q.z;P.y=0;P.vy=0;P.stun=0;P.slow=0;P.f=Number.isFinite(q.f)?q.f:P.f;cp.x=P.x;cp.z=P.z;cy=P.f+Math.PI;hold=0;lpx=P.x;lpz=P.z}
 window.savePos=()=>savePos(true);
 if(MODE!='story'){setInterval(()=>{if(!halt)savePos()},10000);addEventListener('pagehide',()=>savePos());document.addEventListener('visibilitychange',()=>{if(document.hidden)savePos()})}
+/* ---- Round 12d: leaving school through the entrance door (E at the door inside). Mod Jalan-jalan: always free. Mod Kelas: allowed while waiting for a bell, during the class countdown, in the free walk before the balik bell and after Sekolah tamat; NOT while the prefect chases you (late). The day is kept in sk_day and put back by storyBoot (ret.exit). */
+const EXN=()=>Math.hypot(P.x-X(336),P.z-(Z(538)-.06))<1.7,EXOK=()=>MODE!='story'||st=='idle'||st=='class'||st=='endwalk'||st=='free';
+window.exitHint=function(){return !halt&&EXN()&&EXOK()?'Keluar sekolah':''};
+window.exitGo=function(){if(halt||!EXN())return false;
+ if(MODE=='story'){if(st=='late'){say('Pengawas sedang kejar kamu!');return true}if(!EXOK())return false;
+  SS.set('sk_day',st=='free'?{free:1,score}:{order:order.slice(),n,score,ok,lt,gr,st,clk,tleft,ttot,cls,ew,exit:1})}
+ SS.set('sk_out','exit');halt=true;loading(()=>nav('luar'));return true};
 /* ---- hooks ---- */
-window.storyBoot=function(){const day=SS.get('sk_day'),ret=SS.get('sk_ret');SS.del('sk_ret');
- if(MODE!='story'){if(ret&&ret.roam){if(ret.back)placeBack(ret.room);else place(ret.room!=null?ret.room:5)}else posRestore();halt=false;posOn=true;return} /* Mod Jalan-jalan: back from a room page, stand at its door */
+window.storyBoot=function(){const day=SS.get('sk_day'),ret=SS.get('sk_ret'),arr=SS.get('sk_arr');SS.del('sk_ret');SS.del('sk_arr');
+ if(MODE!='story'){if(ret&&ret.roam){if(ret.back)placeBack(ret.room);else place(ret.room!=null?ret.room:5)}else if(!arr)posRestore();halt=false;posOn=true;return} /* Round 12: coming in from the outdoor map = stand at the school entrance, not at the saved spot */ /* Mod Jalan-jalan: back from a room page, stand at its door */
+ if(day&&ret&&ret.exit){ /* Round 12d: back from outside in the middle of the day (or after Sekolah tamat) */
+  SS.del('sk_day');$('scr').hidden=false;
+  if(day.free){score=day.score||0;st='free';$('ck').hidden=true;$('bl').hidden=true;freeRoam();return}
+  if(Array.isArray(day.order)&&day.order.length==6){order=day.order.slice();n=Math.max(0,Math.min(6,day.n|0));score=day.score||0;ok=day.ok||0;lt=day.lt||0;gr=day.gr&&typeof day.gr=='object'?day.gr:{};
+   $('ck').hidden=false;$('bl').hidden=false;
+   if(day.st=='class'&&Number.isInteger(day.cls)&&day.cls>=0&&day.cls<6&&day.ttot>0){st='class';cls=day.cls;ttot=day.ttot;tleft=Math.max(0,day.tleft);clk=Number.isFinite(day.clk)?day.clk:bellAt(n)}
+   else if(day.st=='endwalk'&&n>=CFG.DAY){st='endwalk';ew=Math.max(0,day.ew||0);clk=CFG.BALIK-ew*CFG.RATE}
+   else{sched(false)}
+   halt=false;pills();drawClock();toast(ret.caught?'Balik ke dalam! Waktu belajar!':'Kamu masuk semula ke sekolah.',2400);return}}
+ if(day&&ret&&ret.home&&Array.isArray(day.order)){ /* Round 12: back from the bus ride home: show Sekolah tamat */
+  SS.del('sk_day');order=day.order;n=day.n;score=day.score;ok=day.ok;lt=day.lt;gr=day.gr||{};st='off';$('scr').hidden=false;$('ck').hidden=false;$('bl').hidden=false;endDay();return}
  if(day&&ret&&!ret.roam&&Array.isArray(day.order)){ /* back from the Kantin: carry on the same day */
   SS.del('sk_day');order=day.order;n=day.n+1;score=day.score;ok=day.ok;lt=day.lt;gr=day.gr||{};const rr=ret.room!=null?ret.room:5;if(ret.grade)gr[rr]={g:ret.grade,s:ret.score};st='off';
   $('scr').hidden=false;$('ck').hidden=false;$('bl').hidden=false;$('stm').hidden=true;
@@ -109,7 +139,7 @@ window.storyBoot=function(){const day=SS.get('sk_day'),ret=SS.get('sk_ret');SS.d
  SS.del('sk_day');
  /* Round 9f: a saved day in this slot (app was closed or killed): offer Sambung or Mula baru */
  if(dayOk(cur.save)){const s=cur.save;$('scr').hidden=false;$('ck').hidden=false;$('bl').hidden=false;$('stm').hidden=true;
-  card('Hari sekolah belum habis',[['Kelas '+s.n+'/6 sudah siap.'],['Skor: '+s.score,1],['Sambung hari ini atau mula hari baru?']],[['Sambung',()=>{closeCard();document.body.classList.remove('mn');order=s.order.slice();n=s.n;score=s.score;ok=s.ok;lt=s.lt;gr=s.gr&&typeof s.gr=='object'?s.gr:{};st='off';after(s.room,'Hari disambung. Loceng akan berbunyi lagi.')}],['Mula baru',()=>{cur.save=null;save();freshDay()}]]);return}
+  card('Hari sekolah belum habis',[['Kelas '+s.n+'/6 sudah siap.'],['Skor: '+s.score,1],['Sambung hari ini atau mula hari baru?']],[['Sambung',()=>{closeCard();document.body.classList.remove('mn');order=s.order.slice();n=s.n;score=s.score;ok=s.ok;lt=s.lt;gr=s.gr&&typeof s.gr=='object'?s.gr:{};st='off';after(s.room,'Hari disambung. Loceng akan berbunyi lagi.')}],['Mula baru',()=>{cur.save=null;save();closeCard();SS.del('sk_in');SS.del('sk_day');SS.del('sk_out');loading(()=>nav('luar'))}]]);return} /* Round 14: a new day starts with the bus (luar.html, arrive flow) */
  if(cur.save){cur.save=null;save()} /* unreadable saved day: drop it */
  freshDay()};
 function freshDay(){
@@ -121,13 +151,13 @@ window.storyDoor=function(d){const i=DR.indexOf(d);
  if(st=='free'){say('Sekolah dah tamat. Bilik dikunci.');return true}
  if(st=='endwalk'||st=='balik'||st=='done'){say('Kelas dah habis. Jom balik!');return true}
  say('Loceng belum berbunyi lagi.');return true};
-window.storyTick=function(dt,t){if(MODE!='story'||halt)return;
+window.storyTick=function(dt,t){if(MODE!='story')return;if(halt){pfOff();return}
  if(ringT>0){ringT-=dt;if(ringT<=0)ringT=0}
  if(st=='idle'){clk+=dt*CFG.RATE;if(clk>=bellAt(n))ring();else pills()}
  else if(st=='class'){tleft-=dt;clk=bellAt(n)+(ttot-Math.max(0,tleft))*CFG.RATE;if(tleft<=Math.max(CFG.NEARMIN,ttot*CFG.NEAR))setNav(true);if(tleft<=0)late();else pills()}
  else if(st=='late'){clk+=dt*CFG.RATE;chase(dt,t);pills()}
  else if(st=='endwalk'){ew-=dt;clk=CFG.BALIK-Math.max(0,ew)*CFG.RATE;if(ew<=0)ringBalik();else pills()}
- else if(st=='balik'){bd2-=dt;if(bd2<=0)endDay();else pills()}
+ else if(st=='balik'){bd2-=dt;if(bd2<=0)goHome();else pills()}
  drawClock()};
 if(MODE=='story'){const r=document.createElement('div');r.id='room';document.body.appendChild(r)}
 })();
