@@ -252,7 +252,7 @@ function loop(ts){requestAnimationFrame(loop);let dt=Math.min((ts-last)/1000||0,
 function boot(){const k=LS.get('sk_cur',null);if(!k||!PF[k]){SS.del('sk_day');SS.del('sk_ret');SS.del('sk_in');nav('index');return}
  cur=PF[k];gen=cur.gen||'m';curL=cur.L||null;mkP();applySet();
  const out=SS.get('sk_out'),day=SS.get('sk_day');flow=LUL.flow({story:STORY,out,hasDay:!!day,savedDay:dayOk(cur.save)});
- $('mdl').textContent='Luar Sekolah · '+(STORY?'Mod Kelas':'Mod Jalan-jalan');
+ /* Round 15: the MOD line is written by js/hud.js */
  if(flow=='skip'){SS.set('sk_in',1);SS.del('sk_out');loading(()=>nav('world'));return} /* a Mod Kelas day is saved: carry on inside, no second bus ride */
  if(flow=='arrive')SS.del('sk_out');
  $('scr').textContent=flow=='home'?'Naik bas pulang':STORY?'Masuk ke sekolah':'Luar sekolah';

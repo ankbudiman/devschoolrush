@@ -33,7 +33,7 @@ for(const RX of [8.5,9.75]){const RZ0=-7,RZ1=7,D=4.8,mg=.3;let out=0,n=0,moved=0
  ok(/camClamp\(cp\.x,cp\.z,sx,sz,D,LCR\)/.test(lu)&&/camRect\(\[LUC\.BX0,LUC\.BX1,LUC\.BZ0,LUC\.BZ1\],\.3\)/.test(lu)&&/CAMW\.h\+D\*CAMW\.k/.test(lu),'luar.js walk camera uses camClamp with the map rectangle');
  ok(/camClamp\(cp\.x,cp\.z,sx,sz,D,KCR\)/.test(ka)&&/CAMP\.y=CM\[1\]\+D\*CM\[2\]/.test(ka)&&/KCR=\[camRect\(\[-RX,RX,RZ0,RZ1\],\.3\)\]/.test(ka),'kantin.js uses camClamp with the room');
  ok(/camClamp\(cp\.x,cp\.z,sx,sz,D,PCR\)/.test(pa)&&/camRect\(\[BX0,BX1,BZ0,BZ1\],\.3\)/.test(pa)&&/function sideCam/.test(pa)&&!/camClamp[^;]*sideCam/.test(pa),'padang.js walk camera uses camClamp with the fence box, the 2.5D side camera is untouched');
- for(const f of ['world','luar','kantin','padang'])ok(/"js\/audio\.js", "js\/cam-clamp\.js"/.test(rd(f+'.html')),f+'.html loads js/cam-clamp.js');
+ for(const f of ['world','luar','kantin','padang'])ok(/"js\/audio\.js", ("js\/hud\.js", )?("js\/wallet\.js", "js\/spot\.js", )?"js\/cam-clamp\.js"/.test(rd(f+'.html')),f+'.html loads js/cam-clamp.js');
  ok(rd('sw.js').includes("'js/cam-clamp.js'"),'sw.js pre-caches js/cam-clamp.js');
  const wb=rd('js/world-build.js');ok(/Round 14 backdrop/.test(wb)&&/sc\.fog=new T\.Fog/.test(wb)&&(wb.match(/BoxGeometry\(w,h,d\)/g)||[]).length>=1,'world-build.js has the hedge ring, the darker floor and the fog');
  ok(/new T\.PlaneGeometry\(300,300\),mat\('#8fc27a'\)/.test(wb)&&/new T\.PerspectiveCamera\(55,1,\.5,150\)/.test(wb),'ground plane and camera far are unchanged');

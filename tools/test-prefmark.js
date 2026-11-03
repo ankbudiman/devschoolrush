@@ -35,7 +35,7 @@ ok(/CFG\.PGAPK\)/.test(st)&&/tone\(740,0,\.07,'square',\.07\)/.test(st)&&/dm\*CF
 /* ---- Round 14c: join / release / speed ramp ---- */
 const a=st.indexOf('function joinEx'),b=st.indexOf('\n',st.indexOf('function pSpd'));
 ok(a>0&&b>a,'joinEx / releaseEx / pSpd found');
-const cfgM=st.match(/PSPD:4,[^]*?JNEAR:6\}/);ok(!!cfgM,'CFG chase numbers found');
+const cfgM=st.match(/PSPD:4,[^]*?JNEAR:6(?=[,}])/);ok(!!cfgM,'CFG chase numbers found');
 const CFG=new Function('const CFG={'+cfgM[0].replace(/^PSPD:4/,'PSPD:4').replace(/\}$/,'')+'};return CFG')();
 const rate=+st.match(/RATE:([\d.]+)/)[1];ok(CFG.JOIN*rate===10,'JOIN = 10 game minutes ('+CFG.JOIN+' real s at RATE '+rate+')');
 const log2=[];const SRA={whistle(){log2.push('w')}},toast=(m)=>log2.push(m);
@@ -54,7 +54,7 @@ ok(lib.pSpd(0)===4&&lib.pSpd(60)===5.5&&lib.pSpd(600)===5.5&&Math.abs(lib.pSpd(3
 ok(5.5>5&&4<5,'ramp ends a little above the player walking speed (5), extra prefects stay below it (4)');
 
 /* ---- simulate the real chase() body: markers, join after JOIN seconds, speeds, catch ---- */
-{const ci=st.indexOf('function chase(dt,t)'),ce=st.indexOf('enterRoom(cls,true)}}',ci)+'enterRoom(cls,true)}}'.length;
+{const ci=st.indexOf('function chase(dt,t,calm)'),ce=st.indexOf('enterRoom(cls,true)}}',ci)+'enterRoom(cls,true)}}'.length;
  ok(ci>0&&ce>ci,'chase() found');
  const rec={enter:0,tones:0,whistles:0,bfs:0,toasts:[],marks:0};
  const mkc=(x,z)=>({x,z,f:0,mv:0,d:0,m:{visible:true,position:{set(){}},rotation:{}}});
@@ -86,11 +86,11 @@ ok(5.5>5&&4<5,'ramp ends a little above the player walking speed (5), extra pref
 }
 /* ---- wiring ---- */
 ok(/bt=0;releaseEx\(\);lateT=0;mainT=0;joined=false\}/.test(st),'a new chase resets the timers and releases old extras');
-ok(/function hidePref\(\)\{if\(ph\)ph\.m\.visible=false;releaseEx\(\);pfOff\(\)\}/.test(st),'hidePref releases the patrol prefects and hides the markers');
+ok(/function hidePref\(\)\{if\(ph\)ph\.m\.visible=false;releaseEx\(\);pfOff\(\);sayOff\(\)\}/.test(st),'hidePref releases the patrol prefects and hides the markers');
 ok(/lateT\+=dt;if\(!joined&&lateT>=CFG\.JOIN\)joinEx\(\)/.test(st),'the patrol prefects join once, after JOIN seconds of being late');
-ok(/sp=i==0\?pSpd\(mainT\):CFG\.PSPD/.test(st),'ramp only for the main prefect');
-ok(/if\(dm<CFG\.CATCH\)\{SRA\.whistle\(\);say\('Kena tangkap! Jom ke kelas!'\)/.test(st),'any prefect catching you ends the chase the same way');
-ok(/storyTick=function\(dt,t\)\{if\(MODE!='story'\)return;if\(halt\)\{pfOff\(\);return\}/.test(st),'markers hidden while the game is halted');
+ok(/sp=calm\?CFG\.RSPD:i==0\?pSpd\(mainT\):CFG\.PSPD/.test(st),'ramp only for the main prefect');
+ok(/if\(!calm&&dm<CFG\.CATCH\)\{SRA\.whistle\(\);say\('Kena tangkap! Jom ke kelas!'\)/.test(st),'any prefect catching you ends the chase the same way');
+ok(/storyTick=function\(dt,t\)\{if\(MODE!='story'\)return;if\(halt\)\{pfOff\(\);sayOff\(\);return\}/.test(st),'markers hidden while the game is halted');
 ok(/n=\{m,role:r,x:/.test(wd)&&/ns\.forEach\(n=>\{if\(n\.ch\)return;if\(n\.hid>0\)/.test(wd),'world.js: patrol NPCs know their role and stand still while n.ch is set');
 ok(/if\(window\.storyMM\)storyMM\(mg,f\);[^\n]*\nconst a=f\(P\.x,P\.z\)/.test(wd),'world.js drawMM calls storyMM before the player arrow');
 ok(!/id=.pfb/.test(wh),'ids pfb, pfb1, pfb2 are unused in world.html');

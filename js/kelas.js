@@ -190,6 +190,6 @@ function loop(ts){requestAnimationFrame(loop);const dt=Math.min((ts-last)/1000||
  drawMM();ren.render(sc,cam)}requestAnimationFrame(loop);
 /* ---- start ---- */
 function boot(){const k=LS.get('sk_cur',null);if(!OKGO||!k||!PF[k]){SS.del('sk_day');SS.del('sk_ret');nav('index');return}
- cur=PF[k];gen=cur.gen||'m';curL=cur.L||null;mkP();applySet();$('scr').style.display='none';refreshBack();if(SS.get('sk_back')){SS.del('sk_back');if(LIB||LAB){P.x=LB.BDX;P.z=RZ0+1.4;P.f=0}else{P.x=RX-1.4;P.z=BDZ;P.f=-Math.PI/2}cy=P.f+Math.PI;cp.x=P.x;cp.z=P.z}$('mdl').textContent=K.n+' · '+(STORY?'Mod Kelas':'Mod Jalan-jalan');
+ cur=PF[k];gen=cur.gen||'m';curL=cur.L||null;mkP();applySet();$('scr').style.display='none';refreshBack();if(SS.get('sk_back')){SS.del('sk_back');if(LIB||LAB){P.x=LB.BDX;P.z=RZ0+1.4;P.f=0}else{P.x=RX-1.4;P.z=BDZ;P.f=-Math.PI/2}cy=P.f+Math.PI;cp.x=P.x;cp.z=P.z}/* Round 15: the MOD line is written by js/hud.js */
  loading(()=>{document.body.classList.remove('mn');halt=false;toast(K.hello+(STORY&&HASQ?' Duduk di kerusi kuning untuk kuiz.':'')+(STORY&&HASL?' Selesaikan 3 stesen untuk membuka pintu.':''),3600)})}
 boot();

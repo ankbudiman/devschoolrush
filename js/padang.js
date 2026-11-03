@@ -234,6 +234,6 @@ function loop(ts){requestAnimationFrame(loop);const dt=Math.min((ts-last)/1000||
  ren.render(sc,cam)}requestAnimationFrame(loop);
 /* ---- start ---- */
 function boot(){const k=LS.get('sk_cur',null);if(!OKGO||!k||!PF[k]){SS.del('sk_day');SS.del('sk_ret');nav('index');return}
- cur=PF[k];gen=cur.gen||'m';curL=cur.L||null;mkP();applySet();$('mdl').textContent='Padang Balapan · '+(STORY?'Mod Kelas':'Mod Jalan-jalan');
+ cur=PF[k];gen=cur.gen||'m';curL=cur.L||null;mkP();applySet();/* Round 15: the MOD line is written by js/hud.js */
  loading(()=>{document.body.classList.remove('mn');halt=false;toast(STORY?'Pendidikan Jasmani! Cuba semua 3 stesen.':'Jom main di padang. Tolak bola ke gol!',2600)})}
 boot();

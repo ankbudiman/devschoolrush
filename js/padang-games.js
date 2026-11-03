@@ -36,12 +36,13 @@ function init(){if(stg)return;stg=new T.Group();stg.visible=false;sc.add(stg);
   else if(c=='Space'||c=='ArrowUp'||c=='KeyW'||c=='KeyE'){jump();e.preventDefault()}})}
 /* ---- helpers ---- */
 function btns(){const p=GS?GS.ph:'',i=GS?GS.i:-1;
- $('sL').hidden=$('sR').hidden=!((i==0&&(p=='count'||p=='run'))||(i==2&&(p=='ready'||p=='runup')));
- $('sJ').hidden=!((i==1&&(p=='count'||p=='run'))||(i==2&&p=='auto'))}
+ $('sL').hidden=$('sR').hidden=!(((i==0||i==1)&&(p=='count'||p=='run'))||(i==2&&(p=='ready'||p=='runup')));
+ $('sJ').hidden=!((i==1&&(p=='count'||p=='run'))||(i==2&&p=='auto'));$('sJ').classList.toggle('nr',i==1);
+ $('sHt').hidden=$('sL').hidden;$('sHt').firstChild.textContent=i==1?'◀ ▶ bergilir-gilir · LOMPAT di pagar':'◀ ▶ bergilir-gilir'}
 function setPh(p,cd){GS.ph=p;GS.cd=cd||0;btns()}
-/* Tap rules (Lari Pecut and the Lompat Jauh run-up): alternate L and R. The same side twice = stumble */
-function tap(side){if(!GS||GS.stun>0)return;const k=GS.g;if(!((GS.i==0&&GS.ph=='run')||(GS.i==2&&GS.ph=='runup')))return;
- if(GS.last===side){GS.mis++;GS.v=0;GS.stun=k.stun;GS.last=null;snd.bad();toast('Tersadung! Gilir L dan R.',900)}
+/* Tap rules (Lari Pecut and the Lompat Jauh run-up): alternate ◀ ▶ (L/R inside). The same side twice = stumble */
+function tap(side){if(!GS||GS.stun>0)return;const k=GS.g;if(!(((GS.i==0||GS.i==1)&&GS.ph=='run')||(GS.i==2&&GS.ph=='runup')))return;
+ if(GS.last===side){GS.mis++;GS.v=0;GS.stun=k.stun;GS.last=null;snd.bad();toast('Tersadung! Gilir ◀ ▶.',900)}
  else{GS.v=Math.min(k.vmax,GS.v+k.imp);GS.last=side;snd.tick()}}
 function jump(){if(!GS)return;const k=GS.g;
  if(GS.i==1&&GS.ph=='run'){if(GS.y<=0&&!GS.air){GS.vy=k.jv;GS.air=1;snd.jump()}}
@@ -58,7 +59,7 @@ function begin(i,callback){init();cb=callback;const g=PD.g[i];
  hur.forEach((h,k)=>{h.visible=i==1&&k<(g.hd||[]).length;if(h.visible){h.position.x=g.hd[k];h.rotation.z=0;h.userData={down:0,passed:0}}});
  document.body.classList.remove('mn');document.body.classList.add('sg');hud('sn',g.n);hud('stm2','');hud('sd','');PG.rx=0;PG.snap=1;
  if(i==2){nextTry()}else{banner('Bersedia...');snd.beep(0);setPh('count',1)}}
-function quit(){if(!GS)return;GS=null;banner('');$('sL').hidden=$('sR').hidden=$('sJ').hidden=true;const f=cb;cb=null;if(f)f({exit:true})}
+function quit(){if(!GS)return;GS=null;banner('');$('sL').hidden=$('sR').hidden=$('sJ').hidden=$('sHt').hidden=true;const f=cb;cb=null;if(f)f({exit:true})}
 /* ---- every frame ---- */
 function update(dt,t){if(!stg||!stg.visible)return;
  cheer.forEach(c=>{const u=c.m.userData,w=Math.sin(t*7+c.ph);u.arms[0].rotation.x=u.arms[1].rotation.x=-2.5+w*.4;u.B.position.y=Math.abs(w)*.1});
@@ -90,15 +91,15 @@ function stepGame(dt){const g=GS.g,i=GS.i;
  if(i==0){ /* Lari Pecut: alternate taps build speed, drag slows it */
   GS.t+=dt;if(GS.stun>0)GS.v=0;else GS.v=Math.max(0,GS.v-GS.v*g.drag*dt);GS.d+=GS.v*dt;
   if(GS.d>=g.len){GS.d=g.len;const T0=GS.t,sc=clamp(Math.round(70+(g.tgt-T0)*(T0<=g.tgt?g.up:g.dn)),15,100);
-   finish(Object.assign(pack(sc,'Masa: '+T0.toFixed(2)+' saat'+(GS.mis?' · Tersadung: '+GS.mis:''),T0<=g.tgt?'Laju! Tahan rentak L dan R.':'Cuba L dan R lebih laju dan jangan tersadung.',T0.toFixed(2)+' s'),{head:T0.toFixed(2)+' s'}))}}
- else if(i==1){ /* Lari Berpagar: runs by itself, LOMPAT over each hurdle */
-  GS.t+=dt;const tg=g.spd*(GS.slow>0?g.slow:1);GS.v+=(tg-GS.v)*Math.min(1,dt*(GS.slow>0?10:2.5));GS.slow-=dt;GS.d+=GS.v*dt;
+   finish(Object.assign(pack(sc,'Masa: '+T0.toFixed(2)+' saat'+(GS.mis?' · Tersadung: '+GS.mis:''),T0<=g.tgt?'Laju! Tahan rentak ◀ ▶.':'Cuba ◀ ▶ lebih laju dan jangan tersadung.',T0.toFixed(2)+' s'),{head:T0.toFixed(2)+' s'}))}}
+ else if(i==1){ /* Lari Berpagar (15c): alternate taps build speed like Lari Pecut, LOMPAT over each hurdle */
+  GS.t+=dt;if(GS.stun>0)GS.v=0;else GS.v=Math.max(0,GS.v-GS.v*g.drag*dt);GS.d+=GS.v*dt;
   GS.y+=GS.vy*dt;GS.vy-=g.g*dt;if(GS.y<=0){GS.y=0;GS.vy=0;GS.air=0}
   hur.forEach((h,k)=>{if(k>=g.hd.length)return;const u=h.userData;
-   if(!u.passed&&GS.d>=g.hd[k]){u.passed=1;if(GS.y<g.hh){u.down=1;GS.hits++;GS.slow=g.slowT;snd.bad();toast('Aduh! Pagar jatuh.',900)}else snd.tick()}
+   if(!u.passed&&GS.d>=g.hd[k]){u.passed=1;if(GS.y<g.hh){u.down=1;GS.hits++;GS.v*=g.slow;snd.bad();toast('Aduh! Pagar jatuh.',900)}else snd.tick()}
    if(u.down&&h.rotation.z>-1.35)h.rotation.z=Math.max(-1.35,h.rotation.z-dt*9)});
   if(GS.d>=g.len){GS.d=g.len;const T0=GS.t,sc=stallScore(GS.hits,T0,g.tgt);
-   finish(Object.assign(pack(sc,'Masa: '+T0.toFixed(2)+' saat · Pagar jatuh: '+GS.hits+'/'+g.hd.length,GS.hits?'Lompat sedikit lebih awal atau lewat? Cuba lagi!':'Tiada pagar jatuh! Mantap!',T0.toFixed(2)+' s · '+GS.hits+' pagar jatuh'),{head:T0.toFixed(2)+' s'}))}}
+   finish(Object.assign(pack(sc,'Masa: '+T0.toFixed(2)+' saat · Pagar jatuh: '+GS.hits+'/'+g.hd.length+(GS.mis?' · Tersadung: '+GS.mis:''),GS.hits?'Lompat sedikit lebih awal atau lewat? Cuba lagi!':'Tiada pagar jatuh! Mantap!',T0.toFixed(2)+' s · '+GS.hits+' pagar jatuh'),{head:T0.toFixed(2)+' s'}))}}
  else{ /* Lompat Jauh */
   if(GS.ph=='runup'){if(GS.stun>0)GS.v=0;else GS.v=Math.max(0,GS.v-GS.v*g.drag*dt);GS.d+=GS.v*dt;
    if(GS.d>=g.ru){GS.v=Math.max(g.vmin,GS.v);setPh('auto');banner('LOMPAT di zon hijau!');GS.bn=1.2}}
@@ -106,7 +107,7 @@ function stepGame(dt){const g=GS.g,i=GS.i;
   else if(GS.ph=='air'){GS.at+=dt;const u=Math.min(1,GS.at/g.air);GS.d=GS.x0+GS.F*u;GS.y=4*g.jh*u*(1-u);
    if(u>=1){GS.y=0;const dist=Math.max(.2,R2(GS.x0+GS.F-g.board));GS.res.push(dist);flag.position.x=GS.x0+GS.F;flag.visible=true;banner(dist.toFixed(2)+' m');snd.land();setPh('after',1.9)}}}}
 const PG={z:SZ,rx:0,snap:0,snd,
- show(){init();stg.visible=true},end(){if(stg)stg.visible=false;GS=null;cb=null;banner('');$('sL').hidden=$('sR').hidden=$('sJ').hidden=true;document.body.classList.remove('sg')},
+ show(){init();stg.visible=true},end(){if(stg)stg.visible=false;GS=null;cb=null;banner('');$('sL').hidden=$('sR').hidden=$('sJ').hidden=$('sHt').hidden=true;document.body.classList.remove('sg')},
  begin,update,quit,tap,jump,open:()=>!!GS&&GS.ph!='done',st:()=>GS};
 window.PG=PG;
 })();

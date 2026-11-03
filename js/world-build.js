@@ -82,12 +82,12 @@ const NM=['Kertas','Botol plastik','Botol kaca','Bungkus gula-gula'],HM=[0,1,2,3
 const SM=[[340,400],[230,168],[230,344],[450,520],[118,450],[330,200]].map((a,i)=>{const x=X(a[0]),z=Z(a[1]),k=[0,1,2,3].map(t=>{const g=mkItem(t),l=t==1||t==2;g.scale.setScalar(1.5);g.position.set(x,l?.11:0,z);g.rotation.set(0,rnd(0,6),l?Math.PI/2:0);g.visible=t==i%4;sc.add(g);return g});return{x,z,ty:i%4,cd:0,k}});
 [['KERTAS','#3b7fd0',466],['PLASTIK','#e8923a',474],['KACA','#7a5236',482]].forEach(a=>tx([a[0]],a[1],'#ffffff',.8,.3,22,X(354)-.1,1.15,Z(a[2]),-Math.PI/2));
 [['KERTAS','#3b7fd0',222],['PLASTIK','#e8923a',230],['KACA','#7a5236',238]].forEach(a=>tx([a[0]],a[1],'#ffffff',.8,.3,22,X(318)+.1,1.15,Z(a[2]),Math.PI/2)); /* Round 10g */
-function pick(s){carry=s.ty;s.k.forEach(g=>g.visible=false);s.cd=40;HM.forEach((g,i)=>g.visible=i==carry);say('Dapat '+NM[carry].toLowerCase()+'!');tone(500,0,.08,'sine',.12)}
+function pick(s){carry=s.ty;s.k.forEach(g=>g.visible=false);s.cd=SPOT.GAP();SPG.save();HM.forEach((g,i)=>g.visible=i==carry);say('Dapat '+NM[carry].toLowerCase()+'!');tone(500,0,.08,'sine',.12)}
 function throwIt(b){const H=['Kertas masuk tong biru.','Botol plastik masuk tong oren.','Botol kaca masuk tong coklat.','Bungkus gula-gula masuk tong biasa.'];
 if(b.k!=carry){say('Salah tong! '+H[carry]);tone(200,0,.3,'sawtooth',.08);return}
 SRA.bin();const c=carry;carry=-1;HM.forEach(g=>g.visible=false);const g=mkItem(c);g.scale.setScalar(1.2);sc.add(g);fly={g,t:0,x0:P.x,z0:P.z,x1:b.bx,z1:b.bz};
 say(R(['Bagus!','Pandai!','Terima kasih, kawan!']));tone(600,.2,.1,'sine',.15);tone(800,.3,.12,'sine',.15);
-cur.s[c]++;save();
+cur.s[c]++;save();toast('+'+WALLET.fmt(WALLET.earn(c)),1600);
 if(cur.s[0]+cur.s[1]+cur.s[2]+cur.s[3]==12)award('sampah12','Pelajar Prihatin','Anda sudah membuang 12 sampah dengan betul.')}
 const sr=new T.Mesh(new T.CircleGeometry(1.1,24),new T.MeshBasicMaterial({color:'#ffd23f'}));sr.rotation.x=-Math.PI/2;sr.position.set(X(336),.05,Z(520));sc.add(sr);
 /* Round 10e: Perpustakaan (index 1) now sits in the big top-left block, Makmal Sains (index 0) in the smaller bottom-right block; indexes and saves unchanged */

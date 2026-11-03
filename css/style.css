@@ -183,10 +183,12 @@ body.mn .sb{display:none!important}
 #sJ svg{width:1.6em;height:1.6em;fill:none;stroke:currentColor;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}#sJ span{font-weight:700;font-size:1em;pointer-events:none}
 .sbtn.dn{background:var(--ac);color:#fff}#sL.dn,#sR.dn{transform:scale(.93)}#sJ.dn{transform:translateX(-50%) scale(.95)}
 #cd{position:absolute;top:36%;left:50%;transform:translate(-50%,-50%);display:none;z-index:5;pointer-events:none;white-space:nowrap;font-weight:700;font-size:min(3em,11vw);color:#fff;text-shadow:0 .06em .18em rgba(0,0,0,.65)}
+#sL svg,#sR svg{width:1.7em;height:1.7em;fill:currentColor;pointer-events:none}#sJ.nr{width:30vmin;max-width:170px}
+#sHt{flex:0 0 100%;order:5;pointer-events:none;text-align:left}#sHt .hp{display:inline-block;padding:.4em .5em .45em 1.55em;border:0;border-radius:.3em;color:#1c2f6b;font-weight:700;line-height:1.3;background:linear-gradient(90deg,transparent 1.1em,#e24b4b 1.1em,#e24b4b 1.17em,transparent 1.17em),repeating-linear-gradient(#fff8e1 0,#fff8e1 1.22em,#a9c7ea 1.22em,#a9c7ea 1.3em);box-shadow:0 2px 5px rgba(0,0,0,.3)} /* Round 15c4: same notebook-paper look as the HUD note #hdn */#sHt[hidden]{display:none!important}
 body:not(.sg) #sh,body:not(.sg) .sbtn,body:not(.sg) #cd{display:none!important}
 body.sg #hud,body.sg #mm,body.sg #help,body.sg #hint,body.sg #bub,body.sg #jz,body.sg #tb{display:none!important}
 body.sg #msg{top:3.4em}
-@media(max-width:559px){#sh #sn{order:1;flex:1 1 auto}#sh #sx{order:2}#sh #stm2,#sh #sd{order:3;flex:1 1 40%;text-align:center;min-width:0}}
+@media(max-width:559px){#sh #sn{order:1;flex:1 1 auto}#sh #sx{order:2}#sh #sHt{order:3}#sh #stm2,#sh #sd{order:4;flex:1 1 40%;text-align:center;min-width:0}}
 
 /* --- Round 9e: save slot screen (6 slots) --- */
 #vs{gap:.7em;padding:.6em 0}
@@ -204,3 +206,33 @@ body.sg #msg{top:3.4em}
 #lvb button.on,#vt [data-tl].on{opacity:1;outline:3px solid #fff!important}
 /* Round 10h3b: Tahap belajar row 120% bigger (0.85em -> 1.02em, buttons scale with it) and moved down from the name hint */
 #lvb{font-size:1.02em;margin-top:.9em}
+
+/* --- Round 15: HUD plate (js/hud.js). Old ids #mdl #ex #stm #scr #wc #stt are kept and moved into the new layout --- */
+#hud{flex-direction:column;align-items:flex-start;flex-wrap:nowrap;gap:.4em}
+#hdr1{display:flex;align-items:center;gap:.45em}
+#hdp{display:flex;align-items:center;background:rgba(20,26,38,.92);border:2px solid #cfd6e2;border-radius:.9em;padding:.3em .8em .3em 0;color:#fff;min-width:0;box-shadow:0 2px 6px rgba(0,0,0,.25)}
+#hdav{width:3.3em;height:3.3em;flex:0 0 auto;margin:-.3em .5em -.3em -.4em;border-radius:50%;border:.2em solid #e8dca0;overflow:hidden;background:#9fd0ee;box-sizing:border-box}
+#hdav svg{display:block;width:100%;height:100%}
+#hdpl{display:flex;flex-direction:column;gap:.12em;min-width:0}
+#hdnm{color:#ffd23f;font-size:.95em;line-height:1.05;max-width:6.2em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#hdpr,#hdrm{display:flex;align-items:center;gap:.35em;font-size:.8em;font-weight:700;line-height:1.1;white-space:nowrap}
+#hdpr[hidden]{display:none}
+.hdi{font-style:normal;font-size:.95em}
+#hdbt{display:flex;flex-direction:column;gap:.25em}
+#hdbt .hp{padding:.35em .5em;display:flex;align-items:center;justify-content:center;cursor:pointer}
+#hdbt svg{width:1.25em;height:1.25em}
+#hud .hdmd{background:rgba(20,26,38,.85);color:#fff;border:1px solid #cfd6e2;border-radius:.5em;padding:.3em .6em;font-size:.72em;letter-spacing:.04em;line-height:1}
+#hdn{display:flex;flex-direction:column;width:max-content;min-width:8.5em;max-width:100%;box-sizing:border-box;padding:.3em .5em .35em 1.55em;border-radius:.3em;color:#1c2f6b;font-weight:700;font-size:.78em;line-height:1.3;background:linear-gradient(90deg,transparent 1.1em,#e24b4b 1.1em,#e24b4b 1.17em,transparent 1.17em),repeating-linear-gradient(#fff8e1 0,#fff8e1 1.22em,#a9c7ea 1.22em,#a9c7ea 1.3em);box-shadow:0 2px 5px rgba(0,0,0,.3)}
+#hdn .hdnh{font-size:.8em;letter-spacing:.12em;color:#c0392b}
+#hdnt{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#hdx{display:flex;flex-wrap:wrap;gap:.45em;align-items:center}
+#hdx:empty{display:none}
+@media(orientation:landscape) and (max-height:560px){#hud{gap:.25em}#hdav{width:2.6em;height:2.6em}#hdp{font-size:.88em}#hdn{font-size:.68em}#hud .hdmd{font-size:.64em;padding:.25em .5em}#hdx .hp{font-size:.85em}}
+
+/* --- Round 15a: HUD 120% (plate, buttons, MOD line, Catatan); the old pills keep their size. Landscape phones 110% --- */
+#hdr1{font-size:1.2em}#hdn{font-size:.94em}#hud .hdmd{font-size:.86em}
+@media(max-width:400px){#hdnm{max-width:4.4em}}
+@media(orientation:landscape) and (max-height:560px){#hdr1{font-size:1.1em}#hdn{font-size:.75em}#hud .hdmd{font-size:.7em}}
+
+/* --- Round 15a2: portrait is a rounded square inside the plate, same style as the plate --- */
+#hdav{border-radius:.7em;border-width:.15em;margin:0 .55em 0 .3em}

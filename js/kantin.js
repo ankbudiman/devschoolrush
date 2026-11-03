@@ -100,12 +100,12 @@ const BN=[];[['#3b7fd0','KERTAS',0],['#e8923a','PLASTIK',1],['#7a5236','KACA',2]
  sign([a[1]],a[0],'#ffffff',.9,.3,22,x,1.15,RZ1-.03,Math.PI);BN.push({x,z:z-.7,bx:x,bz:z,k:a[2]})});
 const SM=[[9.6,5.9],[-9.6,4.8],[.9,-3],[-LX,-5.6],[LX,-6],[-2.6,L0-.4]].map((a,i)=>{const x=a[0],z=a[1],k=[0,1,2,3].map(t=>{const g=mkItem(t),l=t==1||t==2;g.scale.setScalar(1.5);g.position.set(x,l?.11:0,z);g.rotation.set(0,rnd(0,6),l?Math.PI/2:0);g.visible=t==i%4;sc.add(g);return g});return{x,z,ty:i%4,cd:0,k}});
 let carry=-1,fly=null;
-function pick(s){carry=s.ty;s.k.forEach(g=>g.visible=false);s.cd=40;HM.forEach((g,i)=>g.visible=i==carry);say('Dapat '+NM[carry].toLowerCase()+'!');tone(500,0,.08,'sine',.12)}
+function pick(s){carry=s.ty;s.k.forEach(g=>g.visible=false);s.cd=SPOT.GAP();SPG.save();HM.forEach((g,i)=>g.visible=i==carry);say('Dapat '+NM[carry].toLowerCase()+'!');tone(500,0,.08,'sine',.12)}
 function throwIt(b){const H=['Kertas masuk tong biru.','Botol plastik masuk tong oren.','Botol kaca masuk tong coklat.','Bungkus gula-gula masuk tong biasa.'];
  if(b.k!=carry){say('Salah tong! '+H[carry]);tone(200,0,.3,'sawtooth',.08);return}
  SRA.bin();const c=carry;carry=-1;HM.forEach(g=>g.visible=false);const g=mkItem(c);g.scale.setScalar(1.2);sc.add(g);fly={g,t:0,x0:P.x,z0:P.z,x1:b.bx,z1:b.bz};
  say(R(['Bagus!','Pandai!','Terima kasih, kawan!']));tone(600,.2,.1,'sine',.15);tone(800,.3,.12,'sine',.15);
- cur.s[c]++;save();if(cur.s[0]+cur.s[1]+cur.s[2]+cur.s[3]==12)award('sampah12','Pelajar Prihatin','Anda sudah membuang 12 sampah dengan betul.')}
+ cur.s[c]++;save();toast('+'+WALLET.fmt(WALLET.earn(c)),1600);if(cur.s[0]+cur.s[1]+cur.s[2]+cur.s[3]==12)award('sampah12','Pelajar Prihatin','Anda sudah membuang 12 sampah dengan betul.')}
 FDS.push({m:FG.back,boxes:[[-RX-1,RX+1,0,WH,RZ0-1,RZ0]],op:1,tg:1},{m:FG.left,boxes:[[-RX-1,-RX,0,WH,RZ0-1,RZ1+1.2]],op:1,tg:1},{m:FG.right,boxes:[[RX,RX+1,0,WH,RZ0-1,RZ1+1.2]],op:1,tg:1},
  {m:FG.front,boxes:[[-RX-1,-DW,0,WH,RZ1,RZ1+1.2],[DW,RX+1,0,WH,RZ1,RZ1+1.2],[-DW,DW,2.5,WH,RZ1,RZ1+1.2]],op:1,tg:1});
 /* ---- students walking between the stalls (fixed loops through the open lanes; they never block the player for long) ---- */
@@ -121,6 +121,8 @@ function walkers(dt,t){WK.forEach(w=>{if(!w.g.visible)return;
  w.x+=ax*w.sp*dt;w.z+=az*w.sp*dt;w.g.position.set(w.x,0,w.z);w.g.rotation.y=la(w.g.rotation.y,Math.atan2(ax,az),Math.min(1,dt*8));anim(w.g,t+w.o,true)})}
 /* ---- player ---- */
 const P={x:0,z:RZ1-1.8,y:0,vy:0,f:Math.PI,slow:0},cp={x:P.x,z:P.z};let gen='m',pm,cy=0,hold=0,curL=null,recorded=false,grade=null;
+/* Round 15b: sampah spots are random on reachable floor (not wall, not inside a stall), away from the bins, the stalls, the vase and the door; picked item returns after SPOT.CFG.gap s somewhere else. */
+const SPG=SPOT.make({SM,SS,key:'sk_smk',pool:SPOT.pool({x0:-RX+1,x1:RX-1,z0:RZ0+1,z1:RZ1-1,sx:P.x,sz:P.z,hit}),avoid:()=>{const a=[];BN.forEach(b=>a.push({x:b.x,z:b.z,r:2.4}));POS.forEach(p=>a.push({x:p[0],z:p[1],r:2.4}));a.push({x:KV.x,z:KV.z,r:1.6},{x:0,z:RZ1,r:3.5,hard:1},{x:P.x,z:P.z,r:7,hard:1});return a}});SPG.init();
 function mkP(){if(pm)sc.remove(pm);pm=player(gen,'uni',curL);sc.add(pm);pm.userData.arms[1].add(...HM)}mkP();
 const doneN=()=>RES.filter(Boolean).length;
 /* ---- input (same controls as world.html) ---- */
@@ -143,15 +145,16 @@ const nearLit=()=>SM.find(u=>u.cd<=0&&Math.hypot(P.x-u.x,P.z-u.z)<1.1);
 function shut(){KG.close();document.body.classList.remove('mn');halt=false}
 function talk(i){const d=KD.stalls[i],r=RES[i];if(r){say('Gerai ini sudah selesai ✔');return}
  halt=true;document.body.classList.add('mn');
- KG.show('<h3>'+d.n+'</h3><p><b>'+d.v+'</b>: Hai! '+d.t+'</p><p class="kh">Siap dalam '+d.lim+' saat tanpa kesilapan untuk bintang penuh ⭐</p><div class="rw"><button onclick="KN.go('+i+')">Mula ▶</button><button class="kx" onclick="KN.shut()">Nanti dulu</button></div>')}
-function onRes(i,res){if(!res||res.exit){shut();return}RES[i]=res;drawSign(i);MK[i].visible=false;const n=doneN();$('scr').textContent='Gerai '+n+'/5';
+ KG.show('<h3>'+d.n+'</h3><p><b>'+d.v+'</b>: Hai! '+d.t+'</p><p class="kh">Siap dalam '+d.lim+' saat tanpa kesilapan untuk bintang penuh ⭐</p><div class="rw"><button onclick="KN.go('+i+')">Mula ▶'+(STORY?' · '+WALLET.fmt(WALLET.CFG.stall[i]):'')+'</button><button class="kx" onclick="KN.shut()">Nanti dulu</button></div>')}
+const PAID=[0,0,0,0,0]; /* Round 15b: Mod Kelas stall fee paid at Mula, refunded if you leave without finishing, never charged again once finished */
+function onRes(i,res){if(!res||res.exit){if(PAID[i]){WALLET.add(WALLET.CFG.stall[i]);PAID[i]=0}shut();return}PAID[i]=0;RES[i]=res;drawSign(i);MK[i].visible=false;const n=doneN();$('scr').textContent='Gerai '+n+'/5';
  if(n==5){em.visible=STORY;summary()}else{shut();toast('Gerai '+KD.stalls[i].n+' siap! '+n+'/5',2400)}}
 function summary(){const rs=RES,avg=rs.reduce((a,r)=>a+r.score,0)/5;let g=null;halt=true;document.body.classList.add('mn');
  if(STORY){g=gradeOf(avg);if(!recorded){recorded=true;recRoom('kantin',avg,rs.map(r=>r.score));grade={g,s:Math.round(avg)}}}
  const rows=KD.stalls.map((d,i)=>'<div class="gr1"><span>'+(i+1)+'. '+d.n+'</span><b>'+'⭐'.repeat(rs[i].stars)+'</b></div>').join('');
  KG.show('<h2>Semua gerai selesai!</h2><div class="grg">'+rows+'</div>'+(STORY?'<p>Gred Kantin: <b class="'+gcls(g)+'" style="font-size:1.6em">'+g+'</b> · '+Math.round(avg)+'/100</p>':'<p class="kh">Gred hanya dikira dalam Mod Kelas.</p>')+'<div class="rw"><button onclick="KN.leave()">Keluar kantin ▶</button><button class="kx" onclick="KN.shut()">Kekal di sini</button></div>')}
 function leave(){SS.set('sk_ret',STORY&&grade?{grade:grade.g,score:grade.s}:{roam:1});KG.close();loading(()=>nav('world'))}
-window.KN={go(i){KG.start(i,cur.level,r=>onRes(i,r))},shut,leave};
+window.KN={go(i){if(STORY&&!PAID[i]){if(!WALLET.spend(WALLET.CFG.stall[i])){shut();toast('Duit tak cukup, buang sampah dulu!',2800);return}PAID[i]=1}KG.start(i,cur.level,r=>onRes(i,r))},shut,leave};
 function act(){if(halt)return;
  if(Math.hypot(P.x-KV.x,P.z-KV.z)<1.5){vaseHit('kantin');return}
  if(carry>=0){const b=nearBin();if(b){throwIt(b);return}}else{const q=nearLit();if(q){pick(q);return}}
@@ -194,7 +197,7 @@ function loop(ts){requestAnimationFrame(loop);const dt=Math.min((ts-last)/1000||
  cy=camStep(cy,dt,mv,mv&&Math.hypot(P.x-ox,P.z-oz)<CAMC.block*want,P.f,hold);hold-=dt; /* camera: see camStep in core.js; blocked = stick held but (almost) not moving */
  if((keys.Space||jmp)&&P.y<=0)P.vy=6.8;P.vy-=22*dt;P.y+=P.vy*dt;if(P.y<=0){P.y=0;P.vy=0}
  pm.position.set(P.x,P.y,P.z);pm.rotation.y=P.f;anim(pm,t,mv&&P.y==0);if(carry>=0)pm.userData.arms[1].rotation.x=-.9;
- P.slow-=dt;SM.forEach(s=>{if(s.cd>0){s.cd-=dt;if(s.cd<=0){s.ty=(s.ty+1)%4;s.k.forEach((g,i)=>g.visible=i==s.ty)}return}if(P.slow<=0&&P.y<.5&&Math.hypot(P.x-s.x,P.z-s.z)<.45){P.slow=1.2;say('Ish, sampah!')}});
+ P.slow-=dt;SM.forEach(s=>{if(s.cd>0){s.cd-=dt;if(s.cd<=0)SPG.respawn(s);return}if(P.slow<=0&&P.y<.5&&Math.hypot(P.x-s.x,P.z-s.z)<.45){P.slow=1.2;say('Ish, sampah!')}});
  if(fly){fly.t+=dt/.5;const u=Math.min(fly.t,1);fly.g.position.set(fly.x0+(fly.x1-fly.x0)*u,1.3-.6*u+Math.sin(Math.PI*u)*.9,fly.z0+(fly.z1-fly.z0)*u);if(fly.t>=1){sc.remove(fly.g);fly=null}}
  walkers(dt,t);
  const D=CM[0]*(cam.aspect<1?1.15:1);cp.x+=(P.x-cp.x)*Math.min(1,dt*10);cp.z+=(P.z-cp.z)*Math.min(1,dt*10);const sx=Math.sin(cy),sz=Math.cos(cy);
@@ -208,6 +211,6 @@ function loop(ts){requestAnimationFrame(loop);const dt=Math.min((ts-last)/1000||
  drawMM();ren.render(sc,cam)}requestAnimationFrame(loop);
 /* ---- start ---- */
 function boot(){const k=LS.get('sk_cur',null);if(!OKGO||!k||!PF[k]){SS.del('sk_day');SS.del('sk_ret');nav('index');return}
- cur=PF[k];gen=cur.gen||'m';curL=cur.L||null;mkP();applySet();$('mdl').textContent='Kantin · '+(STORY?'Mod Kelas':'Mod Jalan-jalan');
+ cur=PF[k];gen=cur.gen||'m';curL=cur.L||null;mkP();applySet();/* Round 15: the MOD line is written by js/hud.js */
  loading(()=>{document.body.classList.remove('mn');halt=false;toast(STORY?'Waktu rehat! Jumpa semua penjual.':'Jom jumpa semua penjual.',2600)})}
 boot();
