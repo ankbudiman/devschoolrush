@@ -39,7 +39,7 @@ function build(){const d=g.document;if(!d)return;const H=d.getElementById('hud')
  pt.textContent='0';mn.textContent='RM 0.00';pr.append(ic('\u2B50','Mata'),pt);rm.append(ic('\uD83E\uDE99','Duit poket'),mn);
  bd.append(nm,pr,rm);pl.append(av,bd);
  const bag=mk('button','hdbag','hp','<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M8 5a4 4 0 0 1 8 0" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="4.5" y="6" width="15" height="15" rx="4" fill="currentColor"/><rect x="7.5" y="13" width="9" height="4.5" rx="1.5" fill="#fff" opacity=".85"/></svg>');
- bag.setAttribute('aria-label','Beg sekolah');bag.onclick=()=>{if(typeof g.toast=='function')g.toast('Beg sekolah: segera hadir',2000)};
+ bag.setAttribute('aria-label','Beg sekolah');bag.onclick=()=>{if(typeof BAG!=='undefined'&&BAG.open)BAG.open();else if(typeof g.toast=='function')g.toast('Beg sekolah: segera hadir',2000)}; /* Round 16: js/bag.js opens the bag list */
  const bt=mk('div','hdbt');bt.append(bag);if(ex)bt.append(ex);r1.append(pl,bt);
  const nt=mk('span','hdnt'),hh=mk('b',null,'hdnh'),note=mk('div','hdn');hh.textContent='CATATAN';nt.textContent='KELAS : Tiada';note.append(hh,nt);
  const rest=mk("div","hdx");['stm','scr','wc','stt'].forEach(i=>{const x=d.getElementById(i);if(x)rest.append(x)});

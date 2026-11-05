@@ -16,7 +16,7 @@ const LUC={BX0:-35,BX1:35,BZ0:-34,BZ1:17,        /* map edges */
  WALK:[{g:'m',z:-2.75,x0:-14,x1:14,v:1.2,x:-4},{g:'f',z:7.6,x0:4,x1:18,v:1,x:10}], /* two students who walk to and fro along a pavement lane */
  FZ:-19,GATE:3,                                   /* Round 12d: fence line z and half width of the gate */
  CH:{wait:3,k:1.15,pspd:5,catch:.9,r:.35,gap:.25,gapMax:1.2}, /* Round 12d: chaser: seconds before it runs, speed factor over the player's speed (pspd), catch distance, body radius, beep gap range */
- SCHOOL:{x:0,z:-26},GUARD:{x:3.9,z:-20.6},NASI:{x:22,z:9.8},ICE:{x:-25,z:-6.6}};
+ SCHOOL:{x:0,z:-26},GUARD:{x:3.9,z:-20.6},NASI:{x:28.5,z:9.8},RUN:{x:18.75,z:9.8},ICE:{x:-25,z:-6.6}};
 const LUL={
  /* what the page does on arrival: 'exit' = came out of the school door in the middle of the day (Round 12d), 'skip' = a Mod Kelas day is saved (carry on inside), 'home' = day finished (Mod Kelas, day data present), else 'arrive' (bus in the morning) */
  flow(o){if(o.out=='exit')return'exit';if(o.out=='home'&&o.hasDay)return'home';if(o.story&&o.savedDay)return'skip';return'arrive'},

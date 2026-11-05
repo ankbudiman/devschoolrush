@@ -197,7 +197,7 @@ function loop(ts){requestAnimationFrame(loop);const dt=Math.min((ts-last)/1000||
  cy=camStep(cy,dt,mv,mv&&Math.hypot(P.x-ox,P.z-oz)<CAMC.block*want,P.f,hold);hold-=dt; /* camera: see camStep in core.js; blocked = stick held but (almost) not moving */
  if((keys.Space||jmp)&&P.y<=0)P.vy=6.8;P.vy-=22*dt;P.y+=P.vy*dt;if(P.y<=0){P.y=0;P.vy=0}
  pm.position.set(P.x,P.y,P.z);pm.rotation.y=P.f;anim(pm,t,mv&&P.y==0);if(carry>=0)pm.userData.arms[1].rotation.x=-.9;
- P.slow-=dt;SM.forEach(s=>{if(s.cd>0){s.cd-=dt;if(s.cd<=0)SPG.respawn(s);return}if(P.slow<=0&&P.y<.5&&Math.hypot(P.x-s.x,P.z-s.z)<.45){P.slow=1.2;say('Ish, sampah!')}});
+ P.slow-=dt;BAG.tick(dt,1);BAG.sync(P.slow);SM.forEach(s=>{if(s.cd>0){s.cd-=dt;if(s.cd<=0)SPG.respawn(s);return}if(P.slow<=0&&P.y<.5&&Math.hypot(P.x-s.x,P.z-s.z)<.45){P.slow=1.2;say('Ish, sampah!')}});
  if(fly){fly.t+=dt/.5;const u=Math.min(fly.t,1);fly.g.position.set(fly.x0+(fly.x1-fly.x0)*u,1.3-.6*u+Math.sin(Math.PI*u)*.9,fly.z0+(fly.z1-fly.z0)*u);if(fly.t>=1){sc.remove(fly.g);fly=null}}
  walkers(dt,t);
  const D=CM[0]*(cam.aspect<1?1.15:1);cp.x+=(P.x-cp.x)*Math.min(1,dt*10);cp.z+=(P.z-cp.z)*Math.min(1,dt*10);const sx=Math.sin(cy),sz=Math.cos(cy);
@@ -211,6 +211,6 @@ function loop(ts){requestAnimationFrame(loop);const dt=Math.min((ts-last)/1000||
  drawMM();ren.render(sc,cam)}requestAnimationFrame(loop);
 /* ---- start ---- */
 function boot(){const k=LS.get('sk_cur',null);if(!OKGO||!k||!PF[k]){SS.del('sk_day');SS.del('sk_ret');nav('index');return}
- cur=PF[k];gen=cur.gen||'m';curL=cur.L||null;mkP();applySet();/* Round 15: the MOD line is written by js/hud.js */
+ cur=PF[k];P.slow=BAG.slow0();BAG.onCure=()=>{P.slow=0};gen=cur.gen||'m';curL=cur.L||null;mkP();applySet();/* Round 15: the MOD line is written by js/hud.js */
  loading(()=>{document.body.classList.remove('mn');halt=false;toast(STORY?'Waktu rehat! Jumpa semua penjual.':'Jom jumpa semua penjual.',2600)})}
 boot();

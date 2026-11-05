@@ -201,13 +201,13 @@ const m=$('menu');if(m.style.display=='flex'){const vp=$('vp');if(vp&&!vp.hidden
 window.gfxHook=()=>{ren.shadowMap.enabled=!SET.lo;dl.castShadow=!SET.lo;ren.setPixelRatio(SET.lo?1:Math.min(devicePixelRatio,2));LOWH.forEach((o,i)=>o.visible=!(SET.lo&&i%2));BL.forEach((b,i)=>{b.m.visible=!(SET.lo&&i>0)});fit();sc.traverse(o=>{if(o.material)o.material.needsUpdate=true})};
 /* ---- main loop ---- */
 let last=0;
-function loop(ts){requestAnimationFrame(loop);const dt=Math.min((ts-last)/1000||0,.05),t=ts/1000;last=ts;
+function loop(ts){requestAnimationFrame(loop);const dt=Math.min((ts-last)/1000||0,.05),t=ts/1000;last=ts;BAG.tick(dt,0);
  if(halt){keys.KeyW=keys.KeyA=keys.KeyS=keys.KeyD=keys.ArrowUp=keys.ArrowDown=keys.ArrowLeft=keys.ArrowRight=keys.Space=0;jv.x=jv.z=0;jmp=0}
  const onField=mode=='walk'||(mode=='in'&&!swapped)||(mode=='out'&&swapped);
  let ix=(keys.KeyD||keys.ArrowRight?1:0)-(keys.KeyA||keys.ArrowLeft?1:0)+jv.x,iz=(keys.KeyS||keys.ArrowDown?1:0)-(keys.KeyW||keys.ArrowUp?1:0)+jv.z;const l=Math.hypot(ix,iz);if(l>1){ix/=l;iz/=l}
  const mv=l>.12&&!halt,ox=P.x,oz=P.z;let want=0;
  boost+=(((mode=='walk'&&mv&&onTrack(P.x,P.z))?1:0)-boost)*Math.min(1,dt*BOOST.ease);aph+=dt*(1+BOOST.anim*boost);
- if(mode=='walk'){if(mv){const m=camMap(cy,ix,iz,true,od||hold>0),mx=m[0],mz=m[1],spd=5*(1+BOOST.k*boost),dx=mx*spd*dt,dz=mz*spd*dt;want=Math.hypot(dx,dz);if(!hit(P.x+dx,P.z,.35))P.x+=dx;if(!hit(P.x,P.z+dz,.35))P.z+=dz;P.f=la(P.f,Math.atan2(mx,mz),Math.min(1,dt*14))}else camMap(cy,0,0,false,false);
+ if(mode=='walk'){if(mv){const m=camMap(cy,ix,iz,true,od||hold>0),mx=m[0],mz=m[1],spd=5*(1+BOOST.k*boost)*BAG.sl(),dx=mx*spd*dt,dz=mz*spd*dt;want=Math.hypot(dx,dz);if(!hit(P.x+dx,P.z,.35))P.x+=dx;if(!hit(P.x,P.z+dz,.35))P.z+=dz;P.f=la(P.f,Math.atan2(mx,mz),Math.min(1,dt*14))}else camMap(cy,0,0,false,false);
   P.x=Math.max(BX0+.4,Math.min(BX1-.4,P.x));P.z=Math.max(BZ0+.4,Math.min(BZ1-.4,P.z));
   cy=camStep(cy,dt,mv,mv&&Math.hypot(P.x-ox,P.z-oz)<CAMC.block*want,P.f,hold);hold-=dt;
   if((keys.Space||jmp)&&P.y<=0)P.vy=6.8;P.vy-=22*dt;P.y+=P.vy*dt;if(P.y<=0){P.y=0;P.vy=0}}

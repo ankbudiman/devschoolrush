@@ -2,13 +2,12 @@
    Morning: the school bus rolls in, stops at the far kerb, you step out, use the zebra crossing, pass the guard and climb the stairs (E at the door).
    Going home (Mod Kelas, after the balik bell): you start at the foot of the stairs, walk to the bus stop, wait for the bus and board it (E at the door).
    Cars never trap you: they stop for the zebra, and a bump on the road only slows you down for a while and puts you back on the pavement.
-   Nasi lemak, the ice cream man and the guard are placeholders: they talk, buying comes with the coin round.
+   Round 16: the kedai runcit (two old empty stalls, x 13 to 24.5), the nasi lemak stall (moved to the right stall, x 28.5) and the ice cream man sell through js/bag.js (BAG); the guard only talks.
    Pure logic (cars, bus, crossing, flow) is in js/luar-logic.js (LUC / LUL). Sizes are in game units (1 unit is about 1 m). */
 /* ======== TUNING ======== */
 const CAMW={d:5.4,h:1.2,k:.85,la:.6,ly:.9};            /* walking camera (same feel as the Padang) */
 const SLOW={t:15,k:.5};                                /* bumped by a car: seconds of slow walking, speed factor */
 const SIGNT=['SEKOLAH KEBANGSAAN','HERO KAMPUS'];      /* signboard over the school door */
-const PRICE={nasi:'RM2',ais:'RM1'};                    /* shown only, no buying yet */
 /* ============================ */
 const STORY=LS.get('sk_mode','roam')=='story';
 const ren=new T.WebGLRenderer({canvas:$('cv'),antialias:true}),cv=$('cv');ren.shadowMap.enabled=true;ren.setPixelRatio(Math.min(devicePixelRatio,2));
@@ -18,6 +17,7 @@ const dl=new T.DirectionalLight(0xffffff,.55);dl.castShadow=true;dl.shadow.mapSi
 const {BX0,BX1,BZ0,BZ1,RZ0,RZ1,ZX,ZW}=LUC;
 const cols=[],DYNS=[],hitS=(x,z,r)=>cols.some(c=>x+r>c.x0&&x-r<c.x1&&z+r>c.z0&&z-r<c.z1),
  hit=(x,z,r)=>hitS(x,z,r)||DYNS.some(d=>Math.hypot(x-d.x,z-d.z)<r+d.r)||WLK.some(w=>Math.hypot(x-w.x,z-w.z)<r+.4); /* Round 12c: people are solid too (DYNS = people standing still, WLK = walkers) */
+const hitG=(x,z,r)=>cols.some(c=>c.w&&x+r>c.x0&&x-r<c.x1&&z+r>c.z0&&z-r<c.z1),hitP=(x,z,r)=>BAG.inv()?hitG(x,z,r):hit(x,z,r); /* Round 16: invisible = only the school building blocks (no objects, people or cars) */
 const colBox=(x,z,hx,hz)=>cols.push({x0:x-hx,x1:x+hx,z0:z-hz,z1:z+hz});
 function flat(w,d,c,x,z,y){const m=new T.Mesh(new T.PlaneGeometry(w,d),mat(c));m.rotation.x=-Math.PI/2;m.position.set(x,y||0,z);m.receiveShadow=true;sc.add(m);return m}
 function bxm(w,h,d,c,x,y,z,col,s){const m=new T.Mesh(new T.BoxGeometry(w,h,d),mat(c));m.position.set(x,y,z);m.castShadow=!!s;m.receiveShadow=true;sc.add(m);if(col)colBox(x,z,w/2,d/2);return m}
@@ -31,7 +31,7 @@ for(let x=-34;x<34;x+=3)flat(1.5,.18,'#f4f4f4',x+.75,2,.02);[RZ0+.3,RZ1-.3].forE
 for(let z=RZ0+.25;z<RZ1;z+=1)flat(ZW*2,.5,'#f7f7f7',ZX,z+.25,.025);
 [RZ0-.15,RZ1+.15].forEach(z=>bxm(70,.14,.3,'#a8aab2',0,.07,z,false));
 /* ---- school building, stairs, door, sign, windows ---- */
-bxm(64,7,7,'#f1e2b8',0,3.5,-30.5,true,true);bxm(65,.8,8,'#c9553a',0,7.4,-30.5,false);
+bxm(64,7,7,'#f1e2b8',0,3.5,-30.5,true,true);cols[cols.length-1].w=1; /* Round 16: the school building is the only wall that still blocks an invisible player */bxm(65,.8,8,'#c9553a',0,7.4,-30.5,false);
 for(let k=0;k<4;k++)bxm(8,.15*(k+1),.75,k%2?'#d6d0c2':'#c4bdb0',0,.075*(k+1),-24.375-k*.75,false);
 const SD=-26.99;pn(2.9,3.1,'#f5f5f5',0,.6+1.55,SD,0);[-.68,.68].forEach(o=>{pn(1.25,2.8,'#7a5236',o,.6+1.4,SD+.02,0);pn(.8,1.1,'#a9d8f0',o,.6+1.95,SD+.04,0);pn(.08,.4,'#e8c53a',o*.12,.6+1.35,SD+.04,0)});sgn(['PINTU MASUK'],'#1c2f6b','#ffffff',2.4,.6,34,0,.6+3.55,SD+.04,0); /* 12d: the same double door as the inside one (world-build.js), each part on its own depth */
 sgn(SIGNT,'#1c2f6b','#ffd23f',9,2.2,17.5,0,5.6,SD+.03,0,1024); /* 12c: big canvas, the old one was far too small for two lines */
@@ -106,7 +106,16 @@ function glass(w,h,x,y,z,ry){const m=new T.Mesh(new T.PlaneGeometry(w,h),new T.M
 const seller=npc('penjual','f');seller.position.set(LUC.NASI.x,0,13.2);seller.rotation.y=Math.PI;sc.add(seller);DYNS.push({x:LUC.NASI.x,z:13.2,r:.5});
 /* ---- Round 12b: a livelier world: empty stalls, more benches, picnic and cafe tables, notice boards, grass, flowers, students ---- */
 function stallEmpty(x,aw){bxm(5,1.1,1,'#d9d2c0',x,.55,12,true,true);bxm(5.2,.12,1.4,'#e8dfd0',x,1.15,12,false);[[-2.4,11.4],[2.4,11.4],[-2.4,13.9],[2.4,13.9]].forEach(a=>bxm(.14,3,.14,'#555',x+a[0],1.5,a[1],false));bxm(5.6,.2,3.2,aw,x,3.05,12.65,false,true);bxm(5,2.2,.1,'#cfc7b4',x,1.1,14.05,false);sgn(['GERAI','KOSONG'],'#ffffff','#666666',2.4,.8,36,x,2.45,11.35,0)}
-stallEmpty(15.5,'#3d7fd0');stallEmpty(28.5,'#3da36b');
+/* ---- Round 16: kedai runcit (replaces the two empty stalls; the nasi lemak stall now stands at the right-hand place) ---- */
+{const x=LUC.RUN.x,z=12,cl=['#e8523f','#3f9d54','#f2b81f','#3f7fd0','#d86bb0'];
+ bxm(11.6,1.1,1,'#c98f4a',x,.55,z,true,true);bxm(11.6,.12,1.4,'#efe6d2',x,1.15,z,false);
+ bxm(11.8,3,.15,'#e6d6b0',x,1.5,14.05,true);[-5.9,5.9].forEach(o=>bxm(.15,3,2.2,'#e6d6b0',x+o,1.5,12.95,true));
+ [[-5.5,11.4],[-1.8,11.4],[1.8,11.4],[5.5,11.4]].forEach(a=>bxm(.14,3,.14,'#555',x+a[0],1.5,a[1],false));
+ bxm(12.6,.22,3.4,'#d94a3a',x,3.05,12.7,false,true);
+ [1.5,2.2].forEach(y=>bxm(10.6,.1,.5,'#8a5a2a',x,y,13.7,false));
+ for(let i=0;i<12;i++)[1.5,2.2].forEach((y,j)=>bxm(.55,.5,.4,cl[(i+j*2)%5],x-4.7+i*.85,y+.3,13.7,false));
+ sgn(['KEDAI RUNCIT'],'#ffd23f','#7a2a1a',6.4,1,44,x,2.55,11.3,0)}
+const keeper=npc('penjual','m');keeper.position.set(LUC.RUN.x,0,13.2);keeper.rotation.y=Math.PI;sc.add(keeper);DYNS.push({x:LUC.RUN.x,z:13.2,r:.5});
 LUC.BENCH.forEach(a=>bench(a[0],a[1],a[2])); /* 12c: pavement benches moved off the walkers' lanes (LUC.BENCH / LUC.WALK) */
 function picnic(x,z){const g=new T.Group(),a=(w,h,d,c,px,py,pz)=>{const m=new T.Mesh(new T.BoxGeometry(w,h,d),mat(c));m.position.set(px,py,pz);m.castShadow=true;g.add(m)};a(2.2,.1,1,'#a9713f',0,.85,0);[-.9,.9].forEach(o=>a(.12,.8,.8,'#6b4a2f',o,.45,0));[-.95,.95].forEach(o=>{a(2.2,.1,.4,'#a9713f',0,.5,o);[-.9,.9].forEach(q=>a(.1,.45,.1,'#6b4a2f',q,.25,o))});g.position.set(x,0,z);sc.add(g);colBox(x,z,1.2,1.4)}
 [[-22,-15.5],[22,-8.5],[12,-16]].forEach(a=>picnic(a[0],a[1]));
@@ -141,7 +150,7 @@ const bus=LUL.makeBus(),BG=new T.Group(),BU=LUC.BUS;let busDoor,busOpen;
  [[BU.w/2+.04,0],[-BU.w/2-.04,Math.PI]].forEach(a=>{const m=sgn(['BAS SEKOLAH'],'#f2b81f','#1c2f6b',4,.6,36,1.2,2.4,a[0],a[1]);sc.remove(m);BG.add(m)}); /* 12b: the board belongs to the bus, on both sides */
  BG.position.set(BU.x0,0,LUC.LW);sc.add(BG);BG.visible=false}
 /* ---- player ---- */
-const P={x:0,z:0,y:0,vy:0,f:Math.PI,gy:0},cp={x:0,z:0};let gen='m',pm,cy=0,hold=0,curL=null,flow='arrive',slowT=0,greet=0,callT=-1,fin=0,boardT=-1,gt=1,gFrom=null,lastLook=[0,1,0];
+const P={x:0,z:0,y:0,vy:0,f:Math.PI,gy:0},cp={x:0,z:0};let gen='m',pm,cy=0,hold=0,curL=null,flow='arrive',slowT=0,eatT=0,ghS=false,ghP=null,ghO=1,greet=0,callT=-1,fin=0,boardT=-1,gt=1,gFrom=null,lastLook=[0,1,0];
 let mode='boot'; /* boot / bus (arrival scene) / walk / board (stepping on the bus) */
 function mkP(){if(pm)sc.remove(pm);pm=player(gen,'uni',curL);sc.add(pm)}mkP();
 const gy=(x,z)=>Math.abs(x)<4&&z<=-24&&z>=-27?Math.min(4,Math.floor((-24-z)/.75)+1)*.15:0;
@@ -165,6 +174,7 @@ function nearAct(){const n=LUL.near,home=STORY&&flow=='home';
  if(n(P,LUC.SCHOOL,3.4))return['door',home?'Pintu sekolah (dah tamat)':'Masuk sekolah'];
  if(CHS.st=='off'&&n(P,LUC.GUARD,2.8))return['guard','Cakap dengan pengawal'];
  if(n(P,LUC.NASI,3))return['nasi','Nasi lemak'];
+ if(n(P,LUC.RUN,3.6))return['run','Kedai runcit'];
  if(n(P,LUC.ICE,2.8))return['ice','Aiskrim'];
  if(n(P,{x:LUC.BUS.xs,z:7.6},4.5))return['stop','Perhentian bas'];
  return null}
@@ -173,8 +183,9 @@ function act(){if(mode=='bus'){skipBus();return}if(halt||mode!='walk')return;con
  if(a[0]=='bus'){board();return}
  if(a[0]=='door'){if(STORY&&flow=='home'){say('Sekolah dah tamat. Jom naik bas!');return}enter();return}
  if(a[0]=='guard'){say(flow=='home'?'Hati-hati di jalan, '+nm+'. Jumpa esok!':STORY?'Selamat pagi, '+nm+'! Tengok kiri kanan bila melintas jalan.':'Selamat datang, '+nm+'. Jalan-jalan sekitar sekolah ya.');return}
- if(a[0]=='nasi'){say('Nasi lemak telur '+PRICE.nasi+' sebungkus! Belum ada duit lagi...');return}
- if(a[0]=='ice'){say('Aiskrim '+PRICE.ais+'! Vanila, coklat, jagung. Belum ada duit lagi...');return}
+ if(a[0]=='nasi'){say('Nasi lemak telur '+WALLET.fmt(WALLET.CFG.nasi)+' sebungkus!');BAG.openNasi();return}
+ if(a[0]=='ice'){say('Aiskrim '+WALLET.fmt(WALLET.CFG.ice)+'! Vanila, coklat, jagung.');BAG.openIce();return}
+ if(a[0]=='run'){say('Selamat datang ke kedai runcit!');BAG.openRuncit();return}
  if(a[0]=='stop'){say(STORY?(flow=='home'?'Tunggu bas sekolah sampai.':'Bas pulang datang selepas loceng balik.'):'Bas sekolah datang waktu balik (Mod Kelas).')}}
 function enter(){if(fin)return;fin=1;halt=true;SS.set('sk_in',1);SS.set('sk_arr',1);SS.del('sk_out');if(flow=='exit'&&STORY)SS.set('sk_ret',{exit:1}); /* 12d: back in the middle of the day, story.js restores the day */loading(()=>nav('world'))}
 /* Round 12d: the guard caught a pupil who left during lessons: back inside, no points lost, only the counter goes up (cur.caught, optional field) */
@@ -195,7 +206,7 @@ const mc=$('mm'),mg=mc.getContext('2d'),mb=document.createElement('canvas');mb.w
 (()=>{const g=mb.getContext('2d'),r=(x0,z0,x1,z1,c)=>{const a=mf(x0,z0),b=mf(x1,z1);g.fillStyle=c;g.fillRect(a[0],a[1],b[0]-a[0],b[1]-a[1])};g.fillStyle='#2b2f38';g.fillRect(0,0,320,232);r(BX0,BZ0,BX1,BZ1,'#79c06a');r(-32,-34,32,-27,'#d8c690');r(-4,-27,4,-4,'#b3aa95');r(BX0,-5,BX1,-2,'#9ea2ac');r(BX0,RZ0,BX1,RZ1,'#3b3f47');r(BX0,6,BX1,9,'#9ea2ac');r(10,9,34,14,'#aaa493');
  g.fillStyle='#f4f4f4';for(let z=RZ0;z<RZ1;z+=1){const a=mf(ZX-ZW,z);g.fillRect(a[0],a[1],ZW*2*MS,MS*.5)}
  g.strokeStyle='#2f6f5a';g.lineWidth=2;[[-35,-3],[3,35]].forEach(a=>{const p=mf(a[0],-19),q=mf(a[1],-19);g.beginPath();g.moveTo(p[0],p[1]);g.lineTo(q[0],q[1]);g.stroke()});
- [[LUC.SCHOOL.x,-25,'#ffd23f','S'],[LUC.GUARD.x,LUC.GUARD.z,'#4a86c8','P'],[LUC.BUS.xs,8,'#2e6fd0','B'],[LUC.NASI.x,LUC.NASI.z+1.5,'#ff9f43','N'],[LUC.ICE.x,LUC.ICE.z,'#f08ad0','A']].forEach(a=>{const p=mf(a[0],a[1]);g.fillStyle=a[2];g.beginPath();g.arc(p[0],p[1],10,0,7);g.fill();g.fillStyle='#fff';g.font='bold 15px Fredoka,sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText(a[3],p[0],p[1]+1)})})();
+ [[LUC.SCHOOL.x,-25,'#ffd23f','S'],[LUC.GUARD.x,LUC.GUARD.z,'#4a86c8','P'],[LUC.BUS.xs,8,'#2e6fd0','B'],[LUC.NASI.x,LUC.NASI.z+1.5,'#ff9f43','N'],[LUC.RUN.x,LUC.RUN.z+1.5,'#e24b4b','K'],[LUC.ICE.x,LUC.ICE.z,'#f08ad0','A']].forEach(a=>{const p=mf(a[0],a[1]);g.fillStyle=a[2];g.beginPath();g.arc(p[0],p[1],10,0,7);g.fill();g.fillStyle='#fff';g.font='bold 15px Fredoka,sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText(a[3],p[0],p[1]+1)})})();
 function drawMM(){mg.drawImage(mb,0,0);CARS.forEach(c=>{if(!c.on)return;const p=mf(c.x,c.z);mg.fillStyle='#e8e8ee';mg.fillRect(p[0]-3,p[1]-2,6,4)});if(bus.st!='idle'){const p=mf(bus.x,LUC.LW);mg.fillStyle='#f2b81f';mg.fillRect(p[0]-BU.len*MS/2,p[1]-3,BU.len*MS,6)}
  if(CHS.st=='wait'||CHS.st=='run'){const q=mf(CHS.x,CHS.z),k=1+.15*Math.sin(Date.now()/90);mg.fillStyle='#e02424';mg.strokeStyle='#fff';mg.lineWidth=2.5;mg.beginPath();mg.moveTo(q[0],q[1]-13*k);mg.lineTo(q[0]-11*k,q[1]+9*k);mg.lineTo(q[0]+11*k,q[1]+9*k);mg.closePath();mg.fill();mg.stroke()} /* 12d: red triangle = chaser */
  const a=mf(P.x,P.z),s=Math.sin(P.f),c=Math.cos(P.f);mg.fillStyle='#2f6fd0';mg.strokeStyle='#fff';mg.lineWidth=3;mg.beginPath();mg.moveTo(a[0]+s*14,a[1]+c*14);mg.lineTo(a[0]-s*8+c*8,a[1]-c*8-s*8);mg.lineTo(a[0]-s*8-c*8,a[1]-c*8+s*8);mg.closePath();mg.fill();mg.stroke()}
@@ -212,15 +223,16 @@ function loop(ts){requestAnimationFrame(loop);let dt=Math.min((ts-last)/1000||0,
  if(halt){keys.KeyW=keys.KeyA=keys.KeyS=keys.KeyD=keys.ArrowUp=keys.ArrowDown=keys.ArrowLeft=keys.ArrowRight=keys.Space=0;jv.x=jv.z=0;jmp=0}
  let ix=(keys.KeyD||keys.ArrowRight?1:0)-(keys.KeyA||keys.ArrowLeft?1:0)+jv.x,iz=(keys.KeyS||keys.ArrowDown?1:0)-(keys.KeyW||keys.ArrowUp?1:0)+jv.z;const l=Math.hypot(ix,iz);if(l>1){ix/=l;iz/=l}
  const mv=l>.12&&!halt&&mode=='walk',ox=P.x,oz=P.z;let want=0;
- if(mode=='walk'){if(mv){const m=camMap(cy,ix,iz,true,od||hold>0),spd=5*(slowT>0?SLOW.k:1),dx=m[0]*spd*dt,dz=m[1]*spd*dt;want=Math.hypot(dx,dz);if(!hit(P.x+dx,P.z,.35))P.x+=dx;if(!hit(P.x,P.z+dz,.35))P.z+=dz;P.f=la(P.f,Math.atan2(m[0],m[1]),Math.min(1,dt*14))}else camMap(cy,0,0,false,false);
+ if(mode=='walk'){if(mv){const m=camMap(cy,ix,iz,true,od||hold>0),spd=5*(slowT>0?SLOW.k:1)*BAG.spd(),dx=m[0]*spd*dt,dz=m[1]*spd*dt;want=Math.hypot(dx,dz);if(!hitP(P.x+dx,P.z,.35))P.x+=dx;if(!hitP(P.x,P.z+dz,.35))P.z+=dz;P.f=la(P.f,Math.atan2(m[0],m[1]),Math.min(1,dt*14))}else camMap(cy,0,0,false,false);
   P.x=Math.max(BX0+.4,Math.min(BX1-.4,P.x));P.z=Math.max(BZ0+.4,Math.min(BZ1-.4,P.z));
   cy=camStep(cy,dt,mv,mv&&Math.hypot(P.x-ox,P.z-oz)<CAMC.block*want,P.f,hold);hold-=dt;slowT=Math.max(0,slowT-dt);
-  if((keys.Space||jmp)&&P.y<=0)P.vy=6.8;P.vy-=22*dt;P.y+=P.vy*dt;if(P.y<=0){P.y=0;P.vy=0}P.gy+=(gy(P.x,P.z)-P.gy)*Math.min(1,dt*18)}
+  if((keys.Space||jmp)&&P.y<=0)P.vy=6.8*BAG.jmp();P.vy-=22*dt;P.y+=P.vy*dt;if(P.y<=0){P.y=0;P.vy=0}P.gy+=(gy(P.x,P.z)-P.gy)*Math.min(1,dt*18)}
  if(pm.visible){pm.position.set(P.x,P.y+P.gy,P.z);pm.rotation.y=P.f;anim(pm,t,mv&&P.y==0)}
+ BAG.tick(dt,1);BAG.sync(slowT);{const gi=BAG.inv(),lf=BAG.left(),op=gi?((lf<2&&(Math.floor(lf*6)&1))?.85:.4):1;if(op!==ghO||(gi&&pm!==ghP)){BAG.ghost(pm,gi,op);ghO=op;ghP=pm}if(ghS&&!gi)BAG.unstick(P,hit);BAG.track(P.x,P.z,hit);ghS=gi}if(eatT>0){eatT-=dt;pm.userData.arms[1].rotation.x=-2.4;if(eatT<=0&&mode=='walk')halt=false} /* Round 16: carried slow debuff, food animation */
  /* traffic: cars stop at the zebra while someone is on it (and only while the player is walking, never during the bus scene) */
  LUL.sigTick(SGS,dt,{clear:LUL.zoneClear(CARS),empty:!(mode=='walk'&&LUL.pedZone(P))});sigVis();sigBeep(); /* 12b: the cycle runs after the button is pressed; cars hold at the line while SGS.carsStop */
  CARS.forEach(c=>{LUL.carTick(c,dt,SGS.carsStop,LUL.leaderOf(c,CARS),Math.random);c.m.visible=c.on;if(c.on)c.m.position.set(c.x,0,c.z);
-  if(mode=='walk'&&!halt&&dt>0&&LUL.hitCar({x:P.x,z:P.z,y:P.y+P.gy},c,SGS))bump(c)});
+  if(mode=='walk'&&!halt&&dt>0&&!BAG.inv()&&LUL.hitCar({x:P.x,z:P.z,y:P.y+P.gy},c,SGS))bump(c)});
  /* bus: the arrival scene, the waiting bus, boarding */
  if(callT>=0){callT-=dt;if(callT<=0&&LUL.busCall(bus)){callT=-1}}
  const bs=bus.st,dw=bus.door;LUL.busTick(bus,dt);
@@ -240,7 +252,7 @@ function loop(ts){requestAnimationFrame(loop);let dt=Math.min((ts-last)/1000||0,
  if(mode=='walk'){cp.x+=(P.x-cp.x)*Math.min(1,dt*10);cp.z+=(P.z-cp.z)*Math.min(1,dt*10);let c=walkCam();if(gt<1&&gFrom){gt=Math.min(1,gt+dt/.9);const s=gt*gt*(3-2*gt),mx=(a,b)=>a.map((v,k)=>v+(b[k]-v)*s);c={p:mx(gFrom.p,c.p),l:mx(gFrom.l,c.l)}}setCam(c);dl.position.set(cp.x+6,14,cp.z+8);dl.target.position.set(cp.x,0,cp.z)}
  else if(mode=='bus'||mode=='board'){setCam(busCam());dl.position.set(bus.x+6,14,10);dl.target.position.set(bus.x,0,2)}
  /* HUD */
- iceMan.rotation.y=Math.atan2(P.x-LUC.ICE.x,P.z-LUC.ICE.z);seller.rotation.y=Math.atan2(P.x-LUC.NASI.x,P.z-13.2);if(CHS.st=='off'){guard.rotation.y=Math.atan2(P.x-LUC.GUARD.x,P.z-LUC.GUARD.z);anim(guard,t,0)}[iceMan,seller].forEach(m=>anim(m,t,0));
+ iceMan.rotation.y=Math.atan2(P.x-LUC.ICE.x,P.z-LUC.ICE.z);seller.rotation.y=Math.atan2(P.x-LUC.NASI.x,P.z-13.2);keeper.rotation.y=Math.atan2(P.x-LUC.RUN.x,P.z-13.2);if(CHS.st=='off'){guard.rotation.y=Math.atan2(P.x-LUC.GUARD.x,P.z-LUC.GUARD.z);anim(guard,t,0)}[iceMan,seller,keeper].forEach(m=>anim(m,t,0));
  const h=$('hint');
  if(mode=='walk'){bt-=dt;const cw=cv.clientWidth,ch=cv.clientHeight,bb=$('bub');if(bb.style.display=='block'){bv.set(P.x,P.y+P.gy+2.3,P.z).project(cam);bb.style.left=(bv.x*.5+.5)*cw+'px';bb.style.top=(-bv.y*.5+.5)*ch+'px'}
   const a=nearAct(),pe=document.body.classList.contains('touch')?'Tekan E':'E';if(halt)h.style.display='none';else if(a){h.textContent=pe+' · '+a[1];h.style.display='block'}else h.style.display='none';
@@ -250,7 +262,7 @@ function loop(ts){requestAnimationFrame(loop);let dt=Math.min((ts-last)/1000||0,
  drawMM();ren.render(sc,cam)}requestAnimationFrame(loop);
 /* ---- start ---- */
 function boot(){const k=LS.get('sk_cur',null);if(!k||!PF[k]){SS.del('sk_day');SS.del('sk_ret');SS.del('sk_in');nav('index');return}
- cur=PF[k];gen=cur.gen||'m';curL=cur.L||null;mkP();applySet();
+ cur=PF[k];gen=cur.gen||'m';curL=cur.L||null;mkP();applySet();slowT=BAG.slow0();BAG.world=1;BAG.onCure=()=>{slowT=0};BAG.onEat=(ic,msg)=>{eatT=2;halt=true;say(msg)}; /* Round 16 */
  const out=SS.get('sk_out'),day=SS.get('sk_day');flow=LUL.flow({story:STORY,out,hasDay:!!day,savedDay:dayOk(cur.save)});
  /* Round 15: the MOD line is written by js/hud.js */
  if(flow=='skip'){SS.set('sk_in',1);SS.del('sk_out');loading(()=>nav('world'));return} /* a Mod Kelas day is saved: carry on inside, no second bus ride */

@@ -5,7 +5,7 @@ const dl=new T.DirectionalLight(0xffffff,.55);dl.castShadow=true;dl.shadow.mapSi
 const K=.112,X=x=>(x-340)*K,Z=y=>(y-344)*K,cols=[],WL=[],FDS=[]; /* Round 8a: WL = wall/roof boxes for see-through, FDS = fade sets (built at the end of this file) */
 function blk(a,b,c,d,h,col,solid,y0,opa){const x0=X(a),x1=X(c),z0=Z(b),z1=Z(d),m=new T.Mesh(new T.BoxGeometry(x1-x0,h,z1-z0),mat(col));
 if(opa){m.material.transparent=true;m.material.opacity=opa;m.material.depthWrite=false;m.renderOrder=2}
-m.position.set((x0+x1)/2,(y0||0)+h/2,(z0+z1)/2);m.castShadow=!opa;m.receiveShadow=true;sc.add(m);if(solid)cols.push({x0,x1,z0,z1});if(!opa&&(y0||0)+h>=3.5)WL.push({m,b:[x0,x1,y0||0,(y0||0)+h,z0,z1]});return m}
+m.position.set((x0+x1)/2,(y0||0)+h/2,(z0+z1)/2);m.castShadow=!opa;m.receiveShadow=true;sc.add(m);if(solid)cols.push({x0,x1,z0,z1,w:h>=2.5?1:0});if(!opa&&(y0||0)+h>=3.5)WL.push({m,b:[x0,x1,y0||0,(y0||0)+h,z0,z1]});return m}
 function flr(a,b,c,d){const x0=X(a),x1=X(c),z0=Z(b),z1=Z(d),cn=document.createElement('canvas');cn.width=cn.height=2;const g=cn.getContext('2d');
 g.fillStyle='#c4c7cc';g.fillRect(0,0,2,2);g.fillStyle='#aeb2b8';g.fillRect(0,0,1,1);g.fillRect(1,1,1,1);
 const t=new T.CanvasTexture(cn);t.magFilter=T.NearestFilter;t.wrapS=t.wrapT=T.RepeatWrapping;t.repeat.set((x1-x0)/3,(z1-z0)/3);
