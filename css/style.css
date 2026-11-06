@@ -252,6 +252,7 @@ body.sg #msg{top:3.4em}
 .bgxr button:disabled{opacity:.45}
 .bgxx{display:block;margin:.6em auto 0;background:#1c2f6b;color:#fff}
 .bgxn{text-align:center;padding:.6em 0;opacity:.8}
+.bgxh{font-weight:700;text-align:center;color:#9a5a00;padding:.5em 0 .15em;border-top:1px solid #e4d6a8}
 .bgxs{background:#fff;border-radius:.6em;margin-top:.5em;opacity:1;padding:.5em .6em}
 .bgxp2{position:fixed;left:50%;top:34%;z-index:17;font-size:4.2em;line-height:1;pointer-events:none;transform:translate(-50%,0);animation:bgxb .5s ease-in-out 4 alternate}
 @keyframes bgxb{from{transform:translate(-50%,0) scale(1)}to{transform:translate(-50%,-.35em) scale(1.25)}}

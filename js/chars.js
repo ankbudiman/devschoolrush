@@ -1,12 +1,15 @@
 const mat=c=>new T.MeshPhongMaterial({color:c,flatShading:true,shininess:0,specular:0});
 function bx(p,w,h,d,c,x,y,z){const m=new T.Mesh(new T.BoxGeometry(w,h,d),mat(c));m.position.set(x,y,z);m.castShadow=true;p.add(m);return m}
+const cosHas=(o,k)=>!!(o&&o.cos&&o.cos.indexOf(k)>=0); /* Round 17: worn cosmetics (cap, eye, beard, mos) come in o.cos */
 function faceMat(o){const c=document.createElement('canvas');c.width=c.height=128;const g=c.getContext('2d');
 [40,88].forEach(x=>{g.fillStyle='#111';g.beginPath();g.ellipse(x,68,9*o.es,13*o.es,0,0,7);g.fill();g.fillStyle='#fff';g.beginPath();g.arc(x+3,62,3.2,0,7);g.fill()});
 g.strokeStyle='#1a1008';g.lineWidth=o.bw;g.lineCap='round';
 [[26,46,52,42],[76,42,102,46]].forEach(b=>{g.beginPath();g.moveTo(b[0],b[1]);g.lineTo(b[2],b[3]);g.stroke()});
+if(cosHas(o,'beard')){const c2=document.createElement('canvas');c2.width=c2.height=128;const h=c2.getContext('2d');h.fillStyle=o.hc||'#14161d';h.beginPath();h.moveTo(14,86);h.lineTo(114,86);h.lineTo(108,114);h.quadraticCurveTo(64,142,20,114);h.closePath();h.fill();h.globalCompositeOperation='destination-out';h.beginPath();h.ellipse(64,94,23,11,0,0,7);h.fill();g.drawImage(c2,0,0)} /* the mouth is cut out of the beard on its own layer */
 g.strokeStyle='#5a2a1a';g.lineWidth=4;g.beginPath();
 if(o.mouth==0)g.arc(64,88,14,.2,Math.PI-.2);else if(o.mouth==1){g.moveTo(50,94);g.quadraticCurveTo(64,102,78,94)}else g.ellipse(64,94,8,6,0,0,7);g.stroke();
 if(o.stache){g.fillStyle='#14110e';g.fillRect(46,80,36,6)}
+if(cosHas(o,'mos')){g.fillStyle=o.hc||'#14161d';[[50,-.25],[78,.25]].forEach(a=>{g.beginPath();g.ellipse(a[0],87,15,4.5,a[1],0,7);g.fill()})}
 if(o.glasses){g.strokeStyle='#222';g.lineWidth=4;g.strokeRect(22,52,38,32);g.strokeRect(68,52,38,32);g.beginPath();g.moveTo(60,66);g.lineTo(68,66);g.stroke()}
 return new T.MeshBasicMaterial({map:new T.CanvasTexture(c),transparent:true,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2})}
 function hair(p,st,c){const a=(w,h,d,x,y,z)=>bx(p,w,h,d,c,x,y,z);if(!st||st=='bald')return;
@@ -39,13 +42,15 @@ const tud=o.noTud?null:(o.tud||ot.tud),fm=faceMat(o);
 bx(B,.5,.5,.5,o.skin,0,1.22,0);const f=new T.Mesh(new T.PlaneGeometry(.42,.42),fm);f.position.set(0,1.2,.252);B.add(f);
 if(tud){bx(B,.55,.07,.55,tud,0,1.5,0);bx(B,.55,.62,.06,tud,0,1.2,-.27);bx(B,.05,.62,.52,tud,-.275,1.2,-.01);bx(B,.05,.62,.52,tud,.275,1.2,-.01);
 bx(B,.5,.08,.05,tud,0,1.44,.265);bx(B,.05,.52,.04,tud,-.26,1.19,.27);bx(B,.05,.52,.04,tud,.26,1.19,.27);bx(B,.56,.09,.1,tud,0,.97,.24);bx(B,.56,.16,.32,tud,0,.9,0)}
-else{bx(B,.06,.12,.08,o.skin,-.28,1.2,0);bx(B,.06,.12,.08,o.skin,.28,1.2,0);hair(B,o.hs,o.hc);if(o.rib){bx(B,.1,.09,.07,o.rib,.14,1.56,.22);bx(B,.1,.09,.07,o.rib,.3,1.56,.22);bx(B,.06,.06,.08,o.rib,.22,1.56,.23)}}
+else{bx(B,.06,.12,.08,o.skin,-.28,1.2,0);bx(B,.06,.12,.08,o.skin,.28,1.2,0);hair(B,cosHas(o,'cap')&&(o.hs=='spiky'||o.hs=='bun')?'fringe':o.hs,o.hc);if(o.rib){bx(B,.1,.09,.07,o.rib,.14,1.56,.22);bx(B,.1,.09,.07,o.rib,.3,1.56,.22);bx(B,.06,.06,.08,o.rib,.22,1.56,.23)}}
 if(o.mask){const mc='#a8d8ea';bx(B,.52,.17,.06,mc,0,1.085,.275);bx(B,.024,.17,.24,mc,-.262,1.085,.14);bx(B,.024,.17,.24,mc,.262,1.085,.14)} /* 7c: no face shares a surface with the head or the face plane any more (that caused the flicker) */
+if(cosHas(o,'cap')){bx(B,.62,.21,.62,'#c8293a',0,1.575,0);bx(B,.44,.04,.28,'#a01c2c',0,1.5,.44);bx(B,.1,.05,.1,'#8a1a28',0,1.7,0)}
+if(cosHas(o,'eye')){const k='#15151a';bx(B,.13,.11,.02,k,-.08,1.185,.272);bx(B,.12,.025,.02,k,-.2,1.235,.27);if(!tud){bx(B,.03,.03,.5,k,-.255,1.235,0);bx(B,.03,.03,.5,k,.255,1.235,0);bx(B,.52,.03,.03,k,0,1.235,-.255)}}
 G.scale.setScalar(o.h||1);G.userData={legs,arms,B,ph:Math.random()*6};G.traverse(m=>{if(m.isMesh)m.castShadow=true});return G}
 const OUT={uni:{m:{top:'#f4f6fa',bot:'#1c2650',shoe:'#f4f4f4'},f:{top:'#f4f6fa',bot:'#1c2650',shoe:'#f4f4f4',skirt:.3,ls:1,tud:'#f6f7fb'}},
 pe:{m:{top:'#2a58c8',bot:'#2150c4',shoe:'#9a9ea6',collar:'#c8293a',cuff:'#c8293a',stripe:1},f:{top:'#f6f7fb',sl:'#2a58c8',cuff:'#c8293a',bot:'#2150c4',shoe:'#f4f4f4',stripe:1,ls:1,tud:'#f6f7fb'}},
 pre:{m:{top:'#4f8ad0',bot:'#1c2650',shoe:'#15151a',tie:'#243b8a',badge:1,ls:1},f:{top:'#4f8ad0',bot:'#1c2650',shoe:'#15151a',skirt:.3,sock:'#15151a',ls:1,badge:1,tud:'#3f78c4'}}};
-function player(g,out,L){L=L||{};return build({o:OUT[out][g],skin:L.sk||'#b87a50',hc:L.hc||'#14161d',hs:L.hs||(g=='f'?'bob':'fringe'),tud:L.tud,noTud:L.nt,rib:L.rib,es:L.es||1,bw:4,mouth:L.mo||0,mask:L.mask})}
+function player(g,out,L){L=L||{};return build({o:OUT[out][g],skin:L.sk||'#b87a50',hc:L.hc||'#14161d',hs:L.hs||(g=='f'?'bob':'fringe'),tud:L.tud,noTud:L.nt,rib:L.rib,es:L.es||1,bw:4,mouth:L.mo||0,mask:L.mask,cos:typeof BAG!=='undefined'&&BAG.worn?BAG.worn():null})} /* Round 17: the menu page has no BAG, so the setup preview never shows cosmetics */
 function npc(role,g){g=g||R(['m','f']);const f=g=='f',o={skin:R(SK),hc:R(HC),h:rnd(.9,1.1),w:rnd(.92,1.15),mouth:R([0,0,1,2]),es:rnd(.8,1.2),bw:rnd(3,6)};
 if(role=='murid'||role=='pengawas'){o.o=Object.assign({},OUT[role=='murid'?(Math.random()<.2?'pe':'uni'):'pre'][g]);o.hs=f?null:R(['short','fringe','spiky','side','crew','short']);if(f&&Math.random()<.4){o.noTud=true;o.hs=R(['bob','pony','bun','pigtails','braid']);o.rib=Math.random()<.4?R(CL):null}if(role=='murid')o.mask=Math.random()<.2}
 else{o.h=rnd(1.2,1.32);const c=R(CL);

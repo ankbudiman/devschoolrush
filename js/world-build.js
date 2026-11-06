@@ -2,7 +2,7 @@ const cv=$('cv'),ren=new T.WebGLRenderer({canvas:cv,antialias:true});ren.shadowM
 const sc=new T.Scene();sc.background=new T.Color('#bfe3f5');const cam=new T.PerspectiveCamera(55,1,.5,150);
 sc.add(new T.HemisphereLight(0xffffff,0x9aa7b8,.95));
 const dl=new T.DirectionalLight(0xffffff,.55);dl.castShadow=true;dl.shadow.mapSize.set(1024,1024);Object.assign(dl.shadow.camera,{left:-14,right:14,top:14,bottom:-14,near:1,far:50});sc.add(dl,dl.target);
-const K=.112,X=x=>(x-340)*K,Z=y=>(y-344)*K,cols=[],WL=[],FDS=[]; /* Round 8a: WL = wall/roof boxes for see-through, FDS = fade sets (built at the end of this file) */
+const K=.112,X=x=>(x-340)*K,Z=y=>(y-344)*K,cols=[],WL=[],FDS=[],LKM=[]; /* Round 8a: WL = wall/roof boxes for see-through, FDS = fade sets (built at the end of this file) */
 function blk(a,b,c,d,h,col,solid,y0,opa){const x0=X(a),x1=X(c),z0=Z(b),z1=Z(d),m=new T.Mesh(new T.BoxGeometry(x1-x0,h,z1-z0),mat(col));
 if(opa){m.material.transparent=true;m.material.opacity=opa;m.material.depthWrite=false;m.renderOrder=2}
 m.position.set((x0+x1)/2,(y0||0)+h/2,(z0+z1)/2);m.castShadow=!opa;m.receiveShadow=true;sc.add(m);if(solid)cols.push({x0,x1,z0,z1,w:h>=2.5?1:0});if(!opa&&(y0||0)+h>=3.5)WL.push({m,b:[x0,x1,y0||0,(y0||0)+h,z0,z1]});return m}
@@ -29,7 +29,7 @@ fl(w*.9,h*.85,'#ffffff',.03);fl(w*.88,h*.8,'#c4623f',.05);fl(w*.78,h*.5,'#78b866
 blk(100,38,318,40,.9,'#ffffff',0);blk(100,40,102,110,.9,'#ffffff',0);blk(316,40,318,110,.9,'#ffffff',0);
 blk(150,106,156,114,3.7,'#ffffff',1);blk(184,106,190,114,3.7,'#ffffff',1);blk(150,106,190,114,.5,'#ffffff',0,3.7);blk(156,109,184,110.5,.12,'#ffffff',0,.8);
 cols.push({x0:X(156),x1:X(184),z0:Z(106),z1:Z(111)})})();
-function lock(a,c,y0,y1){for(let x=a;x+5.8<=c;x+=6.8)blk(x,y0,x+5.8,y1,2,(x/6.8|0)%2?'#3b6fb6':'#4a86c8',0);cols.push({x0:X(a),x1:X(c),z0:Z(y0),z1:Z(y1)})}
+function lock(a,c,y0,y1){for(let x=a;x+5.8<=c;x+=6.8){const m=blk(x,y0,x+5.8,y1,2,(x/6.8|0)%2?'#3b6fb6':'#4a86c8',0);LKM.push({m,x:(X(x)+X(x+5.8))/2,z:y0<344?Z(y1):Z(y0),d:y0<344?1:-1})} /* Round 18: LKM = the blue locker boxes (js/lockers.js recolours and opens them); z = wall-face z, d = side the player stands on (+1 north wall, -1 south wall) */cols.push({x0:X(a),x1:X(c),z0:Z(y0),z1:Z(y1)})}
 [[104,154],[188,312],[360,464],[496,560]].forEach(s=>lock(s[0],s[1],150,157.1));[[104,312],[360,560]].forEach(s=>lock(s[0],s[1],530.9,538));
 const WP=(px,py,nx,nz,o)=>[X(px)+nx*o,Z(py)+nz*o];
 function pn(w,h,c,x,y,z,ry){const m=new T.Mesh(new T.PlaneGeometry(w,h),new T.MeshBasicMaterial({color:c}));m.position.set(x,y,z);m.rotation.y=ry;sc.add(m)}
@@ -106,7 +106,7 @@ const DD=[[280,326,0,1],[420,186,0,-1],[270,362,0,-1],[530,502,0,1]].map(d=>{con
 /* Round 10b3: 4 of the 6 outside vases (the other two are in the Kantin and the Padang): by the boys toilet, by the girls toilet, and two quiet corners. Silent: no hint, E = key click (vaseHit in core.js). */
 const VS=[[120,180,'boys'],[575.5,534.5,'girls'],[349,286,'spine'],[567,357.5,'east']].map(a=>{const x=X(a[0]),z=Z(a[1]);mkVase(sc,x,z);cols.push({x0:x-.4,x1:x+.4,z0:z-.4,z1:z+.4});return{x,z,id:'w_'+a[2]}});
 /* Round 9g: Pejabat front. A teacher stands beside the door, a doormat marks the spot in front of it (CNS = the caning spot, used in Round 13) */
-const CANE_TEST=true; /* Round 9g test: E at the Pejabat door plays the cane scene. Set to false to switch it off. */
+const CANE_TEST=false; /* Round 9g test: E at the Pejabat door plays the cane scene. Round 18b: OFF; the cane now only comes from the locker prefect (js/lockers.js) */
 const PJX=X(387),PJZ=Z(502),CNS=[PJX,PJZ+.9];let TCH=null,CANE=null;
 (()=>{const mt=new T.Mesh(new T.PlaneGeometry(3.4,1.3),mat('#a33b4b'));mt.rotation.x=-Math.PI/2;mt.position.set(PJX,.025,PJZ+1.25);mt.receiveShadow=true;sc.add(mt);
 const mi=new T.Mesh(new T.PlaneGeometry(3.0,.9),mat('#d9a441'));mi.rotation.x=-Math.PI/2;mi.position.set(PJX,.03,PJZ+1.25);sc.add(mi);

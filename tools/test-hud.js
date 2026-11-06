@@ -62,10 +62,10 @@ const st=rd('js/story.js');
 ok(!st.includes("Skor '+score;")&&st.includes("b.textContent=st=='free'?'Jalan-jalan':hm(clk);"),'story.js: Skor removed from the clock pill');
 ok(st.includes("HUD.set({pts:score,note:st=='class'||st=='late'||st=='rehat'?LAB[cls]:null})"),'story.js: pills() feeds the HUD');
 ok(!/\$\('mdl'\)\.textContent/.test(st+rd('js/kantin.js')+rd('js/luar.js')+rd('js/padang.js')+rd('js/kelas.js')),'old #mdl writers removed (hud.js owns the MOD line)');
-ok(rd('sw.js').includes("'js/hud.js'")&&rd('sw.js').includes("CACHE='sr-r16c'"),'sw.js: cache sr-r15 and js/hud.js pre-cached');
+ok(rd('sw.js').includes("'js/hud.js'")&&rd('sw.js').includes("CACHE='sr-r18d'"),'sw.js: cache sr-r15 and js/hud.js pre-cached');
 ok(rd('css/style.css').includes('#hdn{')&&rd('css/style.css').includes('#hdav{'),'css has the HUD rules');
 /* ---- other scripts must not use the new names ---- */
 const others=fs.readdirSync(path.join(__dirname,'..','js')).filter(f=>f!='hud.js'&&f!='wallet.js').map(f=>rd('js/'+f)).join('\n');
-ok(!/\bHUD\b/.test(others.replace(/\/\*[\s\S]*?\*\//g,'').replace(/if\(window\.HUD\)HUD\.set\(/g,'')),'no other script defines or uses global HUD (only the one guarded story.js hook)');
+ok(!/\bHUD\b/.test(others.replace(/\/\*[\s\S]*?\*\//g,'').replace(/if\(window\.HUD\)HUD\.set\(/g,'').replace(/typeof HUD!=='undefined'&&HUD&&HUD\.face\)HUD\.face\(/g,'')),'no other script defines or uses global HUD (only the guarded story.js hook and the guarded bag.js portrait refresh)');
 ok(!/id=["']?hd(p|av|pl|nm|pr|rm|n|x|bt|bag|r1)\b/.test(others),'no other script uses the hd* ids');
 console.log(pass+' passed, '+fail+' failed');process.exit(fail?1:0);

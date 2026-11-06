@@ -29,7 +29,7 @@ const txt=doc=>doc.body.textContent;
  ok(['gula','pisang','iso','epal','nasi'].map(k=>B.price(k)).join()=='50,150,300,300,150'&&B.price('ice')==100,'prices: gula .50, pisang 1.50, isotonik 3.00, epal pelangi 3.00, nasi lemak 1.50, ice cream 1.00');
  ok(W.CFG.shop.epal==300&&W.CFG.ice==100&&W.CFG.nasi==150&&W.CFG.pocket==300,'WALLET.CFG: shop prices added, the rest unchanged');
  ok(B.buy('gula')=='ok'&&W.get()==750&&B.cnt('gula')==1&&saves.length>0,'buy gula-gula: RM0.50 paid, one in the bag, saved');
- ok(B.buy('epal')=='ok'&&W.get()==450&&B.cnt('epal')==1,'buy epal pelangi RM3.00');
+ ok(B.buy('epal')=='ok'&&W.get()==450&&B.cnt('epal')==1,'buy epal fuji RM3.00');
  ok(B.buy('iso')=='ok'&&B.buy('iso')=='poor'&&W.get()==150&&B.cnt('iso')==1,'second isotonik: not enough money, nothing taken');
  ok(B.buy('nope')=='bad'&&B.buy('ice')=='bad'&&W.get()==150,'unknown item and ice cream cannot be bought into the bag');
  for(let i=0;i<9;i++)B.add('pisang');ok(B.cnt('pisang')==9&&B.add('pisang')===false,'bag holds at most 9 of one item');
@@ -43,7 +43,7 @@ const txt=doc=>doc.body.textContent;
  B.tick(3.01,1);ok(c.fx.b===undefined&&B.spd()==1,'boost ends after its time');
  B.use('iso');ok(c.fx.t==10&&B.spd()==1.5,'isotonik: speed x1.5 for 10 s');
  B.use('pisang');ok(c.fx.b=='pisang'&&c.fx.t==5&&B.spd()==1&&B.jmp()==1.35,'a new boost replaces the old one (no stacking); pisang = jump x1.35');
- B.use('epal');ok(B.inv()===true&&B.spd()==1&&B.jmp()==1&&c.fx.t==10&&B.left()==10,'epal pelangi: invisible 10 s');
+ B.use('epal');ok(B.inv()===true&&B.spd()==1&&B.jmp()==1&&c.fx.t==10&&B.left()==10,'epal fuji: invisible 10 s');
  B.tick(9.9,1);ok(B.inv()===true&&B.left()<.2,'still invisible just before the end');B.tick(.2,1);ok(B.inv()===false&&B.left()==0,'invisibility ends after 10 s');
  r=B.use('epal');ok(!r.ok&&/Tiada/.test(r.msg),'using something you do not have: refused');
  B.world=1;B.use('gula');B.world=0;B.tick(4,1);ok(c.fx.t==5,'boost time is kept (not counted) on pages that are not the school world');
@@ -71,7 +71,7 @@ const txt=doc=>doc.body.textContent;
  ok(/Segar/.test(txt(d))&&!/Nasi Lemak/.test(txt(d)),'panel is redrawn with the message and without the used item');
  nb=buttons(d,1);nb[0].onclick();ok(c.fx.b=='gula'&&B.spd()==1.5&&!B.isOpen()&&e.getHalt()===false,'tap Guna on a boost: it starts and the panel closes');
  B.openRuncit();ok(B.isOpen()&&/KEDAI|Kedai Runcit/i.test(txt(d))&&/RM0\.50/.test(txt(d))&&/RM3\.00/.test(txt(d))&&!/Nasi/.test(txt(d)),'kedai runcit menu: 4 items with prices (cosmetics come later)');
- nb=buttons(d,1);ok(nb.length==4,'four Beli buttons');const m0=e.WALLET.get();nb[3].onclick();ok(e.WALLET.get()==m0-300&&B.cnt('epal')==1&&/Terima kasih/.test(txt(d)),'Beli epal pelangi: RM3.00 paid, in bag, thank-you note, menu stays open');
+ nb=buttons(d,1);ok(nb.length==8,'eight Beli buttons (four items, four cosmetics)');const m0=e.WALLET.get();nb[3].onclick();ok(e.WALLET.get()==m0-300&&B.cnt('epal')==1&&/Terima kasih/.test(txt(d)),'Beli epal pelangi: RM3.00 paid, in bag, thank-you note, menu stays open');
  c.w.c=10;buttons(d,1)[0].onclick();ok(/Tak cukup duit/.test(txt(d))&&B.cnt('gula')==1,'not enough money message, nothing bought');
  c.w.c=5000;c.inv.gula=9;buttons(d,1)[0].onclick();ok(/Beg penuh/.test(txt(d))&&c.w.c==5000,'full bag message, no money taken');
  B.close();B.openNasi();ok(/Nasi Lemak/.test(txt(d))&&/RM1\.50/.test(txt(d)),'nasi lemak stall menu');buttons(d,1)[0].onclick();ok(B.cnt('nasi')==1,'buy nasi lemak: goes into the bag');B.close();
@@ -164,11 +164,11 @@ ok(/BAG\.onEat=/.test(L)&&/eatT/.test(L)&&/arms\[1\]\.rotation\.x=-2\.4/.test(L)
 ok(/typeof BAG!=='undefined'&&BAG\.open/.test(H),'hud.js: the bag button opens the bag');
 for(const f of ['world','kantin','luar','padang','kelas'])ok(/"js\/bag\.js"/.test(rd(f+'.html')),f+'.html loads js/bag.js');
 ok(rd('luar.html').indexOf('js/wallet.js')<rd('luar.html').indexOf('js/bag.js')&&rd('luar.html').indexOf('js/bag.js')<rd('luar.html').indexOf('js/luar.js'),'luar.html: wallet.js, then bag.js, before luar.js');
-ok(S.includes("'js/bag.js'")&&/CACHE='sr-r16c'/.test(S),'sw.js: cache sr-r16c and js/bag.js pre-cached');
+ok(S.includes("'js/bag.js'")&&/CACHE='sr-r18d'/.test(S),'sw.js: cache sr-r18d and js/bag.js pre-cached');
 ok(rd('js/core.js').indexOf('BAG')<0&&rd('js/ui.js').indexOf('BAG')<0,'core.js and ui.js are not changed (no bag code there)');
 /* ---- names and ids are free ---- */
 {const others=fs.readdirSync(path.join(__dirname,'..','js')).filter(f=>f!='bag.js').map(f=>[f,rd('js/'+f)]);
- for(const n of ['BAG','keeper','eatT','hitNS','hitG','hitP','ghost','ghS','ghP','ghO']){const used=others.filter(([f,s])=>new RegExp('\\b'+n+'\\b').test(s)).map(x=>x[0]);const allowed=n=='BAG'?['world.js','kantin.js','padang.js','kelas.js','luar.js','hud.js']:n=='keeper'||n=='eatT'?['luar.js']:n=='hitNS'?['world.js']:['world.js','luar.js'];ok(used.every(f=>allowed.includes(f)),'name '+n+' only in '+allowed.join('/')+(used.length?' (found '+used.join(',')+')':''))}
+ for(const n of ['BAG','keeper','eatT','hitNS','hitG','hitP','ghost','ghS','ghP','ghO']){const used=others.filter(([f,s])=>new RegExp('\\b'+n+'\\b').test(s)).map(x=>x[0]);const allowed=n=='BAG'?['world.js','kantin.js','padang.js','kelas.js','luar.js','hud.js','chars.js','lockers.js']:n=='keeper'||n=='eatT'?['luar.js']:n=='hitNS'?['world.js']:['world.js','luar.js'];ok(used.every(f=>allowed.includes(f)),'name '+n+' only in '+allowed.join('/')+(used.length?' (found '+used.join(',')+')':''))}
  const ids=['bgxp','bgxe','bgxc','bgxm','bgxl','bgxr','bgxi','bgxt','bgxq','bgxn','bgxs','bgxx','bgxp2','bgxb'];const html=['index','world','kantin','luar','padang','kelas'].map(f=>rd(f+'.html')).join('\n');
  ok(ids.every(i=>!html.includes(i)&&others.every(([f,s])=>!s.includes(i))),'bgx* ids and classes are used by nobody else');
  ok(ids.slice(0,2).every(i=>CSS.includes(i)),'css for the panel and the chip exists');}

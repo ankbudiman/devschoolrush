@@ -70,7 +70,7 @@ function pfSay(c,i){let b=syM[i];if(!b){b=document.createElement('div');b.id='pf
 function sayOff(){syM.forEach(b=>b.style.display='none')}
 function startRemind(){rm=1;setNav(true);ns.forEach(o=>{if(o.role!='pengawas'||o.ch)return;o.ch=1;o.hid=0;o.m.visible=true;o.mv=0;o.d=0;ex.push(o)});tone(520,0,.18,'sine',.08);toast('Waktu rehat nak habis! Cepat ke Kantin.',2600)}
 function autoKantin(){score=Math.max(0,score-CFG.RPEN);toast('Waktu rehat dah habis! Pengawas hantar kamu ke Kantin.',3000);enterRoom(5,false,true)}
-window.storyMM=function(mg,f){if(MODE!='story'||st!='late'||!ph||!ph.m.visible)return;const k=1+.15*Math.sin(Date.now()/90);mg.fillStyle='#e02424';mg.strokeStyle='#fff';mg.lineWidth=2.5;[ph].concat(ex).forEach(c=>{const q=f(c.x,c.z);mg.beginPath();mg.moveTo(q[0],q[1]-13*k);mg.lineTo(q[0]-11*k,q[1]+9*k);mg.lineTo(q[0]+11*k,q[1]+9*k);mg.closePath();mg.fill();mg.stroke()})};
+window.storyMM=function(mg,f){const a=MODE=='story'&&st=='late'&&ph&&ph.m.visible?[ph].concat(ex):[],lk=window.lockPf?window.lockPf():null;if(lk)a.push(lk);/* Round 18c: lockPf = the prefect sent by a locker (js/lockers.js), null when none */if(!a.length)return;const k=1+.15*Math.sin(Date.now()/90);mg.fillStyle='#e02424';mg.strokeStyle='#fff';mg.lineWidth=2.5;a.forEach(c=>{const q=f(c.x,c.z);mg.beginPath();mg.moveTo(q[0],q[1]-13*k);mg.lineTo(q[0]-11*k,q[1]+9*k);mg.lineTo(q[0]+11*k,q[1]+9*k);mg.closePath();mg.fill();mg.stroke()})};
 function bfs(){if(!bd)bd=new Int16Array(GW*GH);bd.fill(-1);let[ci,cj]=cell(P.x,P.z);ci=Math.max(0,Math.min(GW-1,ci));cj=Math.max(0,Math.min(GH-1,cj));let s=ci+cj*GW;
  if(bk[s]){let f=false;for(const[a,b]of N8){const i=ci+a,j=cj+b;if(i>=0&&j>=0&&i<GW&&j<GH&&!bk[i+j*GW]){s=i+j*GW;f=true;break}}if(!f)return}
  bd[s]=0;const q=[s];for(let h=0;h<q.length;h++){const c=q[h],i=c%GW,j=c/GW|0;for(let k=0;k<4;k++){const a=i+N8[k][0],b=j+N8[k][1];if(a<0||b<0||a>=GW||b>=GH)continue;const m=b*GW+a;if(bd[m]<0&&!bk[m]){bd[m]=bd[c]+1;q.push(m)}}}}
@@ -88,6 +88,14 @@ function chase(dt,t,calm){if(!calm&&(!ph||!ph.m.visible))return;if(!calm){lateT+
   c.m.position.set(c.x,0,c.z);c.m.rotation.y=c.f;anim(c.m,t,c.mv);if(calm)pfSay(c,i);else pfOn(t,c,i)});
  if(!calm&&run){pfBt-=dt;if(pfBt<=0){pfBt=Math.max(CFG.PGAP,Math.min(CFG.PGAPMAX,CFG.PGAP+dm*CFG.PGAPK));tone(740,0,.07,'square',.07)}}else pfBt=0;
  if(!calm&&dm<CFG.CATCH){SRA.whistle();say('Kena tangkap! Jom ke kelas!');toast('Pengawas hantar kamu ke kelas.',2800);score=Math.max(0,score-CFG.CAUGHT);enterRoom(cls,true)}}
+/* ---- Round 18: small hooks for js/lockers.js (the prefect sent by a locker). pfGo = one step of the same path-finding chase for one prefect o (speed sp), returns the distance to the player; pfMark / pfUnmark = the red ring and "!" bubble in marker slot i (the late chase uses 0 to 2, lockers use 5); storyPen = lose points in Mod Kelas only (false in Mod Jalan-jalan) ---- */
+window.pfGo=function(c,dt,sp){bt-=dt;if(bt<=0){bt=.3;bfs()}let tx=P.x,tz=P.z;const[pi,pj]=cell(c.x,c.z),cc=pi+pj*GW;
+ if(bd&&pi>=0&&pj>=0&&pi<GW&&pj<GH&&bd[cc]>0){let best=cc,bi=pi,bj=pj;for(const[a,b]of N8){const i2=pi+a,j2=pj+b;if(i2<0||j2<0||i2>=GW||j2>=GH)continue;const m=i2+j2*GW;if(bd[m]<0||bd[m]>=bd[best])continue;
+  if(a&&b&&(bk[(pi+a)+pj*GW]||bk[pi+(pj+b)*GW]))continue;best=m;bi=i2;bj=j2}
+  if(best!=cc){tx=GX+(bi+.5)*GC;tz=GZ+(bj+.5)*GC}}
+ const dx=tx-c.x,dz=tz-c.z,l=Math.hypot(dx,dz);c.mv=0;if(l>.01){c.x+=dx/l*sp*dt;c.z+=dz/l*sp*dt;c.f=la(c.f,Math.atan2(dx,dz),Math.min(1,dt*10));c.mv=1}return Math.hypot(c.x-P.x,c.z-P.z)};
+window.pfMark=pfOn;window.pfUnmark=function(i){const o=pfM[i];if(o){o.r.visible=false;o.b.style.display='none'}};
+window.storyPen=function(n){if(MODE!='story'||st=='off')return false;score=Math.max(0,score-n);pills();return true};
 /* ---- rooms (placeholder for now) ---- */
 function card(h,lines,btns){const r=room();r.innerHTML='';const a=document.createElement('h2');a.textContent=h;r.appendChild(a);
  lines.forEach(l=>{const p=document.createElement('p');p.textContent=l[0];if(l[1])p.className='rs2';r.appendChild(p)});
